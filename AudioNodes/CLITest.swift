@@ -12,13 +12,50 @@ import AudioToolbox
 // MARK: - Driver
 
 class Driver: Node {
-	private var connector = Connector()
+
+	func connect(_ input: Node) { withAudioLock { _userConnector.connectSafe(input) } }
+
+	func disconnect() { withAudioLock { _userConnector.disconnectSafe() } }
+
+
+	// Internal
+
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		guard let input = _connector.input else {
+			return FillSilence(frameCount: frameCount, buffers: buffers)
+		}
+		return input._internalRender(frameCount: frameCount, buffers: buffers)
+	}
+
+
+	override func _willRenderSafe() {
+		super._willRenderSafe()
+		_connector = _userConnector
+	}
+
+
+	override func willConnectSafe(with format: StreamFormat) {
+		super.willConnectSafe(with: format)
+		_userConnector.setFormatSafe(format)
+	}
+
+
+	override func didDisconnectSafe() {
+		super.didDisconnectSafe()
+		_userConnector.resetFormat()
+	}
+
+
+	// Private
+
+	private var _userConnector = Connector()
+	private var _connector = Connector()
 }
 
 
 // MARK: - System
 
-class System: Node {
+class System: Driver {
 
 	private let unit: AudioUnit
 

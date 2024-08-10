@@ -26,6 +26,9 @@ actor AudioActor {
 
 // NB: names that start with an underscore are executed or accessed on the system audio thread. Names that end with *Safe should be called only within a semaphore lock, i.e. withAudioLock { }
 
+
+// MARK: - Connector
+
 struct StreamFormat: Equatable {
 	let sampleRate: Double
 	let bufferFrameSize: Int
@@ -106,6 +109,7 @@ class Node {
 
 
 	final func _internalRender(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+
 		// 1. Prepare the config
 		withAudioLock {
 			_willRenderSafe()
@@ -142,24 +146,23 @@ class Node {
 
 	private func _internalRender2(ramping: Bool, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 
-		// 4. Generate data; redefined in subclasses
+		// 5. Generate data; redefined in subclasses
 		let status = _render(frameCount: frameCount, buffers: buffers)
 
-		// 5. Playing muted: keep generating and replacing with silence; the first buffer is smoothened
+		// 6. Playing muted: keep generating and replacing with silence; the first buffer is smoothened
 		if _config.muted {
 			if !_prevMuted {
 				_prevMuted = true
 				if !ramping {
-					// TODO: should probably also pass this to the monitor
 					Smooth(out: true, frameCount: frameCount, fadeFrameCount: _transitionSamples, buffers: buffers)
-					return status
+					return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
 				}
 			}
 			FillSilence(frameCount: frameCount, buffers: buffers)
-			return status
+			return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
 		}
 
-		// 6. Not muted; ensure switching to unmuted state is smooth too
+		// 7. Not muted; ensure switching to unmuted state is smooth too
 		if _prevMuted {
 			_prevMuted = false
 			if !ramping {
@@ -167,13 +170,16 @@ class Node {
 			}
 		}
 
-		// 7. Notify the monitor (tap) node if there's any
+		// 8. Notify the monitor (tap) node if there's any
+		return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
+	}
+
+
+	private func _internalMonitor(status: OSStatus, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		if status == noErr {
 			// Call monitor only if there's actual data generated. This helps monitors like file writers only receive actual data, not e.g. silence that can occur due to timing issues with the microphone. This however leaves the monitor unaware of any gaps which may not be good for e.g. meter UI elements. Should find a way to handle these situations.
 			_ = _config.monitor.input?._internalRender(frameCount: frameCount, buffers: buffers)
 		}
-
-		// 8. Done
 		return status
 	}
 
