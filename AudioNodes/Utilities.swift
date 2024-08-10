@@ -1,0 +1,149 @@
+//
+//  Utilities.swift
+//  AudioNodes
+//
+//  Created by Hovik Melikyan on 09.08.24.
+//
+
+import Foundation
+import Accelerate
+import CoreAudio
+
+
+@usableFromInline typealias Sample = Float32
+@usableFromInline typealias AudioBufferListPtr = UnsafeMutableAudioBufferListPointer
+@usableFromInline let SizeOfSample = MemoryLayout<Sample>.size
+
+
+@inlinable
+internal func debugOnly(_ body: () -> Void) {
+	assert({ body(); return true }())
+}
+
+
+@inlinable
+internal func DLOG(_ s: String) {
+	debugOnly { print(s) }
+}
+
+
+@usableFromInline
+func Unrecoverable(_ code: Int) -> Never {
+	preconditionFailure("Unrecoverable error \(code)")
+}
+
+
+@inlinable
+func NotError(_ error: OSStatus, _ code: Int) {
+	if error != noErr {
+		DLOG("ERROR: OS status: \(error)")
+		Unrecoverable(code)
+	}
+}
+
+
+@inlinable
+func Abstract() -> Never {
+	Unrecoverable(52001)
+}
+
+
+@inlinable
+func Assert(_ cond: Bool, _ code: Int) {
+	// TODO: should this be DEBUG only?
+	if !cond { Unrecoverable(code) }
+}
+
+
+
+// MARK: - Audio Utilities
+
+@discardableResult
+func FillSilence(frameCount: Int, buffers: AudioBufferListPtr, offset: Int = 0) -> OSStatus {
+	precondition(offset <= frameCount)
+	if offset < frameCount {
+		for i in 0..<buffers.count {
+			vDSP_vclr(buffers[i].samples + offset, 1, UInt(frameCount - offset))
+		}
+	}
+	return noErr
+}
+
+
+// Fast non-logarithmic fade in/out: used for muting/unmuting - it's why it's called Smooth() and not say Ramp()
+@discardableResult
+func Smooth(out: Bool, frameCount: Int, fadeFrameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	// DLOG("SMOOTH \(out ? "out" : "in")")
+	let fadeFrameCount = min(frameCount, fadeFrameCount)
+	if fadeFrameCount > 0 {
+		for i in 0..<buffers.count {
+			let samples = buffers[i].samples
+			for i in 0..<fadeFrameCount {
+				let t = Sample(i) / Sample(fadeFrameCount)
+				samples[i] *= out ? 1 - t : t
+			}
+		}
+	}
+	return out ? FillSilence(frameCount: frameCount, buffers: buffers, offset: fadeFrameCount) : noErr
+}
+
+
+extension AudioBuffer {
+
+	@inlinable
+	var samples: UnsafeMutablePointer<Sample> {
+		mData!.assumingMemoryBound(to: Sample.self)
+	}
+
+	@inlinable
+	var sampleCount: Int {
+		get { Int(mDataByteSize) / SizeOfSample }
+		set { mDataByteSize = UInt32(newValue * SizeOfSample) }
+	}
+
+	@inlinable
+	mutating func allocate(capacity: Int) {
+		precondition(capacity > 0)
+		precondition(mData == nil)
+		mNumberChannels = 1
+		mDataByteSize = UInt32(capacity * SizeOfSample)
+		mData = UnsafeMutableRawPointer(UnsafeMutableBufferPointer<Sample>.allocate(capacity: capacity).baseAddress)
+	}
+
+	@inlinable
+	mutating func deallocate() {
+		mData?.deallocate()
+		mData = nil
+	}
+}
+
+
+class SafeAudioBufferList {
+	let buffers: AudioBufferListPtr
+	let capacity: Int
+
+	init(isStereo: Bool, capacity: Int) {
+		buffers = AudioBufferList.allocate(maximumBuffers: isStereo ? 2 : 1)
+		for i in 0..<buffers.count {
+			buffers[i].allocate(capacity: capacity)
+		}
+		self.capacity = capacity
+	}
+
+	var sampleCount: Int {
+		get { buffers[0].sampleCount }
+		set {
+			precondition(newValue >= 0 && newValue <= capacity)
+			for i in 0..<buffers.count {
+				buffers[i].sampleCount = newValue
+			}
+		}
+	}
+
+	deinit {
+		for i in 0..<buffers.count {
+			buffers[i].deallocate()
+		}
+		buffers.unsafeMutablePointer.deallocate()
+	}
+}

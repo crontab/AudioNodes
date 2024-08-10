@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		36FF52C82C661FD7006428FE /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FF52C72C661FD7006428FE /* main.swift */; };
+		3697C24C2C676E3E00CEADFB /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3697C24B2C676E3E00CEADFB /* Node.swift */; };
+		36FF52C82C661FD7006428FE /* CLITest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FF52C72C661FD7006428FE /* CLITest.swift */; };
+		36FF52CF2C662659006428FE /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FF52CE2C662659006428FE /* Utilities.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -23,8 +25,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3697C24B2C676E3E00CEADFB /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		36FF52C42C661FD7006428FE /* AudioNodes */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AudioNodes; sourceTree = BUILT_PRODUCTS_DIR; };
-		36FF52C72C661FD7006428FE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		36FF52C72C661FD7006428FE /* CLITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLITest.swift; sourceTree = "<group>"; };
+		36FF52CE2C662659006428FE /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +61,9 @@
 		36FF52C62C661FD7006428FE /* AudioNodes */ = {
 			isa = PBXGroup;
 			children = (
-				36FF52C72C661FD7006428FE /* main.swift */,
+				36FF52CE2C662659006428FE /* Utilities.swift */,
+				3697C24B2C676E3E00CEADFB /* Node.swift */,
+				36FF52C72C661FD7006428FE /* CLITest.swift */,
 			);
 			path = AudioNodes;
 			sourceTree = "<group>";
@@ -78,6 +84,8 @@
 			dependencies = (
 			);
 			name = AudioNodes;
+			packageProductDependencies = (
+			);
 			productName = AudioNodes;
 			productReference = 36FF52C42C661FD7006428FE /* AudioNodes */;
 			productType = "com.apple.product-type.tool";
@@ -106,6 +114,8 @@
 				Base,
 			);
 			mainGroup = 36FF52BB2C661FD7006428FE;
+			packageReferences = (
+			);
 			productRefGroup = 36FF52C52C661FD7006428FE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -120,7 +130,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				36FF52C82C661FD7006428FE /* main.swift in Sources */,
+				3697C24C2C676E3E00CEADFB /* Node.swift in Sources */,
+				36FF52CF2C662659006428FE /* Utilities.swift in Sources */,
+				36FF52C82C661FD7006428FE /* CLITest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
