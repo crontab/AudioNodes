@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		3697C24C2C676E3E00CEADFB /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3697C24B2C676E3E00CEADFB /* Node.swift */; };
 		3697C24E2C6797EA00CEADFB /* SineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3697C24D2C6797EA00CEADFB /* SineGenerator.swift */; };
+		3697C2502C67BA2A00CEADFB /* System.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3697C24F2C67BA2A00CEADFB /* System.swift */; };
 		36FF52C82C661FD7006428FE /* CLITest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FF52C72C661FD7006428FE /* CLITest.swift */; };
 		36FF52CF2C662659006428FE /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FF52CE2C662659006428FE /* Utilities.swift */; };
 /* End PBXBuildFile section */
@@ -28,6 +29,7 @@
 /* Begin PBXFileReference section */
 		3697C24B2C676E3E00CEADFB /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		3697C24D2C6797EA00CEADFB /* SineGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SineGenerator.swift; sourceTree = "<group>"; };
+		3697C24F2C67BA2A00CEADFB /* System.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
 		36FF52C42C661FD7006428FE /* AudioNodes */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AudioNodes; sourceTree = BUILT_PRODUCTS_DIR; };
 		36FF52C72C661FD7006428FE /* CLITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLITest.swift; sourceTree = "<group>"; };
 		36FF52CE2C662659006428FE /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
@@ -64,8 +66,9 @@
 			isa = PBXGroup;
 			children = (
 				36FF52CE2C662659006428FE /* Utilities.swift */,
-				3697C24D2C6797EA00CEADFB /* SineGenerator.swift */,
 				3697C24B2C676E3E00CEADFB /* Node.swift */,
+				3697C24D2C6797EA00CEADFB /* SineGenerator.swift */,
+				3697C24F2C67BA2A00CEADFB /* System.swift */,
 				36FF52C72C661FD7006428FE /* CLITest.swift */,
 			);
 			path = AudioNodes;
@@ -133,6 +136,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3697C2502C67BA2A00CEADFB /* System.swift in Sources */,
 				3697C24E2C6797EA00CEADFB /* SineGenerator.swift in Sources */,
 				3697C24C2C676E3E00CEADFB /* Node.swift in Sources */,
 				36FF52CF2C662659006428FE /* Utilities.swift in Sources */,

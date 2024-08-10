@@ -9,7 +9,6 @@ import Foundation
 
 
 @globalActor
-@available(*, unavailable) // unused
 actor AudioActor {
 	static var shared = AudioActor()
 }
@@ -33,6 +32,8 @@ struct StreamFormat: Equatable {
 	let isStereo: Bool
 
 	var transitionSamples: Int { min(bufferFrameSize, Int(sampleRate) / 100) } // ~10ms
+
+	static var `default`: Self { .init(sampleRate: 48000, bufferFrameSize: 512, isStereo: true) }
 }
 
 
@@ -51,6 +52,11 @@ class Node {
 	var isMuted: Bool {
 		get { withAudioLock { config$.muted } }
 		set { withAudioLock { config$.muted = newValue } }
+	}
+
+
+	var format: StreamFormat? {
+		withAudioLock { config$.format }
 	}
 
 
@@ -91,8 +97,12 @@ class Node {
 
 	// MARK: - Internal: rendering
 
+	// Overridable function, should be chain-called from subclasses to ensure the connected input generates its sound
 	func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		Abstract()
+		if let input = _config.input {
+			return input._internalRender(frameCount: frameCount, buffers: buffers)
+		}
+		return FillSilence(frameCount: frameCount, buffers: buffers)
 	}
 
 

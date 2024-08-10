@@ -15,6 +15,8 @@ import CoreAudio
 @usableFromInline let SizeOfSample = MemoryLayout<Sample>.size
 
 
+// MARK: - Errors, debugging
+
 @inlinable
 internal func debugOnly(_ body: () -> Void) {
 	assert({ body(); return true }())
@@ -55,6 +57,8 @@ func Assert(_ cond: Bool, _ code: Int) {
 }
 
 
+// MARK: - Misc.
+
 @inlinable
 func Bridge<T: AnyObject>(obj: T) -> UnsafeMutableRawPointer {
 	return UnsafeMutableRawPointer(Unmanaged.passUnretained(obj).toOpaque())
@@ -73,13 +77,19 @@ func SizeOf<T>(_ v: T) -> UInt32 {
 }
 
 
+@inlinable
+func Sleep(_ t: TimeInterval) async {
+	try? await Task.sleep(for: .seconds(t))
+}
+
+
 
 // MARK: - Audio Utilities
 
 extension AudioStreamBasicDescription {
 
 	static func canonical(isStereo: Bool, sampleRate: Double) -> Self {
-		return .init(mSampleRate: sampleRate, mFormatID: kAudioFormatLinearPCM, mFormatFlags: kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved, mBytesPerPacket: UInt32(SizeOfSample), mFramesPerPacket: 1, mBytesPerFrame: UInt32(SizeOfSample), mChannelsPerFrame: isStereo ? 2 : 1, mBitsPerChannel: UInt32(8 * SizeOfSample), mReserved: 0)
+		.init(mSampleRate: sampleRate, mFormatID: kAudioFormatLinearPCM, mFormatFlags: kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved, mBytesPerPacket: UInt32(SizeOfSample), mFramesPerPacket: 1, mBytesPerFrame: UInt32(SizeOfSample), mChannelsPerFrame: isStereo ? 2 : 1, mBitsPerChannel: UInt32(8 * SizeOfSample), mReserved: 0)
 	}
 }
 
