@@ -55,8 +55,34 @@ func Assert(_ cond: Bool, _ code: Int) {
 }
 
 
+@inlinable
+func Bridge<T: AnyObject>(obj: T) -> UnsafeMutableRawPointer {
+	return UnsafeMutableRawPointer(Unmanaged.passUnretained(obj).toOpaque())
+}
+
+
+@inlinable
+func Bridge<T: AnyObject>(ptr: UnsafeRawPointer) -> T {
+	return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
+}
+
+
+@inlinable
+func SizeOf<T>(_ v: T) -> UInt32 {
+	return UInt32(MemoryLayout.size(ofValue: v))
+}
+
+
 
 // MARK: - Audio Utilities
+
+extension AudioStreamBasicDescription {
+
+	static func canonical(isStereo: Bool, sampleRate: Double) -> Self {
+		return .init(mSampleRate: sampleRate, mFormatID: kAudioFormatLinearPCM, mFormatFlags: kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved, mBytesPerPacket: UInt32(SizeOfSample), mFramesPerPacket: 1, mBytesPerFrame: UInt32(SizeOfSample), mChannelsPerFrame: isStereo ? 2 : 1, mBitsPerChannel: UInt32(8 * SizeOfSample), mReserved: 0)
+	}
+}
+
 
 @discardableResult
 func FillSilence(frameCount: Int, buffers: AudioBufferListPtr, offset: Int = 0) -> OSStatus {
@@ -67,6 +93,12 @@ func FillSilence(frameCount: Int, buffers: AudioBufferListPtr, offset: Int = 0) 
 		}
 	}
 	return noErr
+}
+
+
+@inlinable
+func Copy(from: AudioBuffer, to: AudioBuffer, frameCount: Int) {
+	memcpy(to.mData, from.mData, frameCount * SizeOfSample)
 }
 
 
