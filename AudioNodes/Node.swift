@@ -56,7 +56,7 @@ class Node {
 
 	func connect(_ input: Node) {
 		withAudioLock {
-			input.willConnect$(with: config$.format)
+			config$.format.map { input.willConnect$(with: $0) }
 			config$.input = input
 		}
 	}
@@ -64,16 +64,15 @@ class Node {
 
 	func disconnect() {
 		withAudioLock {
-			let input = config$.input
+			config$.input?.didDisconnect$()
 			config$.input = nil
-			input?.didDisconnect$()
 		}
 	}
 
 
 	func connectMonitor(_ monitor: Node) {
 		withAudioLock {
-			monitor.willConnect$(with: config$.format)
+			config$.format.map { monitor.willConnect$(with: $0) }
 			config$.monitor = monitor
 		}
 	}
@@ -81,9 +80,8 @@ class Node {
 
 	func disconnectMonitor() { 
 		withAudioLock {
-			let monitor = config$.monitor
+			config$.monitor?.didDisconnect$()
 			config$.monitor = nil
-			monitor?.didDisconnect$()
 		}
 	}
 
@@ -193,19 +191,14 @@ class Node {
 
 
 	// Called by the node requesting connection with this node, or otherwise when propagating a new format down the chain
-	func willConnect$(with format: StreamFormat?) {
+	func willConnect$(with format: StreamFormat) {
 		Assert(!isConnected, 51030)
-		if let format {
-			DLOG("\(debugName).didConnect(\(format.sampleRate), \(format.bufferFrameSize), \(format.isStereo ? "stereo" : "mono"))")
-			if format != config$.format {
-				// This is where a known format is propagated down the chain
-				config$.input?.updateFormat$(with: format)
-				config$.monitor?.updateFormat$(with: format)
-				config$.format = format
-			}
-		}
-		else {
-			DLOG("\(debugName).didConnect(<format unknown>)")
+		DLOG("\(debugName).didConnect(\(format.sampleRate), \(format.bufferFrameSize), \(format.isStereo ? "stereo" : "mono"))")
+		if format != config$.format {
+			// This is where a known format is propagated down the chain
+			config$.input?.updateFormat$(with: format)
+			config$.monitor?.updateFormat$(with: format)
+			config$.format = format
 		}
 		isConnected = true
 	}
@@ -216,9 +209,7 @@ class Node {
 		Assert(isConnected, 51031)
 		DLOG("\(debugName).didDisconnect()")
 		isConnected = false
-		if config$.monitor == nil, config$.input == nil {
-			config$.format = nil
-		}
+		config$.format = nil
 	}
 
 
