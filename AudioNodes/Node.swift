@@ -27,8 +27,6 @@ actor AudioActor {
 // NB: names that start with an underscore are executed or accessed on the system audio thread. Names that end with *Safe should be called only within a semaphore lock, i.e. withAudioLock { }
 
 
-// MARK: - Connector
-
 struct StreamFormat: Equatable {
 	let sampleRate: Double
 	let bufferFrameSize: Int
@@ -38,70 +36,62 @@ struct StreamFormat: Equatable {
 }
 
 
-struct Connector {
-	private(set) var format: StreamFormat?
-	private(set) var input: Node?
-
-
-	mutating func setFormatSafe(_ newFormat: StreamFormat) {
-		if let input, newFormat != format {
-			input.didDisconnectSafe()
-			input.willConnectSafe(with: newFormat)
-		}
-		format = newFormat
-	}
-
-
-	mutating func connectSafe(_ newInput: Node) {
-		Assert(!newInput.isConnected, 51030)
-		if let format {
-			newInput.willConnectSafe(with: format)
-		}
-		input = newInput
-	}
-
-
-	mutating func disconnectSafe() {
-		defer {
-			input?.didDisconnectSafe()
-		}
-		input = nil
-	}
-
-
-	mutating func resetFormat() {
-		format = nil
-	}
-}
-
-
 // MARK: - Node
 
 class Node {
 
+	// MARK: - Public interface
+
 	var isEnabled: Bool {
-		get { withAudioLock { _userConfig.enabled } }
-		set { withAudioLock { _userConfig.enabled = newValue } }
+		get { withAudioLock { configSafe.enabled } }
+		set { withAudioLock { configSafe.enabled = newValue } }
 	}
 
 
 	var isMuted: Bool {
-		get { withAudioLock { _userConfig.muted } }
-		set { withAudioLock { _userConfig.muted = newValue } }
+		get { withAudioLock { configSafe.muted } }
+		set { withAudioLock { configSafe.muted = newValue } }
 	}
 
 
-	func connectMonitor(_ input: Node) { withAudioLock { _userConfig.monitor.connectSafe(input) } }
+	func connect(_ input: Node) {
+		withAudioLock {
+			input.willConnectSafe(with: configSafe.format)
+			configSafe.input = input
+		}
+	}
 
-	func disconnectMonitor() { withAudioLock { _userConfig.monitor.disconnectSafe() } }
+
+	func disconnect() {
+		withAudioLock {
+			let input = configSafe.input
+			configSafe.input = nil
+			input?.didDisconnectSafe()
+		}
+	}
+
+
+	func connectMonitor(_ monitor: Node) {
+		withAudioLock {
+			monitor.willConnectSafe(with: configSafe.format)
+			configSafe.monitor = monitor
+		}
+	}
+
+
+	func disconnectMonitor() { 
+		withAudioLock {
+			let monitor = configSafe.monitor
+			configSafe.monitor = nil
+			monitor?.didDisconnectSafe()
+		}
+	}
+
 
 	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
 
 
-	// Internal
-
-	private(set) var isConnected: Bool = false
-
+	// MARK: - Internal: rendering
 
 	func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		Abstract()
@@ -178,51 +168,83 @@ class Node {
 	private func _internalMonitor(status: OSStatus, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		if status == noErr {
 			// Call monitor only if there's actual data generated. This helps monitors like file writers only receive actual data, not e.g. silence that can occur due to timing issues with the microphone. This however leaves the monitor unaware of any gaps which may not be good for e.g. meter UI elements. Should find a way to handle these situations.
-			_ = _config.monitor.input?._internalRender(frameCount: frameCount, buffers: buffers)
+			_ = _config.monitor?._internalRender(frameCount: frameCount, buffers: buffers)
 		}
 		return status
 	}
 
 
 	func _willRenderSafe() {
-		_config = _userConfig
+		_config = configSafe
 	}
 
 
 	func _reset() {
 		_prevEnabled = _config.enabled
 		_prevMuted = _config.muted
-		_config.monitor.input?._reset()
+		_config.input?._reset()
+		_config.monitor?._reset()
 	}
 
 
-	func willConnectSafe(with format: StreamFormat) {
-		DLOG("\(debugName).didConnect(\(format.sampleRate), \(format.bufferFrameSize), \(format.isStereo ? "stereo" : "mono"))")
+	// MARK: - Internal: Connection management
+
+	private(set) var isConnected: Bool = false // there is an incoming connection to this node
+
+
+	// Called by the node requesting connection with this node, or otherwise when propagating a new format down the chain
+	func willConnectSafe(with format: StreamFormat?) {
+		Assert(!isConnected, 51030)
+		if let format {
+			DLOG("\(debugName).didConnect(\(format.sampleRate), \(format.bufferFrameSize), \(format.isStereo ? "stereo" : "mono"))")
+			if format != configSafe.format {
+				// This is where a known format is propagated down the chain
+				configSafe.input?.updateFormatSafe(with: format)
+				configSafe.monitor?.updateFormatSafe(with: format)
+				configSafe.format = format
+			}
+		}
+		else {
+			DLOG("\(debugName).didConnect(<format unknown>)")
+		}
 		isConnected = true
-		_userConfig.monitor.setFormatSafe(format)
 	}
 
 
+	// Called by the node requesting disconnection from this node
 	func didDisconnectSafe() {
+		Assert(isConnected, 51031)
 		DLOG("\(debugName).didDisconnect()")
 		isConnected = false
-		_userConfig.monitor.resetFormat()
+		if configSafe.monitor == nil, configSafe.input == nil {
+			configSafe.format = nil
+		}
 	}
 
 
-	var _transitionSamples: Int { _config.monitor.format?.transitionSamples ?? 0 }
+	var _transitionSamples: Int { _config.format?.transitionSamples ?? 0 }
 
 
-	// Private
+	// MARK: - Private
 
 	private struct Config {
-		var monitor = Connector() // used for storing the format regardless of whether there's a monitor connected or not
+		var format: StreamFormat?
+		var monitor: Node?
+		var input: Node?
 		var enabled: Bool = true
 		var muted: Bool = false
 	}
 
-	private var _userConfig: Config = .init()
-	private var _config: Config = .init()
+
+	// Called internally from the node that requests connection and if the format is known and different from the previous one
+	private func updateFormatSafe(with format: StreamFormat) {
+		didDisconnectSafe()
+		willConnectSafe(with: format)
+	}
+
+
+	private var configSafe: Config = .init() // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
+	private var _config: Config = .init() // config used during the rendering cycle
 	private var _prevEnabled = true
 	private var _prevMuted = false
 }
