@@ -43,6 +43,15 @@ extension System {
 		await Sleep(2)
 		await smoothDisconnect()
 	}
+
+	func testFile() async {
+		print("--- ", #function)
+		let url = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appending(path: "AudioNodesDemo/AudioNodesDemo/Resources/eyes-demo.m4a")
+		let player = Player(url: url, sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)!
+		connect(player)
+		await Sleep(5)
+		await smoothDisconnect()
+	}
 }
 
 
@@ -54,7 +63,8 @@ struct CLI {
 		let system = System(isStereo: true)
 		system.start()
 //		await system.testSine()
-		await system.testMixer()
+//		await system.testMixer()
+		await system.testFile()
 	}
 
 

@@ -23,7 +23,7 @@ class Player: Node {
 		}
 		self.file = file
 		super.init()
-		ensureCachedAsync(position: 0)
+		prepopulateCache(position: 0)
 	}
 
 
@@ -36,7 +36,7 @@ class Player: Node {
 		while framesCopied < frameCount {
 			guard let block = file._blockAt(position: _playhead) else {
 				// Assuming this is a cache miss (or i/o error) but not an end of file; can also happen if the playhead was moved significantly, so we'll play silence until the cache is filled again
-				ensureCachedAsync(position: _playhead)
+				prepopulateCache(position: _playhead)
 				break
 			}
 			let copied = Copy(from: block.buffers, to: buffers, fromOffset: _playhead - block.offset, toOffset: framesCopied, framesMax: frameCount - framesCopied)
@@ -47,11 +47,6 @@ class Player: Node {
 			}
 			_playhead += copied
 			framesCopied += copied
-
-			if framesCopied < frameCount {
-				// Assuming this can happen only once, because our blocks are always larger than frameCount here
-				ensureCachedAsync(position: _playhead)
-			}
 		}
 
 		if framesCopied < frameCount {
@@ -62,6 +57,7 @@ class Player: Node {
 			_didEndPlaying(at: _playhead, frameCount: frameCount, buffers: buffers)
 		}
 		else {
+			prepopulateCache(position: _playhead)
 			_didPlaySome(until: _playhead)
 		}
 
@@ -88,17 +84,17 @@ class Player: Node {
 		if let playhead = playhead$ {
 			_playhead = playhead
 			playhead$ = nil
-			ensureCachedAsync(position: playhead)
+			prepopulateCache(position: playhead)
 		}
 	}
 
 
 	// Private
 
-	private func ensureCachedAsync(position: Int) {
+	private func prepopulateCache(position: Int) {
 		let file = file
 		Task.detached { @AudioFileActor in
-			file.ensureCached(position: position)
+			file.prepopulate(position: position)
 		}
 	}
 
