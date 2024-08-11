@@ -17,10 +17,23 @@ actor AudioActor {
 @usableFromInline let audioSem: DispatchSemaphore = .init(value: 1)
 
 @inlinable func withAudioLock<T>(execute: () -> T) -> T {
+#if DEBUG
+	semCount -= 1
+	Assert(semCount == 0, 51032)
+#endif
 	audioSem.wait()
-	defer { audioSem.signal() }
+	defer {
+#if DEBUG
+		semCount += 1
+#endif
+		audioSem.signal()
+	}
 	return execute()
 }
+
+#if DEBUG
+@usableFromInline nonisolated(unsafe) var semCount: Int = 1
+#endif
 
 
 // NB: names that start with an underscore are executed or accessed on the system audio thread. Names that end with $ should be called only within a semaphore lock, i.e. withAudioLock { }
@@ -93,6 +106,11 @@ class Node {
 
 
 	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
+
+
+	deinit {
+		DLOG("deinit \(debugName)")
+	}
 
 
 	// MARK: - Internal: rendering
@@ -225,6 +243,8 @@ class Node {
 
 	var _transitionFrames: Int { _config.format?.transitionFrames ?? 0 }
 
+	var format$: StreamFormat? { config$.format }
+
 
 	// MARK: - Private
 
@@ -239,6 +259,7 @@ class Node {
 
 	// Called internally from the node that requests connection and if the format is known and different from the previous one
 	private func updateFormat$(with format: StreamFormat) {
+		isConnected = true // cheat
 		didDisconnect$()
 		willConnect$(with: format)
 	}
