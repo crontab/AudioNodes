@@ -7,42 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3632AB462C690820009C107C /* AudioFileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632AB452C690820009C107C /* AudioFileReader.swift */; };
-		3632AB482C690C4E009C107C /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632AB472C690C4E009C107C /* Player.swift */; };
-		3697C24C2C676E3E00CEADFB /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3697C24B2C676E3E00CEADFB /* Node.swift */; };
-		3697C24E2C6797EA00CEADFB /* SineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3697C24D2C6797EA00CEADFB /* SineGenerator.swift */; };
-		3697C2502C67BA2A00CEADFB /* System.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3697C24F2C67BA2A00CEADFB /* System.swift */; };
-		3697C2522C67C78B00CEADFB /* Mixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3697C2512C67C78B00CEADFB /* Mixer.swift */; };
-		36FF52C82C661FD7006428FE /* CLITest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FF52C72C661FD7006428FE /* CLITest.swift */; };
-		36FF52CF2C662659006428FE /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FF52CE2C662659006428FE /* Utilities.swift */; };
+		363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */; };
+		363478B82C692BD6004BB3B8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B72C692BD6004BB3B8 /* ContentView.swift */; };
+		363478BA2C692BD7004BB3B8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 363478B92C692BD7004BB3B8 /* Assets.xcassets */; };
+		363478C52C692C25004BB3B8 /* eyes-demo.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 363478C42C692C19004BB3B8 /* eyes-demo.m4a */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		36FF52C22C661FD7006428FE /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
-		3632AB452C690820009C107C /* AudioFileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileReader.swift; sourceTree = "<group>"; };
-		3632AB472C690C4E009C107C /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
-		3697C24B2C676E3E00CEADFB /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
-		3697C24D2C6797EA00CEADFB /* SineGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SineGenerator.swift; sourceTree = "<group>"; };
-		3697C24F2C67BA2A00CEADFB /* System.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
-		3697C2512C67C78B00CEADFB /* Mixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mixer.swift; sourceTree = "<group>"; };
-		36FF52C42C661FD7006428FE /* AudioNodes */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AudioNodes; sourceTree = BUILT_PRODUCTS_DIR; };
-		36FF52C72C661FD7006428FE /* CLITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLITest.swift; sourceTree = "<group>"; };
-		36FF52CE2C662659006428FE /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		363478B22C692BD6004BB3B8 /* AudioNodesDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioNodesDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioNodesDemoApp.swift; sourceTree = "<group>"; };
+		363478B72C692BD6004BB3B8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		363478B92C692BD7004BB3B8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		363478C42C692C19004BB3B8 /* eyes-demo.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = "eyes-demo.m4a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		36FF52C12C661FD7006428FE /* Frameworks */ = {
+		363478AF2C692BD6004BB3B8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -52,83 +32,77 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		3632443C2C692D100021C8BE /* Sources */ = {
+		363478A92C692BD6004BB3B8 = {
 			isa = PBXGroup;
 			children = (
-				36FF52CE2C662659006428FE /* Utilities.swift */,
-				3697C24B2C676E3E00CEADFB /* Node.swift */,
-				3697C2512C67C78B00CEADFB /* Mixer.swift */,
-				3632AB452C690820009C107C /* AudioFileReader.swift */,
-				3632AB472C690C4E009C107C /* Player.swift */,
-				3697C24D2C6797EA00CEADFB /* SineGenerator.swift */,
-				3697C24F2C67BA2A00CEADFB /* System.swift */,
-			);
-			path = Sources;
-			sourceTree = "<group>";
-		};
-		36FF52BB2C661FD7006428FE = {
-			isa = PBXGroup;
-			children = (
-				36FF52C62C661FD7006428FE /* AudioNodes */,
-				36FF52C52C661FD7006428FE /* Products */,
+				363478B42C692BD6004BB3B8 /* AudioNodesDemo */,
+				363478B32C692BD6004BB3B8 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		36FF52C52C661FD7006428FE /* Products */ = {
+		363478B32C692BD6004BB3B8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				36FF52C42C661FD7006428FE /* AudioNodes */,
+				363478B22C692BD6004BB3B8 /* AudioNodesDemo.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		36FF52C62C661FD7006428FE /* AudioNodes */ = {
+		363478B42C692BD6004BB3B8 /* AudioNodesDemo */ = {
 			isa = PBXGroup;
 			children = (
-				3632443C2C692D100021C8BE /* Sources */,
-				36FF52C72C661FD7006428FE /* CLITest.swift */,
+				363478B72C692BD6004BB3B8 /* ContentView.swift */,
+				363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */,
+				363478C32C692BF4004BB3B8 /* Resources */,
+				363478B92C692BD7004BB3B8 /* Assets.xcassets */,
 			);
-			path = AudioNodes;
+			path = AudioNodesDemo;
+			sourceTree = "<group>";
+		};
+		363478C32C692BF4004BB3B8 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				363478C42C692C19004BB3B8 /* eyes-demo.m4a */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		36FF52C32C661FD7006428FE /* AudioNodes */ = {
+		363478B12C692BD6004BB3B8 /* AudioNodesDemo */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 36FF52CB2C661FD7006428FE /* Build configuration list for PBXNativeTarget "AudioNodes" */;
+			buildConfigurationList = 363478C02C692BD7004BB3B8 /* Build configuration list for PBXNativeTarget "AudioNodesDemo" */;
 			buildPhases = (
-				36FF52C02C661FD7006428FE /* Sources */,
-				36FF52C12C661FD7006428FE /* Frameworks */,
-				36FF52C22C661FD7006428FE /* CopyFiles */,
+				363478AE2C692BD6004BB3B8 /* Sources */,
+				363478AF2C692BD6004BB3B8 /* Frameworks */,
+				363478B02C692BD6004BB3B8 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = AudioNodes;
-			packageProductDependencies = (
-			);
-			productName = AudioNodes;
-			productReference = 36FF52C42C661FD7006428FE /* AudioNodes */;
-			productType = "com.apple.product-type.tool";
+			name = AudioNodesDemo;
+			productName = AudioNodesDemo;
+			productReference = 363478B22C692BD6004BB3B8 /* AudioNodesDemo.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		36FF52BC2C661FD7006428FE /* Project object */ = {
+		363478AA2C692BD6004BB3B8 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1540;
 				LastUpgradeCheck = 1540;
 				TargetAttributes = {
-					36FF52C32C661FD7006428FE = {
+					363478B12C692BD6004BB3B8 = {
 						CreatedOnToolsVersion = 15.4;
 					};
 				};
 			};
-			buildConfigurationList = 36FF52BF2C661FD7006428FE /* Build configuration list for PBXProject "AudioNodes" */;
+			buildConfigurationList = 363478AD2C692BD6004BB3B8 /* Build configuration list for PBXProject "AudioNodesDemo" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -136,38 +110,42 @@
 				en,
 				Base,
 			);
-			mainGroup = 36FF52BB2C661FD7006428FE;
-			packageReferences = (
-			);
-			productRefGroup = 36FF52C52C661FD7006428FE /* Products */;
+			mainGroup = 363478A92C692BD6004BB3B8;
+			productRefGroup = 363478B32C692BD6004BB3B8 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				36FF52C32C661FD7006428FE /* AudioNodes */,
+				363478B12C692BD6004BB3B8 /* AudioNodesDemo */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		363478B02C692BD6004BB3B8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				363478BA2C692BD7004BB3B8 /* Assets.xcassets in Resources */,
+				363478C52C692C25004BB3B8 /* eyes-demo.m4a in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
-		36FF52C02C661FD7006428FE /* Sources */ = {
+		363478AE2C692BD6004BB3B8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3697C2502C67BA2A00CEADFB /* System.swift in Sources */,
-				3697C24E2C6797EA00CEADFB /* SineGenerator.swift in Sources */,
-				3697C24C2C676E3E00CEADFB /* Node.swift in Sources */,
-				3697C2522C67C78B00CEADFB /* Mixer.swift in Sources */,
-				3632AB482C690C4E009C107C /* Player.swift in Sources */,
-				36FF52CF2C662659006428FE /* Utilities.swift in Sources */,
-				3632AB462C690820009C107C /* AudioFileReader.swift in Sources */,
-				36FF52C82C661FD7006428FE /* CLITest.swift in Sources */,
+				363478B82C692BD6004BB3B8 /* ContentView.swift in Sources */,
+				363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		36FF52C92C661FD7006428FE /* Debug */ = {
+		363478BE2C692BD7004BB3B8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -219,19 +197,18 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_STRICT_CONCURRENCY = complete;
 			};
 			name = Debug;
 		};
-		36FF52CA2C661FD7006428FE /* Release */ = {
+		363478BF2C692BD7004BB3B8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -277,60 +254,96 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				SDKROOT = macosx;
+				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_STRICT_CONCURRENCY = complete;
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		36FF52CC2C661FD7006428FE /* Debug */ = {
+		363478C12C692BD7004BB3B8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"AudioNodesDemo/Preview Content\"";
 				DEVELOPMENT_TEAM = 639KEQWW6F;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.melikyan.AudioNodesDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		36FF52CD2C661FD7006428FE /* Release */ = {
+		363478C22C692BD7004BB3B8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"AudioNodesDemo/Preview Content\"";
 				DEVELOPMENT_TEAM = 639KEQWW6F;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.melikyan.AudioNodesDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		36FF52BF2C661FD7006428FE /* Build configuration list for PBXProject "AudioNodes" */ = {
+		363478AD2C692BD6004BB3B8 /* Build configuration list for PBXProject "AudioNodesDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				36FF52C92C661FD7006428FE /* Debug */,
-				36FF52CA2C661FD7006428FE /* Release */,
+				363478BE2C692BD7004BB3B8 /* Debug */,
+				363478BF2C692BD7004BB3B8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		36FF52CB2C661FD7006428FE /* Build configuration list for PBXNativeTarget "AudioNodes" */ = {
+		363478C02C692BD7004BB3B8 /* Build configuration list for PBXNativeTarget "AudioNodesDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				36FF52CC2C661FD7006428FE /* Debug */,
-				36FF52CD2C661FD7006428FE /* Release */,
+				363478C12C692BD7004BB3B8 /* Debug */,
+				363478C22C692BD7004BB3B8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 36FF52BC2C661FD7006428FE /* Project object */;
+	rootObject = 363478AA2C692BD6004BB3B8 /* Project object */;
 }

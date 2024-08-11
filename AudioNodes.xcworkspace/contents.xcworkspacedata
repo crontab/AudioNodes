@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:AudioNodesDemo/AudioNodesDemo.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:AudioNodes.xcodeproj">
    </FileRef>
 </Workspace>

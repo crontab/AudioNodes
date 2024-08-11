@@ -231,7 +231,7 @@ final class AsyncAudioFileReader: AudioFileReader {
 					cachedBlocks.setBlockFor(offset: blockOffset, block)
 					if block.isEmpty {
 						// Empty block is possible if the total number of samples is a multiple of the block size; we should keep it so that that caller triggers an end of file
-						// TODO: allocate a special empty block wih t0 memory overhead?
+						// TODO: allocate a special empty block wih 0 memory overhead?
 #if AUDIO_FILE_LOGGING
 						DLOG("AsyncAudioFile: empty block")
 #endif
