@@ -7,16 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632443D2C695B4B0021C8BE /* FontEx.swift */; };
 		363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */; };
-		363478B82C692BD6004BB3B8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B72C692BD6004BB3B8 /* ContentView.swift */; };
+		363478B82C692BD6004BB3B8 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B72C692BD6004BB3B8 /* MainView.swift */; };
 		363478BA2C692BD7004BB3B8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 363478B92C692BD7004BB3B8 /* Assets.xcassets */; };
 		363478C52C692C25004BB3B8 /* eyes-demo.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 363478C42C692C19004BB3B8 /* eyes-demo.m4a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3632443D2C695B4B0021C8BE /* FontEx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontEx.swift; sourceTree = "<group>"; };
+		363244412C695EBE0021C8BE /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		363244422C695EBE0021C8BE /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
+		363244432C695EBE0021C8BE /* Mixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mixer.swift; sourceTree = "<group>"; };
+		363244442C695EBE0021C8BE /* AudioFileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileReader.swift; sourceTree = "<group>"; };
+		363244452C695EBE0021C8BE /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		363244462C695EBE0021C8BE /* SineGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SineGenerator.swift; sourceTree = "<group>"; };
+		363244472C695EBE0021C8BE /* System.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
 		363478B22C692BD6004BB3B8 /* AudioNodesDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioNodesDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioNodesDemoApp.swift; sourceTree = "<group>"; };
-		363478B72C692BD6004BB3B8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		363478B72C692BD6004BB3B8 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		363478B92C692BD7004BB3B8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		363478C42C692C19004BB3B8 /* eyes-demo.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = "eyes-demo.m4a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -32,6 +41,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		363244482C695EBE0021C8BE /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				363244412C695EBE0021C8BE /* Utilities.swift */,
+				363244422C695EBE0021C8BE /* Node.swift */,
+				363244432C695EBE0021C8BE /* Mixer.swift */,
+				363244442C695EBE0021C8BE /* AudioFileReader.swift */,
+				363244452C695EBE0021C8BE /* Player.swift */,
+				363244462C695EBE0021C8BE /* SineGenerator.swift */,
+				363244472C695EBE0021C8BE /* System.swift */,
+			);
+			name = Sources;
+			path = ../../AudioNodes/Sources;
+			sourceTree = "<group>";
+		};
 		363478A92C692BD6004BB3B8 = {
 			isa = PBXGroup;
 			children = (
@@ -51,7 +75,9 @@
 		363478B42C692BD6004BB3B8 /* AudioNodesDemo */ = {
 			isa = PBXGroup;
 			children = (
-				363478B72C692BD6004BB3B8 /* ContentView.swift */,
+				363244482C695EBE0021C8BE /* Sources */,
+				3632443D2C695B4B0021C8BE /* FontEx.swift */,
+				363478B72C692BD6004BB3B8 /* MainView.swift */,
 				363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */,
 				363478C32C692BF4004BB3B8 /* Resources */,
 				363478B92C692BD7004BB3B8 /* Assets.xcassets */,
@@ -137,8 +163,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				363478B82C692BD6004BB3B8 /* ContentView.swift in Sources */,
+				363478B82C692BD6004BB3B8 /* MainView.swift in Sources */,
 				363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */,
+				3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -271,7 +298,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"AudioNodesDemo/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -280,6 +307,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -287,6 +315,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.melikyan.AudioNodesDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -300,7 +331,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"AudioNodesDemo/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -309,6 +340,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -316,6 +348,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.melikyan.AudioNodesDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

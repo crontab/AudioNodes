@@ -7,11 +7,16 @@
 
 import SwiftUI
 
+
 @main
 struct AudioNodesDemoApp: App {
+
+	@StateObject private var system: System = .init()
+
+
 	var body: some Scene {
 		WindowGroup {
-			ContentView()
+			MainView()
 		}
 	}
 }
