@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		363244582C695FC80021C8BE /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632444A2C695EE90021C8BE /* Node.swift */; };
+		363244592C695FC80021C8BE /* AudioFileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632444C2C695EE90021C8BE /* AudioFileReader.swift */; };
+		3632445A2C695FC80021C8BE /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632444D2C695EE90021C8BE /* Player.swift */; };
+		3632445B2C695FC80021C8BE /* SineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632444E2C695EE90021C8BE /* SineGenerator.swift */; };
+		3632445C2C695FC80021C8BE /* Mixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632444B2C695EE90021C8BE /* Mixer.swift */; };
+		3632445D2C695FC80021C8BE /* System.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632444F2C695EE90021C8BE /* System.swift */; };
+		3632445E2C695FC80021C8BE /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363244492C695EE90021C8BE /* Utilities.swift */; };
 		36FF52C82C661FD7006428FE /* CLITest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FF52C72C661FD7006428FE /* CLITest.swift */; };
 /* End PBXBuildFile section */
 
@@ -23,13 +30,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		363244492C695EE90021C8BE /* Utilities.swift */ = {isa = PBXFileReference; path = Utilities.swift; sourceTree = "<group>"; };
-		3632444A2C695EE90021C8BE /* Node.swift */ = {isa = PBXFileReference; path = Node.swift; sourceTree = "<group>"; };
-		3632444B2C695EE90021C8BE /* Mixer.swift */ = {isa = PBXFileReference; path = Mixer.swift; sourceTree = "<group>"; };
-		3632444C2C695EE90021C8BE /* AudioFileReader.swift */ = {isa = PBXFileReference; path = AudioFileReader.swift; sourceTree = "<group>"; };
-		3632444D2C695EE90021C8BE /* Player.swift */ = {isa = PBXFileReference; path = Player.swift; sourceTree = "<group>"; };
-		3632444E2C695EE90021C8BE /* SineGenerator.swift */ = {isa = PBXFileReference; path = SineGenerator.swift; sourceTree = "<group>"; };
-		3632444F2C695EE90021C8BE /* System.swift */ = {isa = PBXFileReference; path = System.swift; sourceTree = "<group>"; };
+		363244492C695EE90021C8BE /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		3632444A2C695EE90021C8BE /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
+		3632444B2C695EE90021C8BE /* Mixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mixer.swift; sourceTree = "<group>"; };
+		3632444C2C695EE90021C8BE /* AudioFileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileReader.swift; sourceTree = "<group>"; };
+		3632444D2C695EE90021C8BE /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		3632444E2C695EE90021C8BE /* SineGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SineGenerator.swift; sourceTree = "<group>"; };
+		3632444F2C695EE90021C8BE /* System.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
 		36FF52C42C661FD7006428FE /* AudioNodes */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AudioNodes; sourceTree = BUILT_PRODUCTS_DIR; };
 		36FF52C72C661FD7006428FE /* CLITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLITest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -147,6 +154,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				36FF52C82C661FD7006428FE /* CLITest.swift in Sources */,
+				363244582C695FC80021C8BE /* Node.swift in Sources */,
+				363244592C695FC80021C8BE /* AudioFileReader.swift in Sources */,
+				3632445A2C695FC80021C8BE /* Player.swift in Sources */,
+				3632445B2C695FC80021C8BE /* SineGenerator.swift in Sources */,
+				3632445C2C695FC80021C8BE /* Mixer.swift in Sources */,
+				3632445D2C695FC80021C8BE /* System.swift in Sources */,
+				3632445E2C695FC80021C8BE /* Utilities.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

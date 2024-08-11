@@ -8,6 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632443D2C695B4B0021C8BE /* FontEx.swift */; };
+		363244512C695F4C0021C8BE /* Mixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363244432C695EBE0021C8BE /* Mixer.swift */; };
+		363244522C695F4C0021C8BE /* SineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363244462C695EBE0021C8BE /* SineGenerator.swift */; };
+		363244532C695F4C0021C8BE /* AudioFileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363244442C695EBE0021C8BE /* AudioFileReader.swift */; };
+		363244542C695F4C0021C8BE /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363244412C695EBE0021C8BE /* Utilities.swift */; };
+		363244552C695F4C0021C8BE /* System.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363244472C695EBE0021C8BE /* System.swift */; };
+		363244562C695F4C0021C8BE /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363244422C695EBE0021C8BE /* Node.swift */; };
+		363244572C695F4C0021C8BE /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363244452C695EBE0021C8BE /* Player.swift */; };
+		363244602C6961280021C8BE /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632445F2C6961280021C8BE /* Globals.swift */; };
 		363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */; };
 		363478B82C692BD6004BB3B8 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B72C692BD6004BB3B8 /* MainView.swift */; };
 		363478BA2C692BD7004BB3B8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 363478B92C692BD7004BB3B8 /* Assets.xcassets */; };
@@ -23,6 +31,7 @@
 		363244452C695EBE0021C8BE /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		363244462C695EBE0021C8BE /* SineGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SineGenerator.swift; sourceTree = "<group>"; };
 		363244472C695EBE0021C8BE /* System.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
+		3632445F2C6961280021C8BE /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		363478B22C692BD6004BB3B8 /* AudioNodesDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioNodesDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioNodesDemoApp.swift; sourceTree = "<group>"; };
 		363478B72C692BD6004BB3B8 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -76,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				363244482C695EBE0021C8BE /* Sources */,
+				3632445F2C6961280021C8BE /* Globals.swift */,
 				3632443D2C695B4B0021C8BE /* FontEx.swift */,
 				363478B72C692BD6004BB3B8 /* MainView.swift */,
 				363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */,
@@ -164,6 +174,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				363478B82C692BD6004BB3B8 /* MainView.swift in Sources */,
+				363244512C695F4C0021C8BE /* Mixer.swift in Sources */,
+				363244522C695F4C0021C8BE /* SineGenerator.swift in Sources */,
+				363244532C695F4C0021C8BE /* AudioFileReader.swift in Sources */,
+				363244542C695F4C0021C8BE /* Utilities.swift in Sources */,
+				363244602C6961280021C8BE /* Globals.swift in Sources */,
+				363244552C695F4C0021C8BE /* System.swift in Sources */,
+				363244562C695F4C0021C8BE /* Node.swift in Sources */,
+				363244572C695F4C0021C8BE /* Player.swift in Sources */,
 				363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */,
 				3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */,
 			);

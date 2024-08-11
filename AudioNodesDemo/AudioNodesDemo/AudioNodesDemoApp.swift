@@ -11,12 +11,17 @@ import SwiftUI
 @main
 struct AudioNodesDemoApp: App {
 
-	@StateObject private var system: System = .init()
+	@StateObject private var system: System = .init(isStereo: true)
 
 
 	var body: some Scene {
 		WindowGroup {
 			MainView()
+				.environmentObject(system)
 		}
 	}
+}
+
+
+extension System: ObservableObject {
 }

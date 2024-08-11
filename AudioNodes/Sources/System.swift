@@ -22,7 +22,7 @@ final class System: Node {
 
 
 	/// Indicates whether the audio system is enabled and is rendering data.
-	var isSystemRunning: Bool {
+	var isRunning: Bool {
 		var flag: UInt32 = 0, flagSize = SizeOf(flag)
 		NotError(AudioUnitGetProperty(unit, kAudioOutputUnitProperty_IsRunning, kAudioUnitScope_Global, 0, &flag, &flagSize), 51028)
 		return flag != 0
@@ -31,7 +31,7 @@ final class System: Node {
 
 	/// Starts the audio system.
 	func start() {
-		if !isSystemRunning {
+		if !isRunning {
 			NotError(AudioUnitInitialize(unit), 51007)
 			NotError(AudioOutputUnitStart(unit), 51009)
 		}
@@ -253,7 +253,7 @@ final class System: Node {
 				}
 #if os(iOS)
 				// The following is a workaround for an iOS issue when a AU can not be enabled or disabled after initializiation; therefore we stop/deinitialize it before the operation and then restore the state
-				let prevRunning = system?.isSystemRunning ?? false
+				let prevRunning = system?.isRunning ?? false
 				if prevRunning {
 					system?.stop()
 				}

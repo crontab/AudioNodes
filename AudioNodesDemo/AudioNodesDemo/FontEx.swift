@@ -14,5 +14,6 @@ extension Font {
 	static let avenirMedium = "AvenirNextCondensed-Medium"
 
 	static let text = Font.custom(avenir, size: 16)
+	static let smallText = Font.custom(avenir, size: 12)
 	static let header = Font.custom(avenirMedium, size: 20)
 }
