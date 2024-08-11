@@ -122,6 +122,20 @@ func Copy(from: AudioBuffer, to: AudioBuffer, frameCount: Int) {
 }
 
 
+@discardableResult
+func Copy(from: AudioBufferListPtr, to: AudioBufferListPtr, fromOffset: Int, toOffset: Int, framesMax: Int = .max) -> Int {
+	let result = min(from[0].sampleCount - fromOffset, to[0].sampleCount - toOffset, framesMax)
+	precondition(result >= 0)
+	precondition(from.count == to.count)
+	if result > 0 {
+		for i in 0..<from.count {
+			memcpy(to[i].samples + toOffset, from[i].samples + fromOffset, result * SizeOfSample)
+		}
+	}
+	return result
+}
+
+
 // Fast non-logarithmic fade in/out: used for muting/unmuting - it's why it's called Smooth() and not say Ramp()
 @discardableResult
 func Smooth(out: Bool, frameCount: Int, fadeFrameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
@@ -182,7 +196,7 @@ class SafeAudioBufferList {
 		self.capacity = capacity
 	}
 
-	var sampleCount: Int {
+	var frameCount: Int {
 		get { buffers[0].sampleCount }
 		set {
 			precondition(newValue >= 0 && newValue <= capacity)

@@ -9,16 +9,24 @@ import Foundation
 import AudioToolbox
 
 
+@globalActor
+actor AudioFileActor {
+	static var shared = AudioFileActor()
+}
+
+
+@AudioFileActor
 class AudioFileReader {
 
 	let url: URL
 	let sampleRate: Double
 	let isStereo: Bool
-	let fileRef: ExtAudioFileRef
+	nonisolated let fileRef: ExtAudioFileRef
 	let lengthFactor: Double
 	let estimatedTotalFrames: Int
 
 
+	nonisolated
 	init?(url: URL, sampleRate: Double, isStereo: Bool) {
 		self.url = url
 		self.sampleRate = sampleRate
@@ -100,7 +108,9 @@ class AudioFileReader {
 }
 
 
-// MARK: - Internal async audio file reader with caching
+// MARK: - AsyncAudioFileReader
+
+// Internal async audio file reader with caching
 
 final class AsyncAudioFileReader: AudioFileReader {
 
@@ -115,26 +125,23 @@ final class AsyncAudioFileReader: AudioFileReader {
 			self.capacity = capacity
 		}
 
-		subscript(key: Int) -> Block? {
-			get {
-				semaphore.wait()
-				defer { semaphore.signal() }
-				// The element we are looking for will likely be the first or second
-				return list.first { $0.offset == key }
+		func blockFor(offset: Int) -> Block? {
+			semaphore.wait()
+			defer { semaphore.signal() }
+			// The element we are looking for will likely be the first or second
+			return list.first { $0.offset == offset }
+		}
+
+		mutating func setBlockFor(offset: Int, _ newValue: Block) {
+			semaphore.wait()
+			defer { semaphore.signal() }
+			if let oldIndex = list.firstIndex(where: { $0.offset == offset } ) {
+				list.remove(at: oldIndex)
 			}
-			set {
-				semaphore.wait()
-				defer { semaphore.signal() }
-				if let oldIndex = list.firstIndex(where: { $0.offset == key } ) {
-					list.remove(at: oldIndex)
-				}
-				if let newValue {
-					if list.count == capacity {
-						list.removeLast()
-					}
-					list.insert(newValue, at: 0)
-				}
+			if list.count == capacity {
+				list.removeLast()
 			}
+			list.insert(newValue, at: 0)
 		}
 
 		mutating func evictTail() -> Block? {
@@ -194,33 +201,34 @@ final class AsyncAudioFileReader: AudioFileReader {
 
 
 	private let blockSize: Int
-	private var cachedBlocks = Cache(capacity: 8)
 	private(set) var exactTotalFrames: Int?
+
+	nonisolated(unsafe) // protected by a semaphore
+	private var cachedBlocks = Cache(capacity: 8)
 
 
 	override init?(url: URL, sampleRate: Double, isStereo: Bool) {
 		blockSize = Int(sampleRate) // * 2
 		super.init(url: url, sampleRate: sampleRate, isStereo: isStereo)
-		ensureCached(position: 0)
 	}
 
 
 	func ensureCached(position: Int) {
 		precondition(position >= 0)
 		for i in 0...2 { // load up to 3 blocks
-			let offset = ((position / blockSize) + i) * blockSize
-			if let exactTotalFrames, offset >= exactTotalFrames {
+			let blockOffset = ((position / blockSize) + i) * blockSize
+			if let exactTotalFrames, blockOffset >= exactTotalFrames {
 				break
 			}
-			if cachedBlocks[offset] == nil {
+			if cachedBlocks.blockFor(offset: blockOffset) == nil {
 				// Try to reuse a block evicted from the cache tail, otherwise allocate a new one
 				// TODO: potentially this is wrong as the block being evicted may be in use by the audio rendering thread, though very unlikely to happen
-				let block = cachedBlocks.evictTail() ?? Block(isStereo: isStereo, offset: offset, capacity: blockSize)
-				if block.read(from: fileRef, offset: offset, lengthFactor: lengthFactor) {
+				let block = cachedBlocks.evictTail() ?? Block(isStereo: isStereo, offset: blockOffset, capacity: blockSize)
+				if block.read(from: fileRef, offset: blockOffset, lengthFactor: lengthFactor) {
 					if block.count < blockSize {
 						exactTotalFrames = block.offset + block.count
 					}
-					cachedBlocks[offset] = block
+					cachedBlocks.setBlockFor(offset: blockOffset, block)
 					if block.isEmpty {
 						// Empty block is possible if the total number of samples is a multiple of the block size; we should keep it so that that caller triggers an end of file
 						// TODO: allocate a special empty block wih t0 memory overhead?
@@ -234,8 +242,10 @@ final class AsyncAudioFileReader: AudioFileReader {
 	}
 
 
-	func blockAt(position: Int) -> Block? {
+	// Can be called from the audio thread
+	nonisolated
+	func _blockAt(position: Int) -> Block? {
 		let offset = (position / blockSize) * blockSize
-		return cachedBlocks[offset]
+		return cachedBlocks.blockFor(offset: offset)
 	}
 }
