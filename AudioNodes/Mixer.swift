@@ -9,7 +9,7 @@ import Foundation
 import Accelerate
 
 
-final class VolumeControl: Filter {
+final class VolumeControl: Node {
 
 	let busNumber: Int? // for debug diagnostics only
 
@@ -32,7 +32,7 @@ final class VolumeControl: Filter {
 
 	// Internal
 
-	override func _filter(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		var current = _previous
 
 		if current != _config.fadeEnd {

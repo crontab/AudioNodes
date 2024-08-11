@@ -17,23 +17,12 @@ actor AudioActor {
 @usableFromInline let audioSem: DispatchSemaphore = .init(value: 1)
 
 @inlinable func withAudioLock<T>(execute: () -> T) -> T {
-#if DEBUG
-	semCount -= 1
-	Assert(semCount == 0, 51032)
-#endif
 	audioSem.wait()
 	defer {
-#if DEBUG
-		semCount += 1
-#endif
 		audioSem.signal()
 	}
 	return execute()
 }
-
-#if DEBUG
-@usableFromInline nonisolated(unsafe) var semCount: Int = 1
-#endif
 
 
 // NB: names that start with an underscore are executed or accessed on the system audio thread. Names that end with $ should be called only within a semaphore lock, i.e. withAudioLock { }
@@ -52,27 +41,33 @@ struct StreamFormat: Equatable {
 
 // MARK: - Node
 
+/// Generic abstract audio node; all other node types are subclasses of `Node`. All public methods are thread-safe.
 class Node {
 
-	// MARK: - Public interface
-
+	/// Indicates whether rendering should be skipped; if the node is disabled, buffers are filled with silence and the input renderer is not called. The last cycle after disabling the node is spent on gracefully ramping down the audio data; similarly the first cycle after enabling gracefully ramps up the data
 	var isEnabled: Bool {
 		get { withAudioLock { config$.enabled } }
 		set { withAudioLock { config$.enabled = newValue } }
 	}
 
-
+	/// Unlike isEnabled, isMuted always calls the rendering routines but ignores the data and fills buffers with silence if set to true; like with isEnabled ramping can take place when changing this property
 	var isMuted: Bool {
 		get { withAudioLock { config$.muted } }
 		set { withAudioLock { config$.muted = newValue } }
 	}
 
+	/// Indicates whether custom rendering routine should be called or not; useful for filters or effect type nodes; note that no ramping takes place when changing this property
+	var isBypassing: Bool {
+		get { withAudioLock { config$.bypass } }
+		set { withAudioLock { config$.bypass = newValue } }
+	}
 
+	///Returns the stream format known to this node; nodes receive this data when they connect to other nodes and the stream format is known to any one of them in the chain.
 	var format: StreamFormat? {
 		withAudioLock { config$.format }
 	}
 
-
+	/// Connects a node that should provide source data. Each node can be connected to only one other node at a time, a run-time error occurs otherwise.
 	func connect(_ input: Node) {
 		withAudioLock {
 			config$.format.map { input.willConnect$(with: $0) }
@@ -80,7 +75,7 @@ class Node {
 		}
 	}
 
-
+	/// Disconnects input.
 	func disconnect() {
 		withAudioLock {
 			config$.input?.didDisconnect$()
@@ -88,7 +83,7 @@ class Node {
 		}
 	}
 
-
+	/// Connects a node that serves as an observer for audio data, i.e. a node whose `monitor(frameCount:buffers:)` method will be called with each cycle.
 	func connectMonitor(_ monitor: Node) {
 		withAudioLock {
 			config$.format.map { monitor.willConnect$(with: $0) }
@@ -96,15 +91,18 @@ class Node {
 		}
 	}
 
-
-	func disconnectMonitor() { 
+	/// Disconnects the monitor.
+	func disconnectMonitor() {
 		withAudioLock {
 			config$.monitor?.didDisconnect$()
 			config$.monitor = nil
 		}
 	}
 
+	/// Indicates whether there is an incoming connection to this node, i.e. if it's used either as input or monitor; read-only. Each node can be connected to only one other node at a time, a run-time error occurs otherwise.
+	private(set) var isConnected: Bool = false
 
+	/// Name of the node for debug printing
 	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
 
 
@@ -115,12 +113,14 @@ class Node {
 
 	// MARK: - Internal: rendering
 
-	// Overridable function, should be chain-called from subclasses to ensure the connected input generates its sound
+	/// Abstract overridable function that's called if this node is enabled, not bypassing and is connected to another node is `input`. Subclasses either generate or mutate the sound in this routine.
 	func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		if let input = _config.input {
-			return input._internalRender(frameCount: frameCount, buffers: buffers)
-		}
-		return FillSilence(frameCount: frameCount, buffers: buffers)
+		Abstract(#function)
+	}
+
+	/// Abstract overridable function that's called if this node is enabled and is connected to another node as a monitor. Monitors are not supposed to modify data.
+	func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
+		Abstract(#function)
 	}
 
 
@@ -161,11 +161,25 @@ class Node {
 
 
 	private func _internalRender2(ramping: Bool, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		var status: OSStatus = noErr
 
-		// 5. Generate data; redefined in subclasses
-		let status = _render(frameCount: frameCount, buffers: buffers)
+		// 5. Pull input data
+		if let input = _config.input {
+			status = input._internalRender(frameCount: frameCount, buffers: buffers)
+		}
 
-		// 6. Playing muted: keep generating and replacing with silence; the first buffer is smoothened
+		// 6. Call the abstract render routine for this node
+		if status == noErr {
+			if !_config.bypass {
+				status = _render(frameCount: frameCount, buffers: buffers)
+			}
+			else if _config.input == nil {
+				// Bypassing and no input specified, fill with silence. If this node is also muted, silence will be filled twice but we are fine with it, don't want to complicate this function any further.
+				FillSilence(frameCount: frameCount, buffers: buffers)
+			}
+		}
+
+		// 7. Playing muted: keep generating and replacing with silence; the first buffer is smoothened
 		if _config.muted {
 			if !_prevMuted {
 				_prevMuted = true
@@ -178,7 +192,7 @@ class Node {
 			return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
 		}
 
-		// 7. Not muted; ensure switching to unmuted state is smooth too
+		// 8. Not muted; ensure switching to unmuted state is smooth too
 		if _prevMuted {
 			_prevMuted = false
 			if !ramping {
@@ -186,15 +200,15 @@ class Node {
 			}
 		}
 
-		// 8. Notify the monitor (tap) node if there's any
+		// 9. Notify the monitor (tap) node if there's any
 		return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
 	}
 
 
 	private func _internalMonitor(status: OSStatus, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		if status == noErr {
+		if status == noErr, let monitor = _config.monitor, monitor._config.enabled {
 			// Call monitor only if there's actual data generated. This helps monitors like file writers only receive actual data, not e.g. silence that can occur due to timing issues with the microphone. This however leaves the monitor unaware of any gaps which may not be good for e.g. meter UI elements. Should find a way to handle these situations.
-			_ = _config.monitor?._internalRender(frameCount: frameCount, buffers: buffers)
+			_ = monitor._internalRender(frameCount: frameCount, buffers: buffers)
 		}
 		return status
 	}
@@ -215,10 +229,7 @@ class Node {
 
 	// MARK: - Internal: Connection management
 
-	private(set) var isConnected: Bool = false // there is an incoming connection to this node
-
-
-	// Called by the node requesting connection with this node, or otherwise when propagating a new format down the chain
+	/// Called by the node requesting connection with this node, or otherwise when propagating a new format down the chain; overridable. The audio semaphore is in a locked state which means all methods and properties with the $ suffix can be used here.
 	func willConnect$(with format: StreamFormat) {
 		Assert(!isConnected, 51030)
 		DLOG("\(debugName).didConnect(\(format.sampleRate), \(format.bufferFrameSize), \(format.isStereo ? "stereo" : "mono"))")
@@ -232,9 +243,8 @@ class Node {
 	}
 
 
-	// Called by the node requesting disconnection from this node
+	/// Called by the node requesting disconnection from this node; overridable. The audio semaphore is in a locked state which means all methods and properties with the $ suffix can be used here.
 	func didDisconnect$() {
-		Assert(isConnected, 51031)
 		DLOG("\(debugName).didDisconnect()")
 		isConnected = false
 		config$.format = nil
@@ -254,12 +264,12 @@ class Node {
 		var input: Node?
 		var enabled: Bool = true
 		var muted: Bool = false
+		var bypass: Bool = false
 	}
 
 
 	// Called internally from the node that requests connection and if the format is known and different from the previous one
 	private func updateFormat$(with format: StreamFormat) {
-		isConnected = true // cheat
 		didDisconnect$()
 		willConnect$(with: format)
 	}
@@ -269,39 +279,4 @@ class Node {
 	private var _config: Config = .init() // config used during the rendering cycle
 	private var _prevEnabled = true
 	private var _prevMuted = false
-}
-
-
-// MARK: - Filter
-
-class Filter: Node {
-
-	var bypass: Bool {
-		get { withAudioLock { bypass$ } }
-		set { withAudioLock { bypass$ = newValue } }
-	}
-
-
-	func _filter(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		Abstract()
-	}
-
-
-	final override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		let status = super._render(frameCount: frameCount, buffers: buffers)
-		if bypass || status != noErr {
-			return status
-		}
-		return _filter(frameCount: frameCount, buffers: buffers)
-	}
-
-
-	override func _willRender$() {
-		super._willRender$()
-		_bypass = bypass$
-	}
-
-
-	private var bypass$: Bool = false
-	private var _bypass: Bool = false
 }
