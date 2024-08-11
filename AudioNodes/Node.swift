@@ -31,7 +31,7 @@ struct StreamFormat: Equatable {
 	let bufferFrameSize: Int
 	let isStereo: Bool
 
-	var transitionSamples: Int { min(bufferFrameSize, Int(sampleRate) / 100) } // ~10ms
+	var transitionFrames: Int { min(bufferFrameSize, Int(sampleRate) / 100) } // ~10ms
 
 	static var `default`: Self { .init(sampleRate: 48000, bufferFrameSize: 512, isStereo: true) }
 }
@@ -120,7 +120,7 @@ class Node {
 				_reset()
 				let status = _internalRender2(ramping: true, frameCount: frameCount, buffers: buffers)
 				if status == noErr {
-					Smooth(out: true, frameCount: frameCount, fadeFrameCount: _transitionSamples, buffers: buffers)
+					Smooth(out: true, frameCount: frameCount, fadeFrameCount: _transitionFrames, buffers: buffers)
 				}
 				return status
 			}
@@ -132,7 +132,7 @@ class Node {
 			_prevEnabled = true
 			let status = _internalRender2(ramping: true, frameCount: frameCount, buffers: buffers)
 			if status == noErr {
-				Smooth(out: false, frameCount: frameCount, fadeFrameCount: _transitionSamples, buffers: buffers)
+				Smooth(out: false, frameCount: frameCount, fadeFrameCount: _transitionFrames, buffers: buffers)
 			}
 			return status
 		}
@@ -152,7 +152,7 @@ class Node {
 			if !_prevMuted {
 				_prevMuted = true
 				if !ramping {
-					Smooth(out: true, frameCount: frameCount, fadeFrameCount: _transitionSamples, buffers: buffers)
+					Smooth(out: true, frameCount: frameCount, fadeFrameCount: _transitionFrames, buffers: buffers)
 					return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
 				}
 			}
@@ -164,7 +164,7 @@ class Node {
 		if _prevMuted {
 			_prevMuted = false
 			if !ramping {
-				Smooth(out: false, frameCount: frameCount, fadeFrameCount: _transitionSamples, buffers: buffers)
+				Smooth(out: false, frameCount: frameCount, fadeFrameCount: _transitionFrames, buffers: buffers)
 			}
 		}
 
@@ -223,7 +223,7 @@ class Node {
 	}
 
 
-	var _transitionSamples: Int { _config.format?.transitionSamples ?? 0 }
+	var _transitionFrames: Int { _config.format?.transitionFrames ?? 0 }
 
 
 	// MARK: - Private
@@ -248,4 +248,39 @@ class Node {
 	private var _config: Config = .init() // config used during the rendering cycle
 	private var _prevEnabled = true
 	private var _prevMuted = false
+}
+
+
+// MARK: - Filter
+
+class Filter: Node {
+
+	var bypass: Bool {
+		get { withAudioLock { bypass$ } }
+		set { withAudioLock { bypass$ = newValue } }
+	}
+
+
+	func _filter(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		Abstract()
+	}
+
+
+	final override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		let status = super._render(frameCount: frameCount, buffers: buffers)
+		if bypass || status != noErr {
+			return status
+		}
+		return _filter(frameCount: frameCount, buffers: buffers)
+	}
+
+
+	override func _willRender$() {
+		super._willRender$()
+		_bypass = bypass$
+	}
+
+
+	private var bypass$: Bool = false
+	private var _bypass: Bool = false
 }
