@@ -8,6 +8,7 @@
 import Foundation
 
 
+/// Async public methods use this global actor; it is therefore recommended to mark audio-related logic in your code with AudioActor.
 @globalActor
 actor AudioActor {
 	static var shared = AudioActor()
@@ -67,7 +68,7 @@ class Node {
 		withAudioLock { config$.format }
 	}
 
-	/// Connects a node that should provide source data. Each node can be connected to only one other node at a time, a run-time error occurs otherwise.
+	/// Connects a node that should provide source data. Each node can be connected to only one other node at a time, a run-time error occurs otherwise. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge. See also `smoothConnect()`.
 	func connect(_ input: Node) {
 		withAudioLock {
 			config$.format.map { input.willConnect$(with: $0) }
@@ -83,7 +84,27 @@ class Node {
 		}
 	}
 
-	/// Connects a node that serves as an observer for audio data, i.e. a node whose `monitor(frameCount:buffers:)` method will be called with each cycle.
+	/// Connects input smoothly, i.e. ensuring no clicks happen. Use this method when connecting nodes while already running and rendering audio.
+	@AudioActor
+	func smoothConnect(_ input: Node) async {
+		let wasMuted = isMuted
+		isMuted = true
+		connect(input)
+		await Sleep(approximateCycleDuration) // the simplest possible synrhonization method, we don't want to complicate things
+		isMuted = wasMuted
+	}
+
+	/// Disconnects input smoothly, i.e. ensuring no clicks happen.
+	@AudioActor
+	func smoothDisconnect() async {
+		let wasMuted = isMuted
+		isMuted = true
+		await Sleep(approximateCycleDuration)
+		disconnect()
+		isMuted = wasMuted
+	}
+
+	/// Connects a node that serves as an observer of audio data, i.e. a node whose `monitor(frameCount:buffers:)` method will be called with each cycle.
 	func connectMonitor(_ monitor: Node) {
 		withAudioLock {
 			config$.format.map { monitor.willConnect$(with: $0) }
@@ -101,6 +122,13 @@ class Node {
 
 	/// Indicates whether there is an incoming connection to this node, i.e. if it's used either as input or monitor; read-only. Each node can be connected to only one other node at a time, a run-time error occurs otherwise.
 	private(set) var isConnected: Bool = false
+
+	/// Returns approximate duration of a rendering cycle; useful when waiting for some parameter to take effect.
+	var approximateCycleDuration: TimeInterval {
+		withAudioLock {
+			format$.map { Double($0.bufferFrameSize) / Double($0.sampleRate) + 0.001 } ?? 0
+		}
+	}
 
 	/// Name of the node for debug printing
 	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
@@ -252,7 +280,7 @@ class Node {
 
 
 	var _transitionFrames: Int { _config.format?.transitionFrames ?? 0 }
-
+	var _isInputConnected: Bool { _config.input != nil }
 	var format$: StreamFormat? { config$.format }
 
 

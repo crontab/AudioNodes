@@ -14,11 +14,14 @@ import AudioToolbox
 
 final class System: Node {
 
-	private(set) var input: Input? // nil until requestInputAuthorization() is called and permission is granted; stays nil if there are no input devices
+	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
+	private(set) var input: Input?
 
+	/// System input stream format.
 	final let systemFormat: StreamFormat
 
 
+	/// Indicates whether the audio system is enabled and is rendering data.
 	var isSystemRunning: Bool {
 		var flag: UInt32 = 0, flagSize = SizeOf(flag)
 		NotError(AudioUnitGetProperty(unit, kAudioOutputUnitProperty_IsRunning, kAudioUnitScope_Global, 0, &flag, &flagSize), 51028)
@@ -26,6 +29,7 @@ final class System: Node {
 	}
 
 
+	/// Starts the audio system.
 	func start() {
 		if !isSystemRunning {
 			NotError(AudioUnitInitialize(unit), 51007)
@@ -34,8 +38,8 @@ final class System: Node {
 	}
 
 
+	/// Stops the audio system. To avoid clicks, disconnect the input using `smoothDisconnect() async` prior to calling `stop()`.
 	func stop() {
-		// TODO: clicks when stopping; add completion block; isStopping (?)
 		AudioOutputUnitStop(unit)
 		AudioUnitUninitialize(unit)
 	}
@@ -113,6 +117,21 @@ final class System: Node {
 
 		// Imitate connection since we know the format which will be propagated to the entire chain
 		willConnect$(with: systemFormat)
+	}
+
+
+	deinit {
+		stop()
+	}
+
+
+	// MARK: - Internal
+
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		if !_isInputConnected {
+			FillSilence(frameCount: frameCount, buffers: buffers)
+		}
+		return noErr
 	}
 
 

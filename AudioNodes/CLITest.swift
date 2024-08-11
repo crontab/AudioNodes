@@ -16,11 +16,15 @@ extension System {
 	func testSine() async {
 		print("--- ", #function)
 		let sine = SineGenerator(freq: 440)
-		connect(sine)
+		await smoothConnect(sine)
+		await Sleep(1)
+		sine.isEnabled = false
 		await Sleep(1)
 		sine.frequency = 480
+		sine.isEnabled = true
 		await Sleep(1)
-		disconnect()
+		await smoothDisconnect()
+		await Sleep(1)
 	}
 
 	func testVolumeControl() async {
@@ -34,7 +38,7 @@ extension System {
 		await Sleep(1)
 		volume.setVolume(1, duration: 0.5)
 		await Sleep(0.5)
-		disconnect()
+		await smoothDisconnect()
 	}
 }
 
