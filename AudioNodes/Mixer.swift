@@ -9,6 +9,8 @@ import Foundation
 import Accelerate
 
 
+// MARK: - VolumeControl
+
 final class VolumeControl: Node {
 
 	let busNumber: Int? // for debug diagnostics only
@@ -108,7 +110,67 @@ final class VolumeControl: Node {
 }
 
 
+// MARK: - Mixer
+
 final class Mixer: Node {
 
 	typealias Bus = VolumeControl
+
+	let buses: [Bus] // not atomic because it's immutable
+
+
+	init(busCount: Int) {
+		Assert(busCount > 0 && busCount <= 128, 51041)
+		buses = (0..<busCount).map { Bus(busNumber: $0) }
+		_scratchBuffer = .init(isStereo: true, capacity: 1024) // don't want to allocate this under semaphore, should be enough
+	}
+
+
+	// Internal
+
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		var first = true
+		for bus in buses {
+			let status = first ?
+				bus._internalRender(frameCount: frameCount, buffers: buffers)
+					: _renderAndMix(node: bus, frameCount: frameCount, buffers: buffers)
+			first = false
+			if status != noErr {
+				return status
+			}
+		}
+		if first { // no connections on buses
+			return FillSilence(frameCount: frameCount, buffers: buffers)
+		}
+		return noErr
+	}
+
+
+	private func _renderAndMix(node: Node, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		var status: OSStatus
+		status = node._internalRender(frameCount: frameCount, buffers: _scratchBuffer.buffers)
+		for i in 0..<buffers.count {
+			let src = _scratchBuffer.buffers[i]
+			let dst = buffers[i]
+			vDSP_vadd(src.samples, 1, dst.samples, 1, dst.samples, 1, UInt(frameCount))
+		}
+		return status
+	}
+
+
+	override func willConnect$(with format: StreamFormat) {
+		Assert(format.bufferFrameSize <= _scratchBuffer.capacity, 51040)
+		let prevFormat = format$
+		super.willConnect$(with: format)
+		if format != prevFormat {
+			for bus in buses {
+				bus.updateFormat$(with: format)
+			}
+		}
+	}
+
+
+	// Private
+
+	private var _scratchBuffer: SafeAudioBufferList
 }

@@ -279,6 +279,13 @@ class Node {
 	}
 
 
+	// Called internally from the node that requests connection and if the format is known and different from the previous one
+	func updateFormat$(with format: StreamFormat) {
+		didDisconnect$()
+		willConnect$(with: format)
+	}
+
+
 	var _transitionFrames: Int { _config.format?.transitionFrames ?? 0 }
 	var _isInputConnected: Bool { _config.input != nil }
 	var format$: StreamFormat? { config$.format }
@@ -294,14 +301,6 @@ class Node {
 		var muted: Bool = false
 		var bypass: Bool = false
 	}
-
-
-	// Called internally from the node that requests connection and if the format is known and different from the previous one
-	private func updateFormat$(with format: StreamFormat) {
-		didDisconnect$()
-		willConnect$(with: format)
-	}
-
 
 	private var config$: Config = .init() // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
 	private var _config: Config = .init() // config used during the rendering cycle

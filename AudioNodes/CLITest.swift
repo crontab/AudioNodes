@@ -27,17 +27,20 @@ extension System {
 		await Sleep(1)
 	}
 
-	func testVolumeControl() async {
+	func testMixer() async {
 		print("--- ", #function)
-		let sine = SineGenerator(freq: 440)
-		let volume = VolumeControl()
-		volume.connect(sine)
-		connect(volume)
+		let sine1 = SineGenerator(freq: 440)
+		let sine2 = SineGenerator(freq: 480)
+		let mixer = Mixer(busCount: 2)
+		mixer.buses[0].connect(sine1)
+		mixer.buses[1].connect(sine2)
+		connect(mixer)
 		await Sleep(1)
-		volume.setVolume(0.5, duration: 1)
+		mixer.buses[0].setVolume(0.5, duration: 1)
 		await Sleep(1)
-		volume.setVolume(1, duration: 0.5)
-		await Sleep(0.5)
+		mixer.buses[0].setVolume(1, duration: 0)
+		mixer.buses[1].setVolume(0.5, duration: 1)
+		await Sleep(2)
 		await smoothDisconnect()
 	}
 }
@@ -50,8 +53,8 @@ struct CLI {
 	static func runTests() async {
 		let system = System(isStereo: true)
 		system.start()
-		await system.testSine()
-		await system.testVolumeControl()
+//		await system.testSine()
+		await system.testMixer()
 	}
 
 
