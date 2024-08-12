@@ -16,12 +16,13 @@ struct MainView: View {
 
 
 	var body: some View {
-		VStack {
+		VStack(spacing: 24) {
 			top()
 			Divider()
 
 			Spacer()
 
+			inOut()
 			Divider()
 			bottom()
 		}
@@ -30,6 +31,11 @@ struct MainView: View {
 		.padding(24)
 		.tint(.orange)
 		.background { Color.stdBackground.ignoresSafeArea() }
+
+		.onAppear {
+			guard !Globals.isPreview else { return }
+			audio.isRunning = true
+		}
 	}
 
 
@@ -45,17 +51,28 @@ struct MainView: View {
 
 			Spacer()
 
-			Toggle(isOn: $audio.isRunning) {
-				Text("System".uppercased())
-					.foregroundColor(.gray)
+			toggle(isOn: $audio.isRunning, left: "System")
+		}
+	}
+
+
+	private func inOut() -> some View {
+		HStack {
+			VStack(alignment: .leading, spacing: 16) {
+				toggle(isOn: $audio.isOutputEnabled, right: "Output")
+				ProgressView(value: audio.normalizedOutputGainLeft)
+				ProgressView(value: audio.normalizedOutputGainRight)
 			}
-			.frame(width: 112)
+			.frame(width: 120)
+
+			Spacer()
 		}
 	}
 
 
 	private func bottom() -> some View {
 		VStack {
+			// TODO: Wave form
 			HStack {
 				Button {
 					audio.isPlaying = !audio.isPlaying
@@ -78,6 +95,24 @@ struct MainView: View {
 
 			Text(String(format: "%.3fs", audio.playerTimePosition))
 				.font(.smallText)
+		}
+	}
+
+
+	func toggle(isOn: Binding<Bool>, left: String? = nil, right: String? = nil) -> some View {
+		HStack(spacing: 8) {
+			if let left {
+				Text(left.uppercased())
+					.foregroundColor(.gray)
+					.offset(y: 1)
+			}
+			Toggle(isOn: isOn) { }
+				.labelsHidden()
+			if let right {
+				Text(right.uppercased())
+					.foregroundColor(.gray)
+					.offset(y: 1)
+			}
 		}
 	}
 }

@@ -12,15 +12,12 @@ private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "
 
 
 @MainActor
-class AudioState: ObservableObject, PlayerDelegate {
+class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 
 	@Published var isRunning: Bool = false {
 		didSet {
 			guard isRunning != oldValue else { return }
-			if !isInitialized {
-				isInitialized = true
-				root.buses[0].connect(player)
-			}
+			initializeGraph()
 			if isRunning {
 				Task {
 					system.start()
@@ -37,6 +34,13 @@ class AudioState: ObservableObject, PlayerDelegate {
 	}
 
 
+	@Published var isOutputEnabled = true {
+		didSet {
+			system.isEnabled = isOutputEnabled
+		}
+	}
+
+
 	@Published var isPlaying: Bool = false {
 		didSet {
 			Task {
@@ -49,7 +53,10 @@ class AudioState: ObservableObject, PlayerDelegate {
 	}
 
 
-	@Published var playerTimePosition: TimeInterval = 0
+	@Published var playerTimePosition: TimeInterval = 0 // 25 fps
+
+	@Published var normalizedOutputGainLeft: Float = 0
+	@Published var normalizedOutputGainRight: Float = 0
 
 
 	func player(_ player: Player, isAtFramePosition position: Int) {
@@ -67,8 +74,37 @@ class AudioState: ObservableObject, PlayerDelegate {
 	}
 
 
+	func meterDidUpdateGains(_ meter: Meter, left: Float, right: Float) {
+		Task { @MainActor in
+			func normalizeDB(_ db: Float) -> Float { 1 - (max(db, -50) / -50) }
+
+			let newLeft = normalizeDB(left)
+			let newRight = normalizeDB(right)
+
+			if meter === outputMeter {
+				prevOutLeft = max(newLeft, prevOutLeft - declineAmount)
+				prevOutRight = max(newRight, prevOutRight - declineAmount)
+				normalizedOutputGainLeft = prevOutLeft
+				normalizedOutputGainRight = prevOutRight
+			}
+		}
+	}
+
+
+	private func initializeGraph() {
+		guard !isInitialized else { return }
+		isInitialized = true
+		root.buses[0].connect(player)
+		root.connectMonitor(outputMeter)
+	}
+
+
 	private var isInitialized: Bool = false
 	private lazy var system = System(isStereo: true)
 	private lazy var root: Mixer = .init(busCount: 1)
 	private lazy var player = Player(url: fileUrl, sampleRate: system.systemFormat.sampleRate, isStereo: system.systemFormat.isStereo, delegate: self)!
+	private lazy var outputMeter = Meter(format: system.systemFormat, delegate: self)
+
+	private var prevOutLeft: Float = 0, prevOutRight: Float = 0
+	private let declineAmount: Float = 0.05
 }

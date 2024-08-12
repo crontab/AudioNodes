@@ -22,6 +22,7 @@
 		364310062C69C52D000CF9F3 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36430FFE2C69C52D000CF9F3 /* Utilities.swift */; };
 		364310082C69C909000CF9F3 /* AudioState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310072C69C909000CF9F3 /* AudioState.swift */; };
 		3643100A2C69F26D000CF9F3 /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310092C69F26D000CF9F3 /* Monitor.swift */; };
+		3643100E2C69F300000CF9F3 /* Meter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3643100D2C69F300000CF9F3 /* Meter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 		36430FFE2C69C52D000CF9F3 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		364310072C69C909000CF9F3 /* AudioState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioState.swift; sourceTree = "<group>"; };
 		364310092C69F26D000CF9F3 /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
+		3643100D2C69F300000CF9F3 /* Meter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +101,7 @@
 				36430FFE2C69C52D000CF9F3 /* Utilities.swift */,
 				36430FFA2C69C52D000CF9F3 /* Node.swift */,
 				364310092C69F26D000CF9F3 /* Monitor.swift */,
+				3643100D2C69F300000CF9F3 /* Meter.swift */,
 				36430FF92C69C52D000CF9F3 /* Mixer.swift */,
 				36430FF82C69C52D000CF9F3 /* AudioFileReader.swift */,
 				36430FFB2C69C52D000CF9F3 /* Player.swift */,
@@ -188,6 +191,7 @@
 				363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */,
 				364310012C69C52D000CF9F3 /* Mixer.swift in Sources */,
 				364310032C69C52D000CF9F3 /* Player.swift in Sources */,
+				3643100E2C69F300000CF9F3 /* Meter.swift in Sources */,
 				364310042C69C52D000CF9F3 /* SineGenerator.swift in Sources */,
 				364310002C69C52D000CF9F3 /* AudioFileReader.swift in Sources */,
 				3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */,
