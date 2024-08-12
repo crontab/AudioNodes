@@ -92,17 +92,14 @@ class Player: Node {
 	}
 
 
-	@AudioActor private var prevDelegatePlayhead: Int = 0
-
 	private func _didPlaySome(until playhead: Int) {
 		withAudioLock {
+			// TODO: throttle?
+			// let delta = Int(self.file.sampleRate / 25) // 25 fps update rate
 			lastKnownPlayhead$ = playhead
 		}
+		guard let delegate else { return }
 		Task.detached { @AudioActor in
-			guard let delegate = self.delegate else { return }
-			let delta = Int(self.file.sampleRate / 25) // 25 fps update rate
-			guard abs(playhead - self.prevDelegatePlayhead) > delta else { return }
-			self.prevDelegatePlayhead = playhead
 			delegate.player(self, isAtFramePosition: playhead)
 		}
 	}
@@ -110,12 +107,13 @@ class Player: Node {
 
 	private func _didEndPlaying(at playhead: Int, frameCount: Int, buffers: AudioBufferListPtr) {
 		isEnabled = false
+		let total = self.file.estimatedTotalFrames
 		withAudioLock {
-			lastKnownPlayhead$ = file.estimatedTotalFrames
+			lastKnownPlayhead$ = total
 		}
+		guard let delegate else { return }
 		Task.detached { @AudioActor in
-			self.prevDelegatePlayhead = self.file.estimatedTotalFrames
-			guard let delegate = self.delegate else { return }
+			delegate.player(self, isAtFramePosition: total)
 			delegate.playerDidEndPlaying(self)
 		}
 	}
