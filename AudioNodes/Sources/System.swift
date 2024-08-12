@@ -34,6 +34,7 @@ final class System: Node {
 		if !isRunning {
 			NotError(AudioUnitInitialize(unit), 51007)
 			NotError(AudioOutputUnitStart(unit), 51009)
+			DLOG("\(debugName).start()")
 		}
 	}
 
@@ -42,6 +43,7 @@ final class System: Node {
 	func stop() {
 		AudioOutputUnitStop(unit)
 		AudioUnitUninitialize(unit)
+		DLOG("\(debugName).stop()")
 	}
 
 

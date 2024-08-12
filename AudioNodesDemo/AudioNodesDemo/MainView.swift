@@ -8,50 +8,28 @@
 import SwiftUI
 
 
+private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "m4a")!
+
+
 struct MainView: View {
-	@EnvironmentObject private var system: System
-
-	@State private var systemOn: Bool = false
-
-	private let root: Node
-
-
-	init() {
-		root = SineGenerator(freq: 440)
-	}
+	@EnvironmentObject private var audio: AudioState
 
 
 	var body: some View {
 		VStack {
 			top()
 			Divider()
+
 			Spacer()
+
+			Divider()
+			bottom()
 		}
 		.font(.text)
 		.frame(maxWidth: .infinity)
 		.padding(24)
 		.tint(.orange)
 		.background { Color.stdBackground.ignoresSafeArea() }
-
-		.onAppear {
-			systemOn = system.isRunning
-		}
-
-		.onChange(of: systemOn) { oldValue, newValue in
-			guard !Globals.isPreview else { return }
-			if newValue {
-				Task {
-					system.start()
-					system.connect(root)
-				}
-			}
-			else {
-				Task {
-					await system.smoothDisconnect()
-					system.stop()
-				}
-			}
-		}
 	}
 
 
@@ -67,11 +45,36 @@ struct MainView: View {
 
 			Spacer()
 
-			Toggle(isOn: $systemOn) {
+			Toggle(isOn: $audio.isRunning) {
 				Text("System".uppercased())
 					.foregroundColor(.gray)
 			}
 			.frame(width: 112)
+		}
+	}
+
+
+	private func bottom() -> some View {
+		VStack {
+			HStack {
+				Button {
+					audio.isPlaying = !audio.isPlaying
+				} label: {
+					Group {
+						if audio.isPlaying {
+							Image(systemName: "square.fill")
+						}
+						else {
+							Image(systemName: "triangle.fill")
+								.rotationEffect(.degrees(90))
+								.offset(x: 1)
+						}
+					}
+					.font(.system(size: 18))
+					.frame(width: 36, height: 36)
+				}
+				.buttonStyle(.bordered)
+			}
 		}
 	}
 }
@@ -79,5 +82,5 @@ struct MainView: View {
 
 #Preview {
 	MainView()
-		.environmentObject(System(isStereo: true))
+		.environmentObject(AudioState())
 }

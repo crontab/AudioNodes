@@ -22,7 +22,7 @@ class Player: Node {
 			return nil
 		}
 		self.file = file
-		super.init()
+		super.init(isEnabled: false)
 		prepopulateCache(position: 0)
 	}
 

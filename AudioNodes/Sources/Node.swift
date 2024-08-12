@@ -45,6 +45,12 @@ struct StreamFormat: Equatable {
 /// Generic abstract audio node; all other node types are subclasses of `Node`. All public methods are thread-safe.
 class Node {
 
+	init(isEnabled: Bool = true) {
+		_prevEnabled = isEnabled
+		_config = .init(enabled: isEnabled)
+		config$ = .init(enabled: isEnabled)
+	}
+
 	/// Indicates whether rendering should be skipped; if the node is disabled, buffers are filled with silence and the input renderer is not called. The last cycle after disabling the node is spent on gracefully ramping down the audio data; similarly the first cycle after enabling gracefully ramps up the data
 	var isEnabled: Bool {
 		get { withAudioLock { config$.enabled } }
@@ -297,13 +303,13 @@ class Node {
 		var format: StreamFormat?
 		var monitor: Node?
 		var input: Node?
-		var enabled: Bool = true
+		var enabled: Bool
 		var muted: Bool = false
 		var bypass: Bool = false
 	}
 
-	private var config$: Config = .init() // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
-	private var _config: Config = .init() // config used during the rendering cycle
-	private var _prevEnabled = true
-	private var _prevMuted = false
+	private var config$: Config // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
+	private var _config: Config // config used during the rendering cycle
+	private var _prevEnabled: Bool
+	private var _prevMuted: Bool = false
 }
