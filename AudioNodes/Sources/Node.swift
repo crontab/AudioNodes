@@ -111,7 +111,7 @@ class Node {
 	}
 
 	/// Connects a node that serves as an observer of audio data, i.e. a node whose `monitor(frameCount:buffers:)` method will be called with each cycle.
-	func connectMonitor(_ monitor: Node) {
+	func connectMonitor(_ monitor: Monitor) {
 		withAudioLock {
 			config$.format.map { monitor.willConnect$(with: $0) }
 			config$.monitor = monitor
@@ -149,11 +149,6 @@ class Node {
 
 	/// Abstract overridable function that's called if this node is enabled, not bypassing and is connected to another node is `input`. Subclasses either generate or mutate the sound in this routine.
 	func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		Abstract(#function)
-	}
-
-	/// Abstract overridable function that's called if this node is enabled and is connected to another node as a monitor. Monitors are not supposed to modify data.
-	func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		Abstract(#function)
 	}
 
@@ -240,9 +235,9 @@ class Node {
 
 
 	private func _internalMonitor(status: OSStatus, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		if status == noErr, let monitor = _config.monitor, monitor._config.enabled {
+		if status == noErr, let monitor = _config.monitor {
 			// Call monitor only if there's actual data generated. This helps monitors like file writers only receive actual data, not e.g. silence that can occur due to timing issues with the microphone. This however leaves the monitor unaware of any gaps which may not be good for e.g. meter UI elements. Should find a way to handle these situations.
-			_ = monitor._internalRender(frameCount: frameCount, buffers: buffers)
+			monitor._internalRender(frameCount: frameCount, buffers: buffers)
 		}
 		return status
 	}
@@ -257,7 +252,6 @@ class Node {
 		_prevEnabled = _config.enabled
 		_prevMuted = _config.muted
 		_config.input?._reset()
-		_config.monitor?._reset()
 	}
 
 
@@ -301,7 +295,7 @@ class Node {
 
 	private struct Config {
 		var format: StreamFormat?
-		var monitor: Node?
+		var monitor: Monitor?
 		var input: Node?
 		var enabled: Bool
 		var muted: Bool = false

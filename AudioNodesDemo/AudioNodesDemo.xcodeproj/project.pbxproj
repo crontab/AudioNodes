@@ -21,6 +21,7 @@
 		364310052C69C52D000CF9F3 /* System.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36430FFD2C69C52D000CF9F3 /* System.swift */; };
 		364310062C69C52D000CF9F3 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36430FFE2C69C52D000CF9F3 /* Utilities.swift */; };
 		364310082C69C909000CF9F3 /* AudioState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310072C69C909000CF9F3 /* AudioState.swift */; };
+		3643100A2C69F26D000CF9F3 /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310092C69F26D000CF9F3 /* Monitor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,7 @@
 		36430FFD2C69C52D000CF9F3 /* System.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
 		36430FFE2C69C52D000CF9F3 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		364310072C69C909000CF9F3 /* AudioState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioState.swift; sourceTree = "<group>"; };
+		364310092C69F26D000CF9F3 /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +98,7 @@
 			children = (
 				36430FFE2C69C52D000CF9F3 /* Utilities.swift */,
 				36430FFA2C69C52D000CF9F3 /* Node.swift */,
+				364310092C69F26D000CF9F3 /* Monitor.swift */,
 				36430FF92C69C52D000CF9F3 /* Mixer.swift */,
 				36430FF82C69C52D000CF9F3 /* AudioFileReader.swift */,
 				36430FFB2C69C52D000CF9F3 /* Player.swift */,
@@ -177,6 +180,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				364310052C69C52D000CF9F3 /* System.swift in Sources */,
+				3643100A2C69F26D000CF9F3 /* Monitor.swift in Sources */,
 				363478B82C692BD6004BB3B8 /* MainView.swift in Sources */,
 				364310082C69C909000CF9F3 /* AudioState.swift in Sources */,
 				364310062C69C52D000CF9F3 /* Utilities.swift in Sources */,

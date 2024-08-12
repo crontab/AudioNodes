@@ -39,7 +39,12 @@ class AudioState: ObservableObject, PlayerDelegate {
 
 	@Published var isPlaying: Bool = false {
 		didSet {
-			player.isEnabled = isPlaying
+			Task {
+				if isPlaying, await player.isAtEnd {
+					player.time = 0
+				}
+				player.isEnabled = isPlaying
+			}
 		}
 	}
 
