@@ -93,7 +93,7 @@ class Player: Node {
 	@AudioActor private var lastKnownPlayhead: Int = 0
 	@AudioActor private var prevDelegatePlayhead: Int = 0
 
-	func _didPlaySome(until playhead: Int) {
+	private func _didPlaySome(until playhead: Int) {
 		let file = file
 		let delegate = delegate
 		Task.detached { @AudioActor in
@@ -107,7 +107,7 @@ class Player: Node {
 	}
 
 
-	func _didEndPlaying(at playhead: Int, frameCount: Int, buffers: AudioBufferListPtr) {
+	private func _didEndPlaying(at playhead: Int, frameCount: Int, buffers: AudioBufferListPtr) {
 		isEnabled = false
 		let file = file
 		let delegate = delegate

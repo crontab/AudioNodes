@@ -23,6 +23,7 @@
 		364310082C69C909000CF9F3 /* AudioState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310072C69C909000CF9F3 /* AudioState.swift */; };
 		3643100A2C69F26D000CF9F3 /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310092C69F26D000CF9F3 /* Monitor.swift */; };
 		3643100E2C69F300000CF9F3 /* Meter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3643100D2C69F300000CF9F3 /* Meter.swift */; };
+		364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310112C6A09C1000CF9F3 /* SectionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +44,7 @@
 		364310072C69C909000CF9F3 /* AudioState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioState.swift; sourceTree = "<group>"; };
 		364310092C69F26D000CF9F3 /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
 		3643100D2C69F300000CF9F3 /* Meter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meter.swift; sourceTree = "<group>"; };
+		364310112C6A09C1000CF9F3 /* SectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +80,7 @@
 				36430FFF2C69C52D000CF9F3 /* Sources */,
 				3632445F2C6961280021C8BE /* Globals.swift */,
 				3632443D2C695B4B0021C8BE /* FontEx.swift */,
+				364310112C6A09C1000CF9F3 /* SectionView.swift */,
 				364310072C69C909000CF9F3 /* AudioState.swift */,
 				363478B72C692BD6004BB3B8 /* MainView.swift */,
 				363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */,
@@ -184,6 +187,7 @@
 			files = (
 				364310052C69C52D000CF9F3 /* System.swift in Sources */,
 				3643100A2C69F26D000CF9F3 /* Monitor.swift in Sources */,
+				364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */,
 				363478B82C692BD6004BB3B8 /* MainView.swift in Sources */,
 				364310082C69C909000CF9F3 /* AudioState.swift in Sources */,
 				364310062C69C52D000CF9F3 /* Utilities.swift in Sources */,
@@ -262,6 +266,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
 			};
 			name = Debug;
 		};
@@ -317,6 +322,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

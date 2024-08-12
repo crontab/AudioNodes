@@ -16,21 +16,23 @@ struct MainView: View {
 
 
 	var body: some View {
-		VStack(spacing: 24) {
-			top()
-			Divider()
+		GeometryReader { geometry in
+			VStack(spacing: 24) {
+				top()
+				Divider()
 
-			Spacer()
+				Spacer()
 
-			inOut()
-			Divider()
-			bottom()
+				inOut(width: geometry.size.width)
+				Divider()
+				bottom()
+			}
+			.font(.text)
+			.frame(maxWidth: .infinity)
+			.padding(16)
+			.tint(.orange)
+			.background { Color.stdBackground.ignoresSafeArea() }
 		}
-		.font(.text)
-		.frame(maxWidth: .infinity)
-		.padding(24)
-		.tint(.orange)
-		.background { Color.stdBackground.ignoresSafeArea() }
 
 		.onAppear {
 			guard !Globals.isPreview else { return }
@@ -44,8 +46,10 @@ struct MainView: View {
 			Image(.kokopelli)
 			VStack(alignment: .leading) {
 				Text("Audio".uppercased())
-				Text("Nodes".uppercased()) //.foregroundColor(.gray)
-				Text("1.0").font(.smallText).foregroundColor(.gray)
+				Text("Nodes".uppercased())
+				Text(System.version ?? "")
+					.font(.smallText)
+					.foregroundColor(.secondary)
 			}
 			.font(.header)
 
@@ -56,14 +60,21 @@ struct MainView: View {
 	}
 
 
-	private func inOut() -> some View {
+	private func inOut(width: Double) -> some View {
 		HStack {
-			VStack(alignment: .leading, spacing: 16) {
-				toggle(isOn: $audio.isOutputEnabled, right: "Output")
-				ProgressView(value: audio.normalizedOutputGainLeft)
-				ProgressView(value: audio.normalizedOutputGainRight)
+			SectionView {
+				Text("OUTPUT")
+					.font(.smallText)
+			} content: {
+				VStack(alignment: .trailing, spacing: 16) {
+					toggle(isOn: $audio.isOutputEnabled, left: "On")
+						.padding(.bottom, 8)
+					ProgressView(value: audio.normalizedOutputGainLeft)
+					ProgressView(value: audio.normalizedOutputGainRight)
+				}
+				.frame(width: min(120, width / 4))
+				.padding(.vertical, 6)
 			}
-			.frame(width: 120)
 
 			Spacer()
 		}
@@ -102,15 +113,15 @@ struct MainView: View {
 	func toggle(isOn: Binding<Bool>, left: String? = nil, right: String? = nil) -> some View {
 		HStack(spacing: 8) {
 			if let left {
-				Text(left.uppercased())
-					.foregroundColor(.gray)
+				Text(left)
+					.foregroundColor(.secondary)
 					.offset(y: 1)
 			}
 			Toggle(isOn: isOn) { }
 				.labelsHidden()
 			if let right {
-				Text(right.uppercased())
-					.foregroundColor(.gray)
+				Text(right)
+					.foregroundColor(.secondary)
 					.offset(y: 1)
 			}
 		}

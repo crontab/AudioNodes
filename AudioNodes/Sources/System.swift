@@ -47,6 +47,7 @@ final class System: Node {
 	}
 
 
+	/// Requests authorization for audio input on platforms where it's required, and initializes the `input` property.
 	func requestInputAuthorization() async -> Bool {
 		guard input == nil else { return true }
 
@@ -74,6 +75,7 @@ final class System: Node {
 	}
 
 
+	/// Creates a system I/O node.
 	init(isStereo: Bool) {
 		var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: Self.subtype(), componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
 		let comp = AudioComponentFindNext(nil, &desc)!
@@ -125,6 +127,9 @@ final class System: Node {
 	deinit {
 		stop()
 	}
+
+
+	static var version: String? { Bundle(for: System.self).infoDictionary?["CFBundleShortVersionString"] as? String }
 
 
 	// MARK: - Internal
