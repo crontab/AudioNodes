@@ -47,8 +47,8 @@ class Meter: Monitor {
 	}
 
 
-	override func willConnect$(with format: StreamFormat) {
-		super.willConnect$(with: format)
+	override func updateFormat$(_ format: StreamFormat) {
+		super.updateFormat$(format)
 		Assert(format == _format, 51060)
 	}
 

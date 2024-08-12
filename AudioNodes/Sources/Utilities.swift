@@ -99,8 +99,8 @@ extension AudioStreamBasicDescription {
 func FactorFromGain(_ gain: Float32) -> Float32 {
 	// The base formula is 10^(x / 20) where x ∈ -90..0dB. The value of -90dB is the 16-bit silence, i.e. value that's lower than 1 in 16-bit encoding. That's theoretically, but in practice instead of multiplying by 90/20 we do times 2. Sounds nicer. The below formula can lower the volume if `gain` ∈ 0..1, or amplify if it's greater than 1. In the negative space it does the same but also inverses the signal.
 	gain == 0 ? 0 :
-	gain < 0 ? -pow(10, (-gain - 1) * 2) :
-	pow(10, (gain - 1) * 2)
+		gain < 0 ? -pow(10, (-gain - 1) * 2) :
+			pow(10, (gain - 1) * 2)
 }
 
 

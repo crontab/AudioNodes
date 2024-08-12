@@ -162,13 +162,13 @@ final class Mixer: Node {
 	}
 
 
-	override func willConnect$(with format: StreamFormat) {
+	override func updateFormat$(_ format: StreamFormat) {
 		Assert(format.bufferFrameSize <= _scratchBuffer.capacity, 51040)
 		let prevFormat = format$
-		super.willConnect$(with: format)
+		super.updateFormat$(format)
 		if format != prevFormat {
 			for bus in buses {
-				bus.updateFormat$(with: format)
+				bus.updateFormat$(format)
 			}
 		}
 	}

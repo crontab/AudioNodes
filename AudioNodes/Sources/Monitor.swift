@@ -44,23 +44,11 @@ class Monitor: @unchecked Sendable {
 	}
 
 
-	func willConnect$(with format: StreamFormat) {
+	func updateFormat$(_ format: StreamFormat) {
 		DLOG("\(debugName).didConnect(\(format.sampleRate), \(format.bufferFrameSize), \(format.isStereo ? "stereo" : "mono"))")
 		if format != config$.format {
 			config$.format = format
 		}
-	}
-
-
-	func didDisconnect$() {
-		DLOG("\(debugName).didDisconnect()")
-		config$.format = nil
-	}
-
-
-	func updateFormat$(with format: StreamFormat) {
-		didDisconnect$()
-		willConnect$(with: format)
 	}
 
 

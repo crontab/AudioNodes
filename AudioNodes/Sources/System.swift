@@ -120,7 +120,7 @@ final class System: Node {
 		NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, SizeOf(callback)), 51004)
 
 		// Imitate connection since we know the format which will be propagated to the entire chain
-		willConnect$(with: systemFormat)
+		updateFormat$(systemFormat)
 	}
 
 
@@ -231,7 +231,7 @@ final class System: Node {
 			isEnabled = false
 
 			// Imitate connection to pass the stream format to monitors, in case Input acts only as a pusher, not a source; safe to call as this is a constructor
-			super.willConnect$(with: StreamFormat(sampleRate: descr.mSampleRate, bufferFrameSize: Self.maxFramesPerSlice, isStereo: isStereo))
+			super.updateFormat$(StreamFormat(sampleRate: descr.mSampleRate, bufferFrameSize: Self.maxFramesPerSlice, isStereo: isStereo))
 		}
 
 
@@ -241,7 +241,7 @@ final class System: Node {
 		}
 
 
-		override func willConnect$(with format: StreamFormat?) {
+		override func updateFormat$(_ format: StreamFormat?) {
 			// Input doesn't work as a source
 			Unrecoverable(51015)
 		}

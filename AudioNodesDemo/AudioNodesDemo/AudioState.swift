@@ -51,17 +51,17 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 	}
 
 
-	@Published var playerTimePosition: TimeInterval = 0 // 25 fps
+	@Published var playerTimePosition: TimeInterval = 0
 
 	@Published var normalizedOutputGainLeft: Float = 0
 	@Published var normalizedOutputGainRight: Float = 0
 
 
 	func player(_ player: Player, isAtFramePosition position: Int) {
-		let time = player.time
-		Task { @MainActor in
-			self.playerTimePosition = time
-		}
+//		let time = player.time
+//		Task { @MainActor in
+//			self.playerTimePosition = time
+//		}
 	}
 
 

@@ -119,9 +119,9 @@ class Player: Node {
 	}
 
 
-	override func willConnect$(with format: StreamFormat) {
+	override func updateFormat$(_ format: StreamFormat) {
 		Assert(format.sampleRate == file.sampleRate && format.isStereo == file.isStereo, 51050)
-		super.willConnect$(with: format)
+		super.updateFormat$(format)
 	}
 
 

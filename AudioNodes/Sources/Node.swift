@@ -77,7 +77,7 @@ class Node: @unchecked Sendable {
 	/// Connects a node that should provide source data. Each node can be connected to only one other node at a time, a run-time error occurs otherwise. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge. See also `smoothConnect()`.
 	func connect(_ input: Node) {
 		withAudioLock {
-			config$.format.map { input.willConnect$(with: $0) }
+			config$.format.map { input.updateFormat$($0) }
 			config$.input = input
 		}
 	}
@@ -85,7 +85,6 @@ class Node: @unchecked Sendable {
 	/// Disconnects input.
 	func disconnect() {
 		withAudioLock {
-			config$.input?.didDisconnect$()
 			config$.input = nil
 		}
 	}
@@ -113,7 +112,7 @@ class Node: @unchecked Sendable {
 	/// Connects a node that serves as an observer of audio data, i.e. a node whose `monitor(frameCount:buffers:)` method will be called with each cycle.
 	func connectMonitor(_ monitor: Monitor) {
 		withAudioLock {
-			config$.format.map { monitor.willConnect$(with: $0) }
+			config$.format.map { monitor.updateFormat$($0) }
 			config$.monitor = monitor
 		}
 	}
@@ -121,13 +120,9 @@ class Node: @unchecked Sendable {
 	/// Disconnects the monitor.
 	func disconnectMonitor() {
 		withAudioLock {
-			config$.monitor?.didDisconnect$()
 			config$.monitor = nil
 		}
 	}
-
-	/// Indicates whether there is an incoming connection to this node, i.e. if it's used either as input or monitor; read-only. Each node can be connected to only one other node at a time, a run-time error occurs otherwise.
-	private(set) var isConnected: Bool = false
 
 	/// Returns approximate duration of a rendering cycle; useful when waiting for some parameter to take effect.
 	var approximateCycleDuration: TimeInterval {
@@ -258,31 +253,14 @@ class Node: @unchecked Sendable {
 	// MARK: - Internal: Connection management
 
 	/// Called by the node requesting connection with this node, or otherwise when propagating a new format down the chain; overridable. The audio semaphore is in a locked state which means all methods and properties with the $ suffix can be used here.
-	func willConnect$(with format: StreamFormat) {
-		Assert(!isConnected, 51030)
+	func updateFormat$(_ format: StreamFormat) {
 		DLOG("\(debugName).didConnect(\(format.sampleRate), \(format.bufferFrameSize), \(format.isStereo ? "stereo" : "mono"))")
 		if format != config$.format {
 			// This is where a known format is propagated down the chain
-			config$.input?.updateFormat$(with: format)
-			config$.monitor?.updateFormat$(with: format)
+			config$.input?.updateFormat$(format)
+			config$.monitor?.updateFormat$(format)
 			config$.format = format
 		}
-		isConnected = true
-	}
-
-
-	/// Called by the node requesting disconnection from this node; overridable. The audio semaphore is in a locked state which means all methods and properties with the $ suffix can be used here.
-	func didDisconnect$() {
-		DLOG("\(debugName).didDisconnect()")
-		isConnected = false
-		config$.format = nil
-	}
-
-
-	// Called internally from the node that requests connection and if the format is known and different from the previous one
-	func updateFormat$(with format: StreamFormat) {
-		didDisconnect$()
-		willConnect$(with: format)
 	}
 
 

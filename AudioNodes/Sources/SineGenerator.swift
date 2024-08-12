@@ -28,8 +28,8 @@ final class SineGenerator: Node {
 	}
 
 
-	override func willConnect$(with format: StreamFormat) {
-		super.willConnect$(with: format)
+	override func updateFormat$(_ format: StreamFormat) {
+		super.updateFormat$(format)
 		_thetaInc = 2.0 * Double.pi / format.sampleRate
 	}
 
