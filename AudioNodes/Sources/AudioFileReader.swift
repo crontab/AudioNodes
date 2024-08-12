@@ -21,9 +21,10 @@ class AudioFileReader {
 	let url: URL
 	let sampleRate: Double
 	let isStereo: Bool
-	nonisolated let fileRef: ExtAudioFileRef
 	let lengthFactor: Double
 	let estimatedTotalFrames: Int
+
+	fileprivate let fileRef: ExtAudioFileRef
 
 
 	nonisolated
@@ -143,12 +144,6 @@ final class AsyncAudioFileReader: AudioFileReader {
 			}
 			list.insert(newValue, at: 0)
 		}
-
-		mutating func evictTail() -> Block? {
-			semaphore.wait()
-			defer { semaphore.signal() }
-			return list.count >= capacity ? list.removeLast() : nil
-		}
 	}
 
 
@@ -208,7 +203,7 @@ final class AsyncAudioFileReader: AudioFileReader {
 
 
 	override init?(url: URL, sampleRate: Double, isStereo: Bool) {
-		blockSize = Int(sampleRate) // * 2
+		blockSize = Int(sampleRate) // 1s per block
 		super.init(url: url, sampleRate: sampleRate, isStereo: isStereo)
 	}
 
@@ -221,9 +216,7 @@ final class AsyncAudioFileReader: AudioFileReader {
 				break
 			}
 			if cachedBlocks.blockFor(offset: blockOffset) == nil {
-				// Try to reuse a block evicted from the cache tail, otherwise allocate a new one
-				// TODO: potentially this is wrong as the block being evicted may be in use by the audio rendering thread, though very unlikely to happen
-				let block = cachedBlocks.evictTail() ?? Block(isStereo: isStereo, offset: blockOffset, capacity: blockSize)
+				let block = Block(isStereo: isStereo, offset: blockOffset, capacity: blockSize)
 				if block.read(from: fileRef, offset: blockOffset, lengthFactor: lengthFactor) {
 					if block.count < blockSize {
 						exactTotalFrames = block.offset + block.count
@@ -231,7 +224,7 @@ final class AsyncAudioFileReader: AudioFileReader {
 					cachedBlocks.setBlockFor(offset: blockOffset, block)
 					if block.isEmpty {
 						// Empty block is possible if the total number of samples is a multiple of the block size; we should keep it so that that caller triggers an end of file
-						// TODO: allocate a special empty block wih t0 memory overhead?
+						// TODO: allocate a special empty block with 0 memory overhead?
 #if AUDIO_FILE_LOGGING
 						DLOG("AsyncAudioFile: empty block")
 #endif

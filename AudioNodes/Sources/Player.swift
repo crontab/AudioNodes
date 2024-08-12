@@ -17,11 +17,31 @@ protocol PlayerDelegate: AnyObject {
 
 class Player: Node {
 
-	init?(url: URL, sampleRate: Double, isStereo: Bool) {
+	@AudioActor
+	var time: TimeInterval {
+		get {
+			Double(prevKnownPlayhead) / file.sampleRate
+		}
+		set {
+			withAudioLock {
+				playhead$ = Int(newValue * file.sampleRate)
+			}
+		}
+	}
+
+
+	@AudioActor
+	var duration: TimeInterval {
+		Double(file.estimatedTotalFrames) / file.sampleRate
+	}
+
+
+	init?(url: URL, sampleRate: Double, isStereo: Bool, delegate: PlayerDelegate? = nil) {
 		guard let file = AsyncAudioFileReader(url: url, sampleRate: sampleRate, isStereo: isStereo) else {
 			return nil
 		}
 		self.file = file
+		self.delegate = delegate
 		super.init(isEnabled: false)
 		prepopulateCache(position: 0)
 	}
@@ -65,11 +85,32 @@ class Player: Node {
 	}
 
 
-	func _didEndPlaying(at playhead: Int, frameCount: Int, buffers: AudioBufferListPtr) {
+	@AudioActor private var prevKnownPlayhead: Int = 0
+	@AudioActor private var prevDelegatePlayhead: Int = 0
+
+	func _didPlaySome(until playhead: Int) {
+		let file = file
+		let delegate = delegate
+		Task.detached { @AudioActor in
+			self.prevKnownPlayhead = playhead
+			guard let delegate else { return }
+			let delta = Int(file.sampleRate / 25) // 25 fps update rate
+			guard abs(playhead - self.prevDelegatePlayhead) > delta else { return }
+			self.prevDelegatePlayhead = playhead
+			delegate.player(self, isAtFramePosition: playhead)
+		}
 	}
 
 
-	func _didPlaySome(until playhead: Int) {
+	func _didEndPlaying(at playhead: Int, frameCount: Int, buffers: AudioBufferListPtr) {
+		let file = file
+		let delegate = delegate
+		Task.detached { @AudioActor in
+			self.prevKnownPlayhead = file.estimatedTotalFrames
+			self.prevDelegatePlayhead = file.estimatedTotalFrames
+			guard let delegate else { return }
+			delegate.playerDidEndPlaying(self)
+		}
 	}
 
 
@@ -100,6 +141,8 @@ class Player: Node {
 
 
 	private let file: AsyncAudioFileReader
+	private weak var delegate: PlayerDelegate?
+
 	private var playhead$: Int?
 	private var _playhead: Int = 0
 }

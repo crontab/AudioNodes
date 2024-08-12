@@ -11,10 +11,16 @@ import Foundation
 private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "m4a")!
 
 
-class AudioState: ObservableObject {
+@MainActor
+class AudioState: ObservableObject, PlayerDelegate {
 
 	@Published var isRunning: Bool = false {
 		didSet {
+			guard isRunning != oldValue else { return }
+			if !isInitialized {
+				isInitialized = true
+				root.buses[0].connect(player)
+			}
 			if isRunning {
 				Task {
 					system.start()
@@ -38,12 +44,26 @@ class AudioState: ObservableObject {
 	}
 
 
-	init() {
-		root.buses[0].connect(player)
+	@Published var playerTimePosition: TimeInterval = 0
+
+
+	func player(_ player: Player, isAtFramePosition position: Int) {
+		let time = player.time
+		Task.detached { @MainActor in
+			self.playerTimePosition = time
+		}
 	}
 
 
+	func playerDidEndPlaying(_ player: Player) {
+		Task.detached { @MainActor in
+			self.isPlaying = false
+		}
+	}
+
+
+	private var isInitialized: Bool = false
 	private lazy var system = System(isStereo: true)
 	private lazy var root: Mixer = .init(busCount: 1)
-	private lazy var player = Player(url: fileUrl, sampleRate: system.systemFormat.sampleRate, isStereo: system.systemFormat.isStereo)!
+	private lazy var player = Player(url: fileUrl, sampleRate: system.systemFormat.sampleRate, isStereo: system.systemFormat.isStereo, delegate: self)!
 }

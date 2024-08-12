@@ -11,6 +11,7 @@ import Accelerate
 
 // MARK: - VolumeControl
 
+/// Audio node/filter that can control the gain. Supports timed transitions. It's a standalone component that's also used internally by the Mixer node.
 final class VolumeControl: Node {
 
 	let busNumber: Int? // for debug diagnostics only
@@ -23,7 +24,7 @@ final class VolumeControl: Node {
 
 	override var debugName: String { super.debugName + (busNumber.map { "[\($0)]" } ?? "") }
 
-
+	/// Sets the gain, optionally with timed transition. The normal range for the value is 0...1 but values outside of it are also allowed. Any timed request overrides a previous one, but the transition is always smooth.
 	func setVolume(_ volume: Float, duration: TimeInterval = 0) {
 		withAudioLock {
 			let frames = format$.map { Int($0.sampleRate * duration) } ?? 0
@@ -112,13 +113,16 @@ final class VolumeControl: Node {
 
 // MARK: - Mixer
 
+/// Mixer node with a predetermined number of buses; each bus is a VolumeControl object.
 final class Mixer: Node {
 
 	typealias Bus = VolumeControl
 
+	/// Immutable array of buses; each element is a VolumeControl node.
 	let buses: [Bus] // not atomic because it's immutable
 
 
+	/// Creates a Mixer object with a given number of buses; up to 128 is allowed.
 	init(busCount: Int) {
 		Assert(busCount > 0 && busCount <= 128, 51041)
 		buses = (0..<busCount).map { Bus(busNumber: $0) }

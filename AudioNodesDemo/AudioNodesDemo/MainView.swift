@@ -75,6 +75,9 @@ struct MainView: View {
 				}
 				.buttonStyle(.bordered)
 			}
+
+			Text(String(format: "%.3fs", audio.playerTimePosition))
+				.font(.smallText)
 		}
 	}
 }
