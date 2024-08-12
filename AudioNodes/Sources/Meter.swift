@@ -10,7 +10,7 @@ import Accelerate
 
 
 @AudioActor
-protocol MeterDelegate: AnyObject {
+protocol MeterDelegate: AnyObject, Sendable {
 	func meterDidUpdateGains(_ meter: Meter, left: Float, right: Float)
 }
 

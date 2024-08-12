@@ -9,7 +9,7 @@ import Foundation
 
 
 @AudioActor
-protocol PlayerDelegate: AnyObject {
+protocol PlayerDelegate: AnyObject, Sendable {
 	func player(_ player: Player, isAtFramePosition position: Int)
 	func playerDidEndPlaying(_ player: Player)
 }
@@ -18,8 +18,10 @@ protocol PlayerDelegate: AnyObject {
 class Player: Node {
 
 	var time: TimeInterval {
-		@AudioActor get {
-			Double(lastKnownPlayhead) / file.sampleRate
+		get {
+			withAudioLock { 
+				Double(lastKnownPlayhead$) / file.sampleRate
+			}
 		}
 		set {
 			withAudioLock {
@@ -29,15 +31,15 @@ class Player: Node {
 	}
 
 
-	@AudioActor
 	var duration: TimeInterval {
 		Double(file.estimatedTotalFrames) / file.sampleRate
 	}
 
 
-	@AudioActor
 	var isAtEnd: Bool {
-		lastKnownPlayhead == file.estimatedTotalFrames // always correct because prevKnownPlayhead is assigned the same value in _didEndPlaying()
+		withAudioLock { 
+			lastKnownPlayhead$ == file.estimatedTotalFrames // always correct because prevKnownPlayhead is assigned the same value in _didEndPlaying()
+		}
 	}
 
 
@@ -90,16 +92,15 @@ class Player: Node {
 	}
 
 
-	@AudioActor private var lastKnownPlayhead: Int = 0
 	@AudioActor private var prevDelegatePlayhead: Int = 0
 
 	private func _didPlaySome(until playhead: Int) {
-		let file = file
-		let delegate = delegate
+		withAudioLock {
+			lastKnownPlayhead$ = playhead
+		}
 		Task.detached { @AudioActor in
-			self.lastKnownPlayhead = playhead
-			guard let delegate else { return }
-			let delta = Int(file.sampleRate / 25) // 25 fps update rate
+			guard let delegate = self.delegate else { return }
+			let delta = Int(self.file.sampleRate / 25) // 25 fps update rate
 			guard abs(playhead - self.prevDelegatePlayhead) > delta else { return }
 			self.prevDelegatePlayhead = playhead
 			delegate.player(self, isAtFramePosition: playhead)
@@ -109,12 +110,12 @@ class Player: Node {
 
 	private func _didEndPlaying(at playhead: Int, frameCount: Int, buffers: AudioBufferListPtr) {
 		isEnabled = false
-		let file = file
-		let delegate = delegate
+		withAudioLock {
+			lastKnownPlayhead$ = file.estimatedTotalFrames
+		}
 		Task.detached { @AudioActor in
-			self.lastKnownPlayhead = file.estimatedTotalFrames
-			self.prevDelegatePlayhead = file.estimatedTotalFrames
-			guard let delegate else { return }
+			self.prevDelegatePlayhead = self.file.estimatedTotalFrames
+			guard let delegate = self.delegate else { return }
 			delegate.playerDidEndPlaying(self)
 		}
 	}
@@ -149,6 +150,7 @@ class Player: Node {
 	private let file: AsyncAudioFileReader
 	private weak var delegate: PlayerDelegate?
 
+	private var lastKnownPlayhead$: Int = 0
 	private var playhead$: Int?
 	private var _playhead: Int = 0
 }

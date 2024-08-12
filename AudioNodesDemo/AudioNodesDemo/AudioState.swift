@@ -12,7 +12,7 @@ private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "
 
 
 @MainActor
-class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
+final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 
 	@Published var isRunning: Bool = false {
 		didSet {
@@ -43,12 +43,10 @@ class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 
 	@Published var isPlaying: Bool = false {
 		didSet {
-			Task {
-				if isPlaying, await player.isAtEnd {
-					player.time = 0
-				}
-				player.isEnabled = isPlaying
+			if isPlaying, player.isAtEnd {
+				player.time = 0
 			}
+			player.isEnabled = isPlaying
 		}
 	}
 
@@ -61,14 +59,14 @@ class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 
 	func player(_ player: Player, isAtFramePosition position: Int) {
 		let time = player.time
-		Task.detached { @MainActor in
+		Task { @MainActor in
 			self.playerTimePosition = time
 		}
 	}
 
 
 	func playerDidEndPlaying(_ player: Player) {
-		Task.detached { @MainActor in
+		Task { @MainActor in
 			self.isPlaying = false
 		}
 	}

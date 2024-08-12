@@ -43,7 +43,7 @@ struct StreamFormat: Equatable {
 // MARK: - Node
 
 /// Generic abstract audio node; all other node types are subclasses of `Node`. All public methods are thread-safe.
-class Node {
+class Node: @unchecked Sendable {
 
 	init(isEnabled: Bool = true) {
 		_prevEnabled = isEnabled
