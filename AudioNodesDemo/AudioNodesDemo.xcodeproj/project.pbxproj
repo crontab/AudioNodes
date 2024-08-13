@@ -45,6 +45,8 @@
 		364310092C69F26D000CF9F3 /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
 		3643100D2C69F300000CF9F3 /* Meter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meter.swift; sourceTree = "<group>"; };
 		364310112C6A09C1000CF9F3 /* SectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionView.swift; sourceTree = "<group>"; };
+		369CCACB2C6B52BC002F462B /* deux.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = deux.m4a; sourceTree = "<group>"; };
+		369CCACC2C6B52BC002F462B /* trois.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = trois.m4a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +96,8 @@
 			isa = PBXGroup;
 			children = (
 				363478C42C692C19004BB3B8 /* eyes-demo.m4a */,
+				369CCACB2C6B52BC002F462B /* deux.m4a */,
+				369CCACC2C6B52BC002F462B /* trois.m4a */,
 			);
 			path = Resources;
 			sourceTree = "<group>";

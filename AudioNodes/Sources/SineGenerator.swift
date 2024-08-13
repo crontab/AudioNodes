@@ -10,9 +10,9 @@ import Foundation
 
 final class SineGenerator: Node {
 
-	init(freq: Float32) {
+	init(freq: Float32, isEnabled: Bool = false) {
 		freq$ = freq
-		super.init()
+		super.init(isEnabled: isEnabled)
 	}
 
 

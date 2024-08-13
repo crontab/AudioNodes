@@ -42,7 +42,7 @@ struct StreamFormat: Equatable {
 
 // MARK: - Node
 
-/// Generic abstract audio node; all other node types are subclasses of `Node`. All public methods are thread-safe.
+/// Generic abstract audio node; all other generator and filter types are subclasses of `Node`. All public methods are thread-safe.
 class Node: @unchecked Sendable {
 
 	init(isEnabled: Bool = true) {
@@ -74,7 +74,7 @@ class Node: @unchecked Sendable {
 		withAudioLock { config$.format }
 	}
 
-	/// Connects a node that should provide source data. Each node can be connected to only one other node at a time, a run-time error occurs otherwise. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge. See also `smoothConnect()`.
+	/// Connects a node that should provide source data. Each node should be connected to only one other node at a time. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge. See also `smoothConnect()`.
 	func connect(_ input: Node) {
 		withAudioLock {
 			config$.format.map { input.updateFormat$($0) }

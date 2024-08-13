@@ -9,13 +9,15 @@ import Foundation
 import AVFoundation
 import AudioToolbox
 
+func resUrl(_ name: String) -> URL { URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appending(path: "AudioNodesDemo/AudioNodesDemo/Resources/").appendingPathComponent(name) }
+
 
 @AudioActor
 extension System {
 
 	func testSine() async {
 		print("--- ", #function)
-		let sine = SineGenerator(freq: 440)
+		let sine = SineGenerator(freq: 440, isEnabled: true)
 		await smoothConnect(sine)
 		await Sleep(1)
 		sine.isEnabled = false
@@ -29,8 +31,8 @@ extension System {
 
 	func testMixer() async {
 		print("--- ", #function)
-		let sine1 = SineGenerator(freq: 440)
-		let sine2 = SineGenerator(freq: 480)
+		let sine1 = SineGenerator(freq: 440, isEnabled: true)
+		let sine2 = SineGenerator(freq: 480, isEnabled: true)
 		let mixer = Mixer(busCount: 2)
 		mixer.buses[0].connect(sine1)
 		mixer.buses[1].connect(sine2)
@@ -46,10 +48,26 @@ extension System {
 
 	func testFile() async {
 		print("--- ", #function)
-		let url = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appending(path: "AudioNodesDemo/AudioNodesDemo/Resources/eyes-demo.m4a")
-		let player = Player(url: url, sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)!
+		let player = Player(url: resUrl("eyes-demo.m4a"), sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)!
 		connect(player)
+		player.isEnabled = true
 		await Sleep(5)
+		await smoothDisconnect()
+	}
+
+	func testQueuePlayer() async {
+		let player = QueuePlayer(sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)
+		["deux.m4a", "trois.m4a"].forEach {
+			precondition(player.addFile(url: resUrl($0)))
+		}
+		connect(player)
+		player.isEnabled = true
+		await Sleep(2)
+		player.time = 0.15
+		player.isEnabled = true
+		_ = player.addFile(url: resUrl("eyes-demo.m4a"))
+		await Sleep(5)
+		print(player.isAtEnd)
 		await smoothDisconnect()
 	}
 }
@@ -64,7 +82,8 @@ struct CLI {
 		system.start()
 //		await system.testSine()
 //		await system.testMixer()
-		await system.testFile()
+//		await system.testFile()
+		await system.testQueuePlayer()
 	}
 
 
