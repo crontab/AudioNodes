@@ -20,14 +20,36 @@ protocol PlayerDelegate: AnyObject, Sendable {
 }
 
 
-// MARK: - Player
+// MARK: - Player protocol
+
+/// Protocol that defines the most basic player interface. Passed as an argument in `PlayerDelegate` methods; also FilePlayer, QueuePlayer and AudioData conform to this protocol.
+protocol Player: Sendable {
+	var time: TimeInterval { get }
+	var duration: TimeInterval { get }
+	var isAtEnd: Bool { get }
+	var delegate: PlayerDelegate? { get }
+
+	func prepareRead() // used in multithreaded runs where config should be copied safely
+	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int
+}
 
 
-/// Abstract class that serves as a base for FilePlayer and QueuePlayer; also passed as an argument in `PlayerDelegate` methods.
-class Player: Node {
-	var time: TimeInterval { Abstract() }
-	var duration: TimeInterval { Abstract() }
-	var isAtEnd: Bool { Abstract() }
+extension Player {
+
+	func didPlaySome() {
+		guard let delegate else { return }
+		Task.detached { @AudioActor in
+			delegate.player(self, isAt: time)
+		}
+	}
+
+	func didEndPlaying() {
+		guard let delegate else { return }
+		Task.detached { @AudioActor in
+			delegate.player(self, isAt: duration)
+			delegate.playerDidEndPlaying(self)
+		}
+	}
 }
 
 
@@ -38,19 +60,19 @@ class Player: Node {
 /// You normally use the `isEnable` property to start and stop the playback. When disabled, this node returns silence to the upstream nodes.
 /// Once end of file is reached, `isEnable` flips to `false` automatically. You can restart the playback by setting `time` to `0` and enabling the node again.
 /// You can pass a delegate to the constructor of `FilePlayer`; your delegate should conform to Sendable and the overridden methods should assume being executed on `AudioActor`.
-class FilePlayer: Player {
+class FilePlayer: Node, Player {
 
 	/// Get or set the current time within the file. The granularity is approximately 10ms.
-	override var time: TimeInterval {
+	var time: TimeInterval {
 		get { withAudioLock { time$ } }
-		set { withAudioLock { setTime$(newValue) } }
+		set { withAudioLock { time$ = newValue } }
 	}
 
 	/// Returns the total duration of the audio file. If the system sampling rate is the same as the file's own then the value is highly accurate; however if it's not then this value may be slightly off due to floating point arithmetic quirks. Most of the time the inaccuracy may be ignored in your code.
-	override var duration: TimeInterval { duration$ } // no need for a lock
+	var duration: TimeInterval { duration$ } // no need for a lock
 
 	/// Indicates whether end of file was reached while playing the file.
-	override var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
+	var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
 
 	func setAtEnd() { withAudioLock { playhead$ = file.estimatedTotalFrames } }
 
@@ -70,12 +92,20 @@ class FilePlayer: Player {
 	// Internal
 
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		_ = _continueRender(frameCount: frameCount, buffers: buffers, offset: 0)
+		read(frameCount: frameCount, buffers: buffers, offset: 0)
 		return noErr
 	}
 
 
-	fileprivate final func _continueRender(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
+	func prepareRead() { // Player delegate
+		withAudioLock {
+			_willRender$()
+		}
+	}
+
+
+	@discardableResult
+	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
 		var framesCopied = offset
 		var reachedEnd = false
 
@@ -99,43 +129,21 @@ class FilePlayer: Player {
 		}
 
 		if reachedEnd, _isEnabled { // Check enabled status to avoid didEndPlaying() being called twice
-			_didEndPlaying(at: _playhead)
+			isEnabled = false
+			withAudioLock {
+				lastKnownPlayhead$ = file.estimatedTotalFrames
+			}
+			didEndPlaying()
 		}
 		else {
 			prepopulateCacheAsync(position: _playhead)
-			_didPlaySome(until: _playhead)
+			withAudioLock {
+				lastKnownPlayhead$ = _playhead
+			}
+			didPlaySome()
 		}
 
-		return framesCopied
-	}
-
-
-	private func _didPlaySome(until playhead: Int) {
-		withAudioLock {
-			// TODO: throttle?
-			// let delta = Int(self.file.sampleRate / 25) // 25 fps update rate
-			lastKnownPlayhead$ = playhead
-		}
-		guard let delegate else { return }
-		let time = Double(playhead) / file.sampleRate
-		Task.detached { @AudioActor in
-			delegate.player(self, isAt: time)
-		}
-	}
-
-
-	private func _didEndPlaying(at playhead: Int) {
-		isEnabled = false
-		let total = self.file.estimatedTotalFrames
-		withAudioLock {
-			lastKnownPlayhead$ = total
-		}
-		guard let delegate else { return }
-		let time = Double(total) / file.sampleRate
-		Task.detached { @AudioActor in
-			delegate.player(self, isAt: time)
-			delegate.playerDidEndPlaying(self)
-		}
+		return framesCopied - offset
 	}
 
 
@@ -166,15 +174,18 @@ class FilePlayer: Player {
 
 
 	private let file: AsyncAudioFileReader
-	private weak var delegate: PlayerDelegate?
+	weak var delegate: PlayerDelegate?
 
 	private var lastKnownPlayhead$: Int = 0
 	private var playhead$: Int?
 	private var _playhead: Int = 0
 
 	// Internal methods exposed mainly for QueuePlayer to avoid recursive semaphore locks:
-	fileprivate var time$: TimeInterval { Double(lastKnownPlayhead$) / file.sampleRate }
-	fileprivate func setTime$(_ t: TimeInterval) { playhead$ = Int(t * file.sampleRate).clamped(to: 0...file.estimatedTotalFrames) }
+	fileprivate var time$: TimeInterval {
+		get { Double(lastKnownPlayhead$) / file.sampleRate }
+		set { playhead$ = Int(newValue * file.sampleRate).clamped(to: 0...file.estimatedTotalFrames) }
+	}
+
 	fileprivate var duration$: TimeInterval { Double(file.estimatedTotalFrames) / file.sampleRate }
 }
 
@@ -182,19 +193,19 @@ class FilePlayer: Player {
 // MARK: - QueuePlayer
 
 /// Meta-player that provides gapless playback of multiple files. This node treats a series of files as a whole, it supports time positioning and `duration` within the whole. Think of Pink Floyd's *Wish You Were Here*, you absolutely *should* provide gapless playback for the entire album. Questions?
-class QueuePlayer: Player {
+class QueuePlayer: Node, Player {
 
 	/// Gets and sets the time position within the entire series of audio files.
-	override var time: TimeInterval {
+	var time: TimeInterval {
 		get { withAudioLock { time$ } }
-		set { withAudioLock { setTime$(newValue) } }
+		set { withAudioLock { time$ = newValue } }
 	}
 
 	/// Returns the total duration of the entire series of audio files.
-	override var duration: TimeInterval { withAudioLock { items$.map { $0.duration$ }.reduce(0, +) } }
+	var duration: TimeInterval { withAudioLock { items$.map { $0.duration$ }.reduce(0, +) } }
 
 	/// Indicates whether the player has reached the end of the series of files.
-	override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
+	var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
 
 
 	/// Adds a file player to the queue. Can be done at any time during playback or not. Queue player creates FilePlayer objects internally, meaning that `url` can only point to a local file. Returns `false` if there was an error opening the audio file.
@@ -221,7 +232,21 @@ class QueuePlayer: Player {
 	// Internal
 
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		var framesWritten = 0
+		read(frameCount: frameCount, buffers: buffers, offset: 0)
+		return noErr
+	}
+
+
+	func prepareRead() { // Player delegate
+		withAudioLock {
+			_willRender$()
+		}
+	}
+
+
+	@discardableResult
+	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
+		var framesWritten = offset
 
 		while true {
 			if !_items.indices.contains(_currentIndex) {
@@ -230,8 +255,8 @@ class QueuePlayer: Player {
 			}
 			let player = _items[_currentIndex]
 			// Note that we bypass the usual rendering call _internalRender(). This is a bit dangerous in case changes are made in Node or FilePlayer. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
-			player._willRender$()
-			framesWritten += player._continueRender(frameCount: frameCount, buffers: buffers, offset: framesWritten)
+			player.prepareRead()
+			framesWritten += player.read(frameCount: frameCount, buffers: buffers, offset: framesWritten)
 			if framesWritten >= frameCount {
 				break
 			}
@@ -239,36 +264,18 @@ class QueuePlayer: Player {
 		}
 
 		if framesWritten < frameCount, _isEnabled {
-			_didEndPlaying()
+			isEnabled = false
+			didEndPlaying()
 		}
 		else {
-			_didPlaySome()
+			didPlaySome()
 		}
 
 		withAudioLock {
 			lastKnownIndex$ = _currentIndex
 		}
-		return noErr
-	}
 
-
-	private func _didPlaySome() {
-		guard let delegate else { return }
-		let time = time
-		Task.detached { @AudioActor in
-			delegate.player(self, isAt: time)
-		}
-	}
-
-
-	private func _didEndPlaying() {
-		isEnabled = false
-		guard let delegate else { return }
-		let time = duration
-		Task.detached { @AudioActor in
-			delegate.player(self, isAt: time)
-			delegate.playerDidEndPlaying(self)
-		}
+		return framesWritten - offset
 	}
 
 
@@ -285,28 +292,28 @@ class QueuePlayer: Player {
 	// Private
 
 	private var time$: TimeInterval {
-		items$[..<lastKnownIndex$].map { $0.duration$ }.reduce(0, +)
-			+ (items$.indices.contains(lastKnownIndex$) ? items$[lastKnownIndex$].time$ : 0)
-	}
-
-
-	private func setTime$(_ newValue: TimeInterval) {
-		var time = newValue
-		for i in items$.indices {
-			let item = items$[i]
-			if time == 0 {
-				// succeeding item, reset to 0
-				item.setTime$(0)
-			}
-			else if time >= item.duration$ {
-				// preceding item, do nothing
-				time -= item.duration$
-			}
-			else {
-				// an item that should become current
-				currentIndex$ = i
-				item.setTime$(time)
-				time = 0
+		get {
+			items$[..<lastKnownIndex$].map { $0.duration$ }.reduce(0, +)
+				+ (items$.indices.contains(lastKnownIndex$) ? items$[lastKnownIndex$].time$ : 0)
+		}
+		set {
+			var time = newValue
+			for i in items$.indices {
+				let item = items$[i]
+				if time == 0 {
+					// succeeding item, reset to 0
+					item.time$ = 0
+				}
+				else if time >= item.duration$ {
+					// preceding item, do nothing
+					time -= item.duration$
+				}
+				else {
+					// an item that should become current
+					currentIndex$ = i
+					item.time$ = time
+					time = 0
+				}
 			}
 		}
 	}
@@ -314,7 +321,7 @@ class QueuePlayer: Player {
 
 	private let sampleRate: Double
 	private let isStereo: Bool
-	private weak var delegate: PlayerDelegate?
+	weak var delegate: PlayerDelegate?
 
 	private var items$: [FilePlayer] = []
 	private var _items: [FilePlayer] = []

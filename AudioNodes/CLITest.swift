@@ -90,6 +90,34 @@ extension System {
 		await Sleep(3)
 		await smoothDisconnect()
 	}
+
+
+	@AudioFileActor
+	func testMemoryPlayer() async {
+		print("--- ", #function)
+		
+		let data = AudioData(durationSeconds: 10, sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)
+		let file = AudioFileReader(url: resUrl("eyes-demo.m4a"), sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)!
+		let safeBuffer = SafeAudioBufferList(isStereo: systemFormat.isStereo, capacity: 8192)
+		let buffers = safeBuffer.buffers
+		let frameCount = buffers[0].sampleCount
+
+		while true {
+			var numRead: UInt32 = 0
+			let status = file.readSync(frameCount: frameCount, buffers: buffers, numRead: &numRead)
+			if status != noErr || numRead == 0 {
+				break
+			}
+			data.write(frameCount: Int(numRead), buffers: buffers, offset: 0)
+		}
+
+		let progress = PlayerProgress()
+		let player = MemoryPlayer(data: data, isEnabled: true, delegate: progress)
+		connect(player)
+
+		await Sleep(10)
+		await smoothDisconnect()
+	}
 }
 
 
@@ -103,7 +131,8 @@ struct CLI {
 //		await system.testSine()
 //		await system.testMixer()
 //		await system.testFile()
-		await system.testQueuePlayer()
+//		await system.testQueuePlayer()
+		await system.testMemoryPlayer()
 	}
 
 

@@ -18,13 +18,19 @@ class Monitor: @unchecked Sendable {
 		Abstract()
 	}
 
-	/// Name of the node for debug printing
-	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
-
 
 	init(isEnabled: Bool = true) {
 		_config = .init(enabled: isEnabled)
 		config$ = .init(enabled: isEnabled)
+	}
+
+
+	/// Name of the node for debug printing
+	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
+
+
+	deinit {
+		DLOG("deinit \(debugName)")
 	}
 
 
