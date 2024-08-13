@@ -23,7 +23,7 @@ class AudioData: @unchecked Sendable, Player {
 	init(durationSeconds: Int, sampleRate: Double, isStereo: Bool) {
 		Assert(durationSeconds > 0 && durationSeconds <= 60, 51070)
 		self.sampleRate = sampleRate
-		let chunkCapacity = Int(ceil(sampleRate)) * durationSeconds
+		let chunkCapacity = Int(ceil(sampleRate))
 		chunks = (0..<durationSeconds).map { _ in
 			SafeAudioBufferList(isStereo: isStereo, capacity: chunkCapacity)
 		}
@@ -111,8 +111,8 @@ class AudioData: @unchecked Sendable, Player {
 	}
 
 	private func withWriteLock<T>(execute: () -> T) -> T {
-		readSem.wait()
-		defer { readSem.signal() }
+		writeSem.wait()
+		defer { writeSem.signal() }
 		return execute()
 	}
 }
@@ -156,10 +156,10 @@ class MemoryPlayer: Node, Player {
 		if result < frameCount {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: result)
 			isEnabled = false
-			didEndPlaying()
+			didEndPlayingAsync()
 		}
 		else {
-			didPlaySome()
+			didPlaySomeAsync()
 		}
 		return result
 	}

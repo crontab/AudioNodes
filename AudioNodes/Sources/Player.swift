@@ -36,14 +36,14 @@ protocol Player: Sendable {
 
 extension Player {
 
-	func didPlaySome() {
+	func didPlaySomeAsync() {
 		guard let delegate else { return }
 		Task.detached { @AudioActor in
 			delegate.player(self, isAt: time)
 		}
 	}
 
-	func didEndPlaying() {
+	func didEndPlayingAsync() {
 		guard let delegate else { return }
 		Task.detached { @AudioActor in
 			delegate.player(self, isAt: duration)
@@ -133,14 +133,14 @@ class FilePlayer: Node, Player {
 			withAudioLock {
 				lastKnownPlayhead$ = file.estimatedTotalFrames
 			}
-			didEndPlaying()
+			didEndPlayingAsync()
 		}
 		else {
 			prepopulateCacheAsync(position: _playhead)
 			withAudioLock {
 				lastKnownPlayhead$ = _playhead
 			}
-			didPlaySome()
+			didPlaySomeAsync()
 		}
 
 		return framesCopied - offset
@@ -265,10 +265,10 @@ class QueuePlayer: Node, Player {
 
 		if framesWritten < frameCount, _isEnabled {
 			isEnabled = false
-			didEndPlaying()
+			didEndPlayingAsync()
 		}
 		else {
-			didPlaySome()
+			didPlaySomeAsync()
 		}
 
 		withAudioLock {

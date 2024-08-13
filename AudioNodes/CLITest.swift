@@ -96,7 +96,7 @@ extension System {
 	func testMemoryPlayer() async {
 		print("--- ", #function)
 		
-		let data = AudioData(durationSeconds: 10, sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)
+		let data = AudioData(durationSeconds: 2, sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)
 		let file = AudioFileReader(url: resUrl("eyes-demo.m4a"), sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)!
 		let safeBuffer = SafeAudioBufferList(isStereo: systemFormat.isStereo, capacity: 8192)
 		let buffers = safeBuffer.buffers
@@ -115,7 +115,7 @@ extension System {
 		let player = MemoryPlayer(data: data, isEnabled: true, delegate: progress)
 		connect(player)
 
-		await Sleep(10)
+		await Sleep(3)
 		await smoothDisconnect()
 	}
 }
