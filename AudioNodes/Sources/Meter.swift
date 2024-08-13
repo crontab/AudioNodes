@@ -1,6 +1,6 @@
 //
 //  Meter.swift
-//  AudioNodesDemo
+//  AudioNodes
 //
 //  Created by Hovik Melikyan on 12.08.24.
 //
@@ -9,24 +9,30 @@ import Foundation
 import Accelerate
 
 
+/// Audio meter feedback delegate.
 @AudioActor
 protocol MeterDelegate: AnyObject, Sendable {
+	/// Delivers RMS level measurements. The range is -90 to 0 dB; the update frequency is roughly 25 times per second.
 	func meterDidUpdateGains(_ meter: Meter, left: Float, right: Float)
 }
 
 
 private let MIN_LEVEL_DB: Sample = -90
-private let BINS_PER_SEC: Float = 22 // 1536 frames for 44.1kHz/512, or 2048 for 48kHz/1024
+private let BINS_PER_SEC: Float = 25 // update frequency is 25 times per second, or 40ms
 
 
+/// An observer node that can measure RMS levels; suitable for UI gauges. The values are returned via the `MeterDelegate` method `meterDidUpdateGains`.
 class Meter: Monitor {
 
+	/// Creates a meter node; the stream format should be known at the time of creation. You can obtain the format from `System`'s `.systemFormat` property.
 	init(format: StreamFormat, delegate: MeterDelegate) {
 		self.delegate = delegate
 		_format = format
 		_binFrames = max(format.bufferFrameSize, (Int(format.sampleRate / Double(BINS_PER_SEC)) / format.bufferFrameSize) * format.bufferFrameSize)
 	}
 
+
+	// Internal
 
 	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		for i in 0..<min(2, buffers.count) {
@@ -53,7 +59,7 @@ class Meter: Monitor {
 	}
 
 
-	open func _didUpdatePeaks(left: Sample, right: Sample) {
+	func _didUpdatePeaks(left: Sample, right: Sample) {
 		guard let delegate else { return }
 		Task.detached { @AudioActor in
 			delegate.meterDidUpdateGains(self, left: left, right: right)

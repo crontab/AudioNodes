@@ -12,6 +12,7 @@ import AudioToolbox
 
 // MARK: - System
 
+/// System audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using `System`'s `input` node. This node dictates the audio stream format on the entire graph.
 final class System: Node {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.

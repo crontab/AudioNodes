@@ -24,6 +24,7 @@
 		3643100A2C69F26D000CF9F3 /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310092C69F26D000CF9F3 /* Monitor.swift */; };
 		3643100E2C69F300000CF9F3 /* Meter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3643100D2C69F300000CF9F3 /* Meter.swift */; };
 		364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310112C6A09C1000CF9F3 /* SectionView.swift */; };
+		3655FFDE2C6BC811000DE2B6 /* InMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3655FFDD2C6BC811000DE2B6 /* InMemory.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +46,7 @@
 		364310092C69F26D000CF9F3 /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
 		3643100D2C69F300000CF9F3 /* Meter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meter.swift; sourceTree = "<group>"; };
 		364310112C6A09C1000CF9F3 /* SectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionView.swift; sourceTree = "<group>"; };
+		3655FFDD2C6BC811000DE2B6 /* InMemory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemory.swift; sourceTree = "<group>"; };
 		369CCACB2C6B52BC002F462B /* deux.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = deux.m4a; sourceTree = "<group>"; };
 		369CCACC2C6B52BC002F462B /* trois.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = trois.m4a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -113,6 +115,7 @@
 				36430FF82C69C52D000CF9F3 /* AudioFileReader.swift */,
 				36430FFB2C69C52D000CF9F3 /* Player.swift */,
 				36430FFC2C69C52D000CF9F3 /* SineGenerator.swift */,
+				3655FFDD2C6BC811000DE2B6 /* InMemory.swift */,
 				36430FFD2C69C52D000CF9F3 /* System.swift */,
 			);
 			name = Sources;
@@ -198,6 +201,7 @@
 				363244602C6961280021C8BE /* Globals.swift in Sources */,
 				363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */,
 				364310012C69C52D000CF9F3 /* Mixer.swift in Sources */,
+				3655FFDE2C6BC811000DE2B6 /* InMemory.swift in Sources */,
 				364310032C69C52D000CF9F3 /* Player.swift in Sources */,
 				3643100E2C69F300000CF9F3 /* Meter.swift in Sources */,
 				364310042C69C52D000CF9F3 /* SineGenerator.swift in Sources */,

@@ -1,6 +1,6 @@
 //
 //  Monitor.swift
-//  AudioNodesDemo
+//  AudioNodes
 //
 //  Created by Hovik Melikyan on 12.08.24.
 //
