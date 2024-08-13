@@ -45,7 +45,7 @@ func NotError(_ error: OSStatus, _ code: Int) {
 
 
 @inlinable
-func Abstract(_ fn: String) -> Never {
+func Abstract(_ fn: String = #function) -> Never {
 	DLOG("Abstract method called: \(fn)")
 	Unrecoverable(52001)
 }

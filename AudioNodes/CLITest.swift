@@ -12,6 +12,21 @@ import AudioToolbox
 func resUrl(_ name: String) -> URL { URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appending(path: "AudioNodesDemo/AudioNodesDemo/Resources/").appendingPathComponent(name) }
 
 
+class PlayerProgress: PlayerDelegate {
+	func player(_ player: Player, isAt time: TimeInterval) {
+		guard abs(time - prevTime) >= 0.2 else { return }
+		prevTime = time
+		print("Player:", String(format: "%.2f", time))
+	}
+
+	func playerDidEndPlaying(_ player: Player) {
+		print("Player:", "ended")
+	}
+
+	private var prevTime: TimeInterval = 0
+}
+
+
 @AudioActor
 extension System {
 
@@ -28,6 +43,7 @@ extension System {
 		await smoothDisconnect()
 		await Sleep(1)
 	}
+
 
 	func testMixer() async {
 		print("--- ", #function)
@@ -46,17 +62,22 @@ extension System {
 		await smoothDisconnect()
 	}
 
+
 	func testFile() async {
 		print("--- ", #function)
-		let player = Player(url: resUrl("eyes-demo.m4a"), sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)!
+		let progress = PlayerProgress()
+		let player = FilePlayer(url: resUrl("eyes-demo.m4a"), sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo, delegate: progress)!
 		connect(player)
 		player.isEnabled = true
 		await Sleep(5)
 		await smoothDisconnect()
 	}
 
+
 	func testQueuePlayer() async {
-		let player = QueuePlayer(sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)
+		print("--- ", #function)
+		let progress = PlayerProgress()
+		let player = QueuePlayer(sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo, delegate: progress)
 		["deux.m4a", "trois.m4a"].forEach {
 			precondition(player.addFile(url: resUrl($0)))
 		}
@@ -66,8 +87,7 @@ extension System {
 		player.time = 0.15
 		player.isEnabled = true
 		_ = player.addFile(url: resUrl("eyes-demo.m4a"))
-		await Sleep(5)
-		print(player.isAtEnd)
+		await Sleep(3)
 		await smoothDisconnect()
 	}
 }

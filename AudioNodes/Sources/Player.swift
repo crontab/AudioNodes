@@ -10,23 +10,34 @@ import Foundation
 
 @AudioActor
 protocol PlayerDelegate: AnyObject, Sendable {
-	func player(_ player: Player, isAtFramePosition position: Int)
+	func player(_ player: Player, isAt time: TimeInterval)
 	func playerDidEndPlaying(_ player: Player)
 }
 
 
 // MARK: - Player
 
-class Player: Node {
 
-	var time: TimeInterval {
+class Player: Node {
+	var time: TimeInterval { Abstract() }
+	var duration: TimeInterval { Abstract() }
+	var isAtEnd: Bool { Abstract() }
+}
+
+
+
+// MARK: - FilePlayer
+
+class FilePlayer: Player {
+
+	override var time: TimeInterval {
 		get { withAudioLock { time$ } }
 		set { withAudioLock { setTime$(newValue) } }
 	}
 
-	var duration: TimeInterval { duration$ } // no need for a lock
+	override var duration: TimeInterval { duration$ } // no need for a lock
 
-	var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
+	override var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
 
 	func setAtEnd() { withAudioLock { playhead$ = file.estimatedTotalFrames } }
 
@@ -62,7 +73,6 @@ class Player: Node {
 			}
 			let copied = Copy(from: block.buffers, to: buffers, fromOffset: _playhead - block.offset, toOffset: framesCopied, framesMax: frameCount - framesCopied)
 			if copied == 0 {
-				// Gapless playing should happen here, e.g. this buffer should be passed to the next player in the queue
 				reachedEnd = true
 				break
 			}
@@ -74,7 +84,7 @@ class Player: Node {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: framesCopied)
 		}
 
-		if reachedEnd {
+		if reachedEnd, _isEnabled { // Check enabled status to avoid didEndPlaying() being called twice
 			_didEndPlaying(at: _playhead)
 		}
 		else {
@@ -93,8 +103,9 @@ class Player: Node {
 			lastKnownPlayhead$ = playhead
 		}
 		guard let delegate else { return }
+		let time = Double(playhead) / file.sampleRate
 		Task.detached { @AudioActor in
-			delegate.player(self, isAtFramePosition: playhead)
+			delegate.player(self, isAt: time)
 		}
 	}
 
@@ -106,8 +117,9 @@ class Player: Node {
 			lastKnownPlayhead$ = total
 		}
 		guard let delegate else { return }
+		let time = Double(total) / file.sampleRate
 		Task.detached { @AudioActor in
-			delegate.player(self, isAtFramePosition: total)
+			delegate.player(self, isAt: time)
 			delegate.playerDidEndPlaying(self)
 		}
 	}
@@ -156,21 +168,21 @@ class Player: Node {
 // MARK: - QueuePlayer
 
 /// Meta-player that provides gapless playback of multiple files
-class QueuePlayer: Node {
+class QueuePlayer: Player {
 
-	var time: TimeInterval {
+	override var time: TimeInterval {
 		get { withAudioLock { time$ } }
 		set { withAudioLock { setTime$(newValue) } }
 	}
 
-	var duration: TimeInterval { withAudioLock { items$.map { $0.duration$ }.reduce(0, +) } }
+	override var duration: TimeInterval { withAudioLock { items$.map { $0.duration$ }.reduce(0, +) } }
 
-	var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
+	override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
 
 
 	/// Adds a file player to the queue.
 	func addFile(url: URL) -> Bool {
-		guard let player = Player(url: url, sampleRate: sampleRate, isStereo: isStereo, isEnabled: true) else {
+		guard let player = FilePlayer(url: url, sampleRate: sampleRate, isStereo: isStereo, isEnabled: true) else {
 			return false
 		}
 		withAudioLock {
@@ -180,9 +192,10 @@ class QueuePlayer: Node {
 	}
 
 
-	init(sampleRate: Double, isStereo: Bool, isEnabled: Bool = false) {
+	init(sampleRate: Double, isStereo: Bool, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		self.sampleRate = sampleRate
 		self.isStereo = isStereo
+		self.delegate = delegate
 		super.init(isEnabled: isEnabled)
 	}
 
@@ -191,14 +204,14 @@ class QueuePlayer: Node {
 
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		var framesWritten = 0
+
 		while true {
 			if !_items.indices.contains(_currentIndex) {
-				isEnabled = false
 				FillSilence(frameCount: frameCount, buffers: buffers, offset: framesWritten)
 				break
 			}
 			let player = _items[_currentIndex]
-			// Note that we bypass the usual rendering call _internalRender(). This is a bit dangerous in case changes are made in Node or Player. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
+			// Note that we bypass the usual rendering call _internalRender(). This is a bit dangerous in case changes are made in Node or FilePlayer. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
 			player._willRender$()
 			framesWritten += player._continueRender(frameCount: frameCount, buffers: buffers, offset: framesWritten)
 			if framesWritten >= frameCount {
@@ -206,10 +219,38 @@ class QueuePlayer: Node {
 			}
 			_currentIndex += 1
 		}
+
+		if framesWritten < frameCount, _isEnabled {
+			_didEndPlaying()
+		}
+		else {
+			_didPlaySome()
+		}
+
 		withAudioLock {
 			lastKnownIndex$ = _currentIndex
 		}
 		return noErr
+	}
+
+
+	private func _didPlaySome() {
+		guard let delegate else { return }
+		let time = time
+		Task.detached { @AudioActor in
+			delegate.player(self, isAt: time)
+		}
+	}
+
+
+	private func _didEndPlaying() {
+		isEnabled = false
+		guard let delegate else { return }
+		let time = duration
+		Task.detached { @AudioActor in
+			delegate.player(self, isAt: time)
+			delegate.playerDidEndPlaying(self)
+		}
 	}
 
 
@@ -255,9 +296,10 @@ class QueuePlayer: Node {
 
 	private let sampleRate: Double
 	private let isStereo: Bool
+	private weak var delegate: PlayerDelegate?
 
-	private var items$: [Player] = []
-	private var _items: [Player] = []
+	private var items$: [FilePlayer] = []
+	private var _items: [FilePlayer] = []
 	private var lastKnownIndex$: Int = 0
 	private var currentIndex$: Int?
 	private var _currentIndex: Int = 0

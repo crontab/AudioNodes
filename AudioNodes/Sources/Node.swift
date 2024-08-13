@@ -144,7 +144,7 @@ class Node: @unchecked Sendable {
 
 	/// Abstract overridable function that's called if this node is enabled, not bypassing and is connected to another node is `input`. Subclasses either generate or mutate the sound in this routine.
 	func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		Abstract(#function)
+		Abstract()
 	}
 
 
@@ -266,6 +266,7 @@ class Node: @unchecked Sendable {
 
 	var _transitionFrames: Int { _config.format?.transitionFrames ?? 0 }
 	var _isInputConnected: Bool { _config.input != nil }
+	var _isEnabled: Bool { _config.enabled }
 	var format$: StreamFormat? { config$.format }
 
 

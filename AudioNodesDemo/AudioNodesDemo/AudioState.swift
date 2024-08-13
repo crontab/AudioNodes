@@ -57,7 +57,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 	@Published var normalizedOutputGainRight: Float = 0
 
 
-	func player(_ player: Player, isAtFramePosition position: Int) {
+	func player(_ player: Player, isAt time: TimeInterval) {
 //		let time = player.time
 //		Task { @MainActor in
 //			self.playerTimePosition = time
@@ -100,7 +100,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 	private var isInitialized: Bool = false
 	private lazy var system = System(isStereo: true)
 	private lazy var root: Mixer = .init(busCount: 1)
-	private lazy var player = Player(url: fileUrl, sampleRate: system.systemFormat.sampleRate, isStereo: system.systemFormat.isStereo, delegate: self)!
+	private lazy var player = FilePlayer(url: fileUrl, sampleRate: system.systemFormat.sampleRate, isStereo: system.systemFormat.isStereo, delegate: self)!
 	private lazy var outputMeter = Meter(format: system.systemFormat, delegate: self)
 
 	private var prevOutLeft: Float = 0, prevOutRight: Float = 0
