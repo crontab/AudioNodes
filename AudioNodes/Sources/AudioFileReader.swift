@@ -18,20 +18,18 @@ actor AudioFileActor {
 @AudioFileActor
 class AudioFileReader {
 
-	let url: URL
-	let sampleRate: Double
-	let isStereo: Bool
-	let lengthFactor: Double
-	let estimatedTotalFrames: Int
+	final let url: URL
+	final let format: StreamFormat
+	final let lengthFactor: Double
+	final let estimatedTotalFrames: Int
 
-	fileprivate let fileRef: ExtAudioFileRef
+	fileprivate final let fileRef: ExtAudioFileRef
 
 
 	nonisolated
-	init?(url: URL, sampleRate: Double, isStereo: Bool) {
+	init?(url: URL, format: StreamFormat) {
 		self.url = url
-		self.sampleRate = sampleRate
-		self.isStereo = isStereo
+		self.format = format
 
 		var tempFileRef: ExtAudioFileRef?
 		var status = ExtAudioFileOpenURL(url as CFURL, &tempFileRef)
@@ -50,7 +48,7 @@ class AudioFileReader {
 			return nil
 		}
 
-		var descr = AudioStreamBasicDescription.canonical(isStereo: isStereo, sampleRate: sampleRate)
+		var descr: AudioStreamBasicDescription = .canonical(with: format)
 		status = ExtAudioFileSetProperty(fileRef, kExtAudioFileProperty_ClientDataFormat, SizeOf(descr), &descr)
 		if status != noErr {
 			ExtAudioFileDispose(fileRef)
@@ -77,7 +75,7 @@ class AudioFileReader {
 		}
 
 		// If the file reader does resampling, we need to store the resampling factor so that we can correctly seek() within the file
-		lengthFactor = fileDescr.mSampleRate / sampleRate
+		lengthFactor = fileDescr.mSampleRate / format.sampleRate
 		estimatedTotalFrames = Int(ceil(Double(fileFrames) / lengthFactor))
 #if DEBUG && AUDIO_FILE_LOGGING
 		DLOG("AudioFile.estimatedTotalFrames: \(estimatedTotalFrames)")
@@ -202,9 +200,9 @@ final class AsyncAudioFileReader: AudioFileReader {
 	private var cachedBlocks = Cache(capacity: 8)
 
 
-	override init?(url: URL, sampleRate: Double, isStereo: Bool) {
-		blockSize = Int(sampleRate) // 1s per block
-		super.init(url: url, sampleRate: sampleRate, isStereo: isStereo)
+	override init?(url: URL, format: StreamFormat) {
+		blockSize = Int(format.sampleRate) // 1s per block
+		super.init(url: url, format: format)
 	}
 
 
@@ -216,7 +214,7 @@ final class AsyncAudioFileReader: AudioFileReader {
 				break
 			}
 			if cachedBlocks.blockFor(offset: blockOffset) == nil {
-				let block = Block(isStereo: isStereo, offset: blockOffset, capacity: blockSize)
+				let block = Block(isStereo: format.isStereo, offset: blockOffset, capacity: blockSize)
 				if block.read(from: fileRef, offset: blockOffset, lengthFactor: lengthFactor) {
 					if block.count < blockSize {
 						exactTotalFrames = block.offset + block.count

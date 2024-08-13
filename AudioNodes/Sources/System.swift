@@ -19,7 +19,7 @@ final class System: Node {
 	private(set) var input: Input?
 
 	/// System input stream format.
-	final let systemFormat: StreamFormat
+	final let streamFormat: StreamFormat
 
 
 	/// Indicates whether the audio system is enabled and is rendering data.
@@ -102,26 +102,23 @@ final class System: Node {
 		let status = AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &inDescr, &inDescrSize)
 		if status != noErr || inDescr.mChannelsPerFrame == 0 {
 			print("AudioNodes: audio is not available on this system")
-			systemFormat = .default
+			streamFormat = .default
 			super.init()
 			isEnabled = false
 			return
 		}
 
-		systemFormat = StreamFormat(sampleRate: descr.mSampleRate, bufferFrameSize: Self.outputBufferFrameSize(unit: unit), isStereo: isStereo)
+		streamFormat = .init(sampleRate: descr.mSampleRate, isStereo: isStereo)
 
 		super.init()
 
 		// Now set our format parameters using the same sampling rate
-		descr = .canonical(isStereo: isStereo, sampleRate: descr.mSampleRate)
+		descr = .canonical(with: .init(sampleRate: descr.mSampleRate, isStereo: isStereo))
 		NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &descr, descrSize), 51006)
 
 		// Set up the render callback
 		var callback = AURenderCallbackStruct(inputProc: outputRenderCallback, inputProcRefCon: Bridge(obj: self))
 		NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, SizeOf(callback)), 51004)
-
-		// Imitate connection since we know the format which will be propagated to the entire chain
-		updateFormat$(systemFormat)
 	}
 
 
@@ -167,25 +164,11 @@ final class System: Node {
 	}
 
 
-	private static func outputBufferFrameSize(unit: AudioUnit) -> Int {
-#if os(iOS)
-		return Int(ceil(AVAudioSession.sharedInstance().ioBufferDuration * hardwareSampleRate(unit: unit)))
-#else
-		var bufferSize: UInt32 = 0
-		var size: UInt32 = SizeOf(bufferSize)
-		NotError(AudioUnitGetProperty(unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, 0, &bufferSize, &size), 51014)
-		return Int(bufferSize)
-#endif
-	}
-
-
 	// MARK: - Input
 
 	final class Input: Node {
 
 		// Input is a special node that's not a real source; it can only be monitored by connecting a Monitor object, possibly chained
-
-		static let maxFramesPerSlice = 4096
 
 		fileprivate final var renderBuffer: AudioBufferListPtr
 
@@ -205,10 +188,6 @@ final class System: Node {
 
 			super.init()
 
-			// Set maximum buffer size as recommended by Apple
-			var maxFramesPerSlice = UInt32(Self.maxFramesPerSlice)
-			NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_MaximumFramesPerSlice, kAudioUnitScope_Global, 1, &maxFramesPerSlice, SizeOf(maxFramesPerSlice)), 51003)
-
 			// Tell the unit to allocate buffers - this is the default and it doesn't work on macOS anyway, fails with -10877
 			// var one: UInt32 = 1
 			// NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_ShouldAllocateBuffer, kAudioUnitScope_Output, 1, &one, SizeOf(one)), 51002)
@@ -221,7 +200,7 @@ final class System: Node {
 			}
 
 			// Set format and sample rate to the same as hardware output
-			var descr = AudioStreamBasicDescription.canonical(isStereo: isStereo, sampleRate: System.hardwareSampleRate(unit: unit))
+			var descr: AudioStreamBasicDescription = .canonical(with: .init(sampleRate: System.hardwareSampleRate(unit: unit), isStereo: isStereo))
 			NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51022)
 
 			// Set render callback
@@ -230,21 +209,12 @@ final class System: Node {
 
 			// Input is disabled by default, so set the internal var:
 			isEnabled = false
-
-			// Imitate connection to pass the stream format to monitors, in case Input acts only as a pusher, not a source; safe to call as this is a constructor
-			super.updateFormat$(StreamFormat(sampleRate: descr.mSampleRate, bufferFrameSize: Self.maxFramesPerSlice, isStereo: isStereo))
 		}
 
 
 		final override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 			// Already rendered by the system in inputRenderCallback()
 			return noErr
-		}
-
-
-		override func updateFormat$(_ format: StreamFormat?) {
-			// Input doesn't work as a source
-			Unrecoverable(51015)
 		}
 
 

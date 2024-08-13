@@ -26,21 +26,19 @@ actor AudioActor {
 }
 
 
-// NB: names that start with an underscore are executed or accessed on the system audio thread. Names that end with $ should be called only within a semaphore lock, i.e. withAudioLock { }
-
-
 struct StreamFormat: Equatable {
 	let sampleRate: Double
-	let bufferFrameSize: Int
 	let isStereo: Bool
 
-	var transitionFrames: Int { min(bufferFrameSize, Int(sampleRate) / 100) } // ~10ms
-
-	static var `default`: Self { .init(sampleRate: 48000, bufferFrameSize: 512, isStereo: true) }
+	static var `default`: Self { .init(sampleRate: 48000, isStereo: true) }
 }
 
 
 // MARK: - Node
+
+
+// NB: names that start with an underscore are executed or accessed on the system audio thread. Names that end with $ should be called only within a semaphore lock, i.e. withAudioLock { }
+
 
 /// Generic abstract audio node; all other generator and filter types are subclasses of `Node`. All public methods are thread-safe.
 class Node: @unchecked Sendable {
@@ -69,15 +67,9 @@ class Node: @unchecked Sendable {
 		set { withAudioLock { config$.bypass = newValue } }
 	}
 
-	///Returns the stream format known to this node; nodes receive this data when they connect to other nodes and the stream format is known to any one of them in the chain.
-	var format: StreamFormat? {
-		withAudioLock { config$.format }
-	}
-
 	/// Connects a node that should provide source data. Each node should be connected to only one other node at a time. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge. See also `smoothConnect()`.
 	func connect(_ input: Node) {
 		withAudioLock {
-			config$.format.map { input.updateFormat$($0) }
 			config$.input = input
 		}
 	}
@@ -95,7 +87,7 @@ class Node: @unchecked Sendable {
 		let wasMuted = isMuted
 		isMuted = true
 		connect(input)
-		await Sleep(approximateCycleDuration) // the simplest possible synrhonization method, we don't want to complicate things
+		await Sleep(0.011) // the simplest possible synrhonization method, we don't want to complicate things
 		isMuted = wasMuted
 	}
 
@@ -104,7 +96,7 @@ class Node: @unchecked Sendable {
 	func smoothDisconnect() async {
 		let wasMuted = isMuted
 		isMuted = true
-		await Sleep(approximateCycleDuration)
+		await Sleep(0.011)
 		disconnect()
 		isMuted = wasMuted
 	}
@@ -112,7 +104,6 @@ class Node: @unchecked Sendable {
 	/// Connects a node that serves as an observer of audio data, i.e. a node whose `monitor(frameCount:buffers:)` method will be called with each cycle.
 	func connectMonitor(_ monitor: Monitor) {
 		withAudioLock {
-			config$.format.map { monitor.updateFormat$($0) }
 			config$.monitor = monitor
 		}
 	}
@@ -121,13 +112,6 @@ class Node: @unchecked Sendable {
 	func disconnectMonitor() {
 		withAudioLock {
 			config$.monitor = nil
-		}
-	}
-
-	/// Returns approximate duration of a rendering cycle; useful when waiting for some parameter to take effect.
-	var approximateCycleDuration: TimeInterval {
-		withAudioLock {
-			format$.map { Double($0.bufferFrameSize) / Double($0.sampleRate) + 0.001 } ?? 0
 		}
 	}
 
@@ -162,7 +146,7 @@ class Node: @unchecked Sendable {
 				_reset()
 				let status = _internalRender2(ramping: true, frameCount: frameCount, buffers: buffers)
 				if status == noErr {
-					Smooth(out: true, frameCount: frameCount, fadeFrameCount: _transitionFrames, buffers: buffers)
+					Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 				}
 				return status
 			}
@@ -174,7 +158,7 @@ class Node: @unchecked Sendable {
 			_prevEnabled = true
 			let status = _internalRender2(ramping: true, frameCount: frameCount, buffers: buffers)
 			if status == noErr {
-				Smooth(out: false, frameCount: frameCount, fadeFrameCount: _transitionFrames, buffers: buffers)
+				Smooth(out: false, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 			}
 			return status
 		}
@@ -208,7 +192,7 @@ class Node: @unchecked Sendable {
 			if !_prevMuted {
 				_prevMuted = true
 				if !ramping {
-					Smooth(out: true, frameCount: frameCount, fadeFrameCount: _transitionFrames, buffers: buffers)
+					Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 					return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
 				}
 			}
@@ -220,7 +204,7 @@ class Node: @unchecked Sendable {
 		if _prevMuted {
 			_prevMuted = false
 			if !ramping {
-				Smooth(out: false, frameCount: frameCount, fadeFrameCount: _transitionFrames, buffers: buffers)
+				Smooth(out: false, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 			}
 		}
 
@@ -252,28 +236,13 @@ class Node: @unchecked Sendable {
 
 	// MARK: - Internal: Connection management
 
-	/// Called by the node requesting connection with this node, or otherwise when propagating a new format down the chain; overridable. The audio semaphore is in a locked state which means all methods and properties with the $ suffix can be used here.
-	func updateFormat$(_ format: StreamFormat) {
-		DLOG("\(debugName).didConnect(\(format.sampleRate), \(format.bufferFrameSize), \(format.isStereo ? "stereo" : "mono"))")
-		if format != config$.format {
-			// This is where a known format is propagated down the chain
-			config$.input?.updateFormat$(format)
-			config$.monitor?.updateFormat$(format)
-			config$.format = format
-		}
-	}
-
-
-	var _transitionFrames: Int { _config.format?.transitionFrames ?? 0 }
 	var _isInputConnected: Bool { _config.input != nil }
 	var _isEnabled: Bool { _config.enabled }
-	var format$: StreamFormat? { config$.format }
 
 
 	// MARK: - Private
 
 	private struct Config {
-		var format: StreamFormat?
 		var monitor: Monitor?
 		var input: Node?
 		var enabled: Bool

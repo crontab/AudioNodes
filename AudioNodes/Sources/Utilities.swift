@@ -93,10 +93,14 @@ extension Comparable {
 
 // MARK: - Audio Utilities
 
+@inlinable
+func transitionFrames(_ frameCount: Int) -> Int { min(512, frameCount) }
+
+
 extension AudioStreamBasicDescription {
 
-	static func canonical(isStereo: Bool, sampleRate: Double) -> Self {
-		.init(mSampleRate: sampleRate, mFormatID: kAudioFormatLinearPCM, mFormatFlags: kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved, mBytesPerPacket: UInt32(SizeOfSample), mFramesPerPacket: 1, mBytesPerFrame: UInt32(SizeOfSample), mChannelsPerFrame: isStereo ? 2 : 1, mBitsPerChannel: UInt32(8 * SizeOfSample), mReserved: 0)
+	static func canonical(with format: StreamFormat) -> Self {
+		.init(mSampleRate: format.sampleRate, mFormatID: kAudioFormatLinearPCM, mFormatFlags: kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved, mBytesPerPacket: UInt32(SizeOfSample), mFramesPerPacket: 1, mBytesPerFrame: UInt32(SizeOfSample), mChannelsPerFrame: format.isStereo ? 2 : 1, mBitsPerChannel: UInt32(8 * SizeOfSample), mReserved: 0)
 	}
 }
 
@@ -191,8 +195,8 @@ extension AudioBuffer {
 
 
 class SafeAudioBufferList {
-	let buffers: AudioBufferListPtr
-	let capacity: Int
+	final let buffers: AudioBufferListPtr
+	final let capacity: Int
 
 	init(isStereo: Bool, capacity: Int) {
 		buffers = AudioBufferList.allocate(maximumBuffers: isStereo ? 2 : 1)

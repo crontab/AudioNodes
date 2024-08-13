@@ -32,7 +32,7 @@ extension System {
 
 	func testSine() async {
 		print("--- ", #function)
-		let sine = SineGenerator(freq: 440, isEnabled: true)
+		let sine = SineGenerator(freq: 440, format: streamFormat, isEnabled: true)
 		await smoothConnect(sine)
 		await Sleep(1)
 		sine.isEnabled = false
@@ -47,9 +47,9 @@ extension System {
 
 	func testMixer() async {
 		print("--- ", #function)
-		let sine1 = SineGenerator(freq: 440, isEnabled: true)
-		let sine2 = SineGenerator(freq: 480, isEnabled: true)
-		let mixer = Mixer(busCount: 2)
+		let sine1 = SineGenerator(freq: 440, format: streamFormat, isEnabled: true)
+		let sine2 = SineGenerator(freq: 480, format: streamFormat, isEnabled: true)
+		let mixer = Mixer(format: streamFormat, busCount: 2)
 		mixer.buses[0].connect(sine1)
 		mixer.buses[1].connect(sine2)
 		connect(mixer)
@@ -66,7 +66,7 @@ extension System {
 	func testFile() async {
 		print("--- ", #function)
 		let progress = PlayerProgress()
-		let player = FilePlayer(url: resUrl("eyes-demo.m4a"), sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo, delegate: progress)!
+		let player = FilePlayer(url: resUrl("eyes-demo.m4a"), format: streamFormat, delegate: progress)!
 		connect(player)
 		player.isEnabled = true
 		await Sleep(5)
@@ -77,7 +77,7 @@ extension System {
 	func testQueuePlayer() async {
 		print("--- ", #function)
 		let progress = PlayerProgress()
-		let player = QueuePlayer(sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo, delegate: progress)
+		let player = QueuePlayer(format: streamFormat, delegate: progress)
 		["deux.m4a", "trois.m4a"].forEach {
 			precondition(player.addFile(url: resUrl($0)))
 		}
@@ -95,10 +95,10 @@ extension System {
 	@AudioFileActor
 	func testMemoryPlayer() async {
 		print("--- ", #function)
-		
-		let data = AudioData(durationSeconds: 2, sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)
-		let file = AudioFileReader(url: resUrl("eyes-demo.m4a"), sampleRate: systemFormat.sampleRate, isStereo: systemFormat.isStereo)!
-		let safeBuffer = SafeAudioBufferList(isStereo: systemFormat.isStereo, capacity: 8192)
+
+		let data = AudioData(durationSeconds: 2, format: streamFormat)
+		let file = AudioFileReader(url: resUrl("eyes-demo.m4a"), format: streamFormat)!
+		let safeBuffer = SafeAudioBufferList(isStereo: streamFormat.isStereo, capacity: 8192)
 		let buffers = safeBuffer.buffers
 		let frameCount = buffers[0].sampleCount
 
@@ -129,10 +129,10 @@ struct CLI {
 		let system = System(isStereo: true)
 		system.start()
 //		await system.testSine()
-//		await system.testMixer()
+		await system.testMixer()
 //		await system.testFile()
-//		await system.testQueuePlayer()
-		await system.testMemoryPlayer()
+		await system.testQueuePlayer()
+//		await system.testMemoryPlayer()
 	}
 
 

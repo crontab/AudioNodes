@@ -24,11 +24,10 @@ private let BINS_PER_SEC: Float = 25 // update frequency is 25 times per second,
 /// An observer node that can measure RMS levels; suitable for UI gauges. The values are returned via the `MeterDelegate` method `meterDidUpdateGains`.
 class Meter: Monitor {
 
-	/// Creates a meter node; the stream format should be known at the time of creation. You can obtain the format from `System`'s `.systemFormat` property.
+	/// Creates a meter node; the audio format should be known at the time of creation. You can obtain the format from `System`'s `.streamFormat` property.
 	init(format: StreamFormat, delegate: MeterDelegate) {
+		self.binFrames = Int(format.sampleRate / Double(BINS_PER_SEC))
 		self.delegate = delegate
-		_format = format
-		_binFrames = max(format.bufferFrameSize, (Int(format.sampleRate / Double(BINS_PER_SEC)) / format.bufferFrameSize) * format.bufferFrameSize)
 	}
 
 
@@ -44,18 +43,13 @@ class Meter: Monitor {
 
 		_peakFrames += frameCount
 
-		if _peakFrames >= _binFrames {
+		let binFrames = max(frameCount, (binFrames / frameCount) * frameCount)
+		if _peakFrames >= binFrames {
 			_didUpdatePeaks(left: _peakLevels[0], right: _peakLevels[1])
 			_peakLevels[0] = MIN_LEVEL_DB
 			_peakLevels[1] = MIN_LEVEL_DB
 			_peakFrames = 0
 		}
-	}
-
-
-	override func updateFormat$(_ format: StreamFormat) {
-		super.updateFormat$(format)
-		Assert(format == _format, 51060)
 	}
 
 
@@ -70,8 +64,7 @@ class Meter: Monitor {
 	// Private
 
 	private weak var delegate: MeterDelegate?
-	private let _format: StreamFormat
-	private let _binFrames: Int
+	private let binFrames: Int
 	private var _peakLevels = [MIN_LEVEL_DB, MIN_LEVEL_DB]
 	private var _peakFrames = 0
 }

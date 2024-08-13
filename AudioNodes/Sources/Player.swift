@@ -77,9 +77,9 @@ class FilePlayer: Node, Player {
 	func setAtEnd() { withAudioLock { playhead$ = file.estimatedTotalFrames } }
 
 	/// Creates a file player node for a given local audio file; note that remote URL's aren't supported. If any kind of error occurs while attempting to open the file, the constructor returns nil.
-	/// `sampleRate` and `isStereo` arguments should be the same as the current system output's format which you can obtain via `System`'s `.systemFormat` property.
-	init?(url: URL, sampleRate: Double, isStereo: Bool, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
-		guard let file = AsyncAudioFileReader(url: url, sampleRate: sampleRate, isStereo: isStereo) else {
+	/// The `format` argument should be the same as the current system output's format which you can obtain via `System`'s `.streamFormat` property.
+	init?(url: URL, format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
+		guard let file = AsyncAudioFileReader(url: url, format: format) else {
 			return nil
 		}
 		self.file = file
@@ -147,12 +147,6 @@ class FilePlayer: Node, Player {
 	}
 
 
-	override func updateFormat$(_ format: StreamFormat) {
-		Assert(format.sampleRate == file.sampleRate && format.isStereo == file.isStereo, 51050)
-		super.updateFormat$(format)
-	}
-
-
 	override func _willRender$() {
 		super._willRender$()
 		if let playhead = playhead$ {
@@ -182,11 +176,11 @@ class FilePlayer: Node, Player {
 
 	// Internal methods exposed mainly for QueuePlayer to avoid recursive semaphore locks:
 	fileprivate var time$: TimeInterval {
-		get { Double(lastKnownPlayhead$) / file.sampleRate }
-		set { playhead$ = Int(newValue * file.sampleRate).clamped(to: 0...file.estimatedTotalFrames) }
+		get { Double(lastKnownPlayhead$) / file.format.sampleRate }
+		set { playhead$ = Int(newValue * file.format.sampleRate).clamped(to: 0...file.estimatedTotalFrames) }
 	}
 
-	fileprivate var duration$: TimeInterval { Double(file.estimatedTotalFrames) / file.sampleRate }
+	fileprivate var duration$: TimeInterval { Double(file.estimatedTotalFrames) / file.format.sampleRate }
 }
 
 
@@ -210,7 +204,7 @@ class QueuePlayer: Node, Player {
 
 	/// Adds a file player to the queue. Can be done at any time during playback or not. Queue player creates FilePlayer objects internally, meaning that `url` can only point to a local file. Returns `false` if there was an error opening the audio file.
 	func addFile(url: URL) -> Bool {
-		guard let player = FilePlayer(url: url, sampleRate: sampleRate, isStereo: isStereo, isEnabled: true) else {
+		guard let player = FilePlayer(url: url, format: format, isEnabled: true) else {
 			return false
 		}
 		withAudioLock {
@@ -220,10 +214,9 @@ class QueuePlayer: Node, Player {
 	}
 
 
-	/// Creates a queue player node. `sampleRate` and `isStereo` arguments should be the same as the current system output's format which you can obtain via `System`'s `.systemFormat` property.
-	init(sampleRate: Double, isStereo: Bool, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
-		self.sampleRate = sampleRate
-		self.isStereo = isStereo
+	/// Creates a queue player node. The `format argument should be the same as the current system output's format which you can obtain via `System`'s `.streamFormat` property.
+	init(format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
+		self.format = format
 		self.delegate = delegate
 		super.init(isEnabled: isEnabled)
 	}
@@ -319,8 +312,7 @@ class QueuePlayer: Node, Player {
 	}
 
 
-	private let sampleRate: Double
-	private let isStereo: Bool
+	private let format: StreamFormat
 	weak var delegate: PlayerDelegate?
 
 	private var items$: [FilePlayer] = []

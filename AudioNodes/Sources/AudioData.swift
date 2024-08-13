@@ -20,12 +20,12 @@ class AudioData: @unchecked Sendable, Player {
 	var isAtEnd: Bool { withWriteLock { withReadLock { framesRead == framesWritten } } }
 
 
-	init(durationSeconds: Int, sampleRate: Double, isStereo: Bool) {
+	init(durationSeconds: Int, format: StreamFormat) {
 		Assert(durationSeconds > 0 && durationSeconds <= 60, 51070)
-		self.sampleRate = sampleRate
+		self.sampleRate = format.sampleRate
 		let chunkCapacity = Int(ceil(sampleRate))
 		chunks = (0..<durationSeconds).map { _ in
-			SafeAudioBufferList(isStereo: isStereo, capacity: chunkCapacity)
+			SafeAudioBufferList(isStereo: format.isStereo, capacity: chunkCapacity)
 		}
 		self.chunkCapacity = chunkCapacity
 	}

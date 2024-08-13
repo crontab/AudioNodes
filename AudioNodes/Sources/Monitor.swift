@@ -20,8 +20,8 @@ class Monitor: @unchecked Sendable {
 
 
 	init(isEnabled: Bool = true) {
-		_config = .init(enabled: isEnabled)
-		config$ = .init(enabled: isEnabled)
+		_enabled = isEnabled
+		enabled$ = isEnabled
 	}
 
 
@@ -40,31 +40,18 @@ class Monitor: @unchecked Sendable {
 		withAudioLock {
 			_willRender$()
 		}
-		guard _config.enabled else { return }
+		guard _enabled else { return }
 		_monitor(frameCount: frameCount, buffers: buffers)
 	}
 
 
 	func _willRender$() {
-		_config = config$
-	}
-
-
-	func updateFormat$(_ format: StreamFormat) {
-		DLOG("\(debugName).didConnect(\(format.sampleRate), \(format.bufferFrameSize), \(format.isStereo ? "stereo" : "mono"))")
-		if format != config$.format {
-			config$.format = format
-		}
+		_enabled = enabled$
 	}
 
 
 	// Private
 
-	private struct Config {
-		var format: StreamFormat?
-		var enabled: Bool
-	}
-
-	private var config$: Config // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
-	private var _config: Config // config used during the rendering cycle
+	private var enabled$: Bool // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
+	private var _enabled: Bool // config used during the rendering cycle
 }

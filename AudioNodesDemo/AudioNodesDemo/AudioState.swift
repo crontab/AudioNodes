@@ -99,9 +99,9 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 
 	private var isInitialized: Bool = false
 	private lazy var system = System(isStereo: true)
-	private lazy var root: Mixer = .init(busCount: 1)
-	private lazy var player = FilePlayer(url: fileUrl, sampleRate: system.systemFormat.sampleRate, isStereo: system.systemFormat.isStereo, delegate: self)!
-	private lazy var outputMeter = Meter(format: system.systemFormat, delegate: self)
+	private lazy var root: Mixer = .init(format: system.streamFormat, busCount: 1)
+	private lazy var player = FilePlayer(url: fileUrl, format: system.streamFormat, delegate: self)!
+	private lazy var outputMeter = Meter(format: system.streamFormat, delegate: self)
 
 	private var prevOutLeft: Float = 0, prevOutRight: Float = 0
 	private let declineAmount: Float = 0.05

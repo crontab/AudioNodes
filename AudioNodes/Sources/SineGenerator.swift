@@ -10,8 +10,10 @@ import Foundation
 
 final class SineGenerator: Node {
 
-	init(freq: Float32, isEnabled: Bool = false) {
+	init(freq: Float32, format: StreamFormat, isEnabled: Bool = false) {
 		freq$ = freq
+		thetaInc = 2.0 * Double.pi / format.sampleRate
+		precondition(thetaInc > 0)
 		super.init(isEnabled: isEnabled)
 	}
 
@@ -28,16 +30,9 @@ final class SineGenerator: Node {
 	}
 
 
-	override func updateFormat$(_ format: StreamFormat) {
-		super.updateFormat$(format)
-		_thetaInc = 2.0 * Double.pi / format.sampleRate
-	}
-
-
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		precondition(_thetaInc > 0)
 		let samples = buffers[0].samples
-		let increment = _thetaInc * Double(_freq)
+		let increment = thetaInc * Double(_freq)
 		for frame in 0..<frameCount {
 			samples[frame] = Sample(sin(_theta) * Self.amplitude)
 			_theta += increment
@@ -52,9 +47,10 @@ final class SineGenerator: Node {
 	}
 
 
+	private let thetaInc: Double
+
 	private var freq$: Float
 	private var _freq: Float = 0
-	private var _thetaInc: Double = 0
 	private var _theta: Double = 0
 	private static let amplitude = 1.0
 }

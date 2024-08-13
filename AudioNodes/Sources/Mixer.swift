@@ -17,8 +17,9 @@ final class VolumeControl: Node {
 	let busNumber: Int? // for debug diagnostics only
 
 
-	init(busNumber: Int? = nil) {
+	init(format: StreamFormat, busNumber: Int? = nil) {
 		self.busNumber = busNumber
+		self.format = format
 	}
 
 
@@ -27,7 +28,7 @@ final class VolumeControl: Node {
 	/// Sets the gain, optionally with timed transition. The normal range for the value is 0...1 but values outside of it are also allowed. Any timed request overrides a previous one, but the transition is always smooth.
 	func setVolume(_ volume: Float, duration: TimeInterval = 0) {
 		withAudioLock {
-			let frames = format$.map { Int($0.sampleRate * duration) } ?? 0
+			let frames = Int(format.sampleRate * duration)
 			config$ = .init(fadeEnd: volume, fadeFrames: frames)
 		}
 	}
@@ -55,7 +56,7 @@ final class VolumeControl: Node {
 			var factor = FactorFromGain(current)
 			_previous = current
 			let delta = factor - prevFactor
-			let transitionFrames = _transitionFrames
+			let transitionFrames = transitionFrames(frameCount)
 			for i in 0..<buffers.count {
 				let samples = buffers[i].samples
 				for i in 0..<transitionFrames {
@@ -105,6 +106,7 @@ final class VolumeControl: Node {
 		var fadeFrames: Int
 	}
 
+	private let format: StreamFormat
 	private var config$: Config? = nil
 	private var _config: Config = .init(fadeEnd: 1, fadeFrames: 0)
 	private var _previous: Float = 1
@@ -123,10 +125,10 @@ final class Mixer: Node {
 
 
 	/// Creates a Mixer object with a given number of buses; up to 128 is allowed.
-	init(busCount: Int) {
+	init(format: StreamFormat, busCount: Int) {
 		Assert(busCount > 0 && busCount <= 128, 51041)
-		buses = (0..<busCount).map { Bus(busNumber: $0) }
-		_scratchBuffer = .init(isStereo: true, capacity: 1024) // don't want to allocate this under semaphore, should be enough
+		buses = (0..<busCount).map { Bus(format: format, busNumber: $0) }
+		_scratchBuffer = .init(isStereo: true, capacity: 4096) // don't want to allocate this under semaphore, should be enough
 	}
 
 
@@ -159,18 +161,6 @@ final class Mixer: Node {
 			vDSP_vadd(src.samples, 1, dst.samples, 1, dst.samples, 1, UInt(frameCount))
 		}
 		return status
-	}
-
-
-	override func updateFormat$(_ format: StreamFormat) {
-		Assert(format.bufferFrameSize <= _scratchBuffer.capacity, 51040)
-		let prevFormat = format$
-		super.updateFormat$(format)
-		if format != prevFormat {
-			for bus in buses {
-				bus.updateFormat$(format)
-			}
-		}
 	}
 
 
