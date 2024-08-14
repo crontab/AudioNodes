@@ -240,7 +240,7 @@ final class System: Node {
 		}
 
 
-		override func connect(_ input: Node) {
+		override func connectSource(_ source: Node) {
 			Unrecoverable(51023) // You can't connect to the input node as a source (not yet at least)
 		}
 	}
@@ -248,6 +248,8 @@ final class System: Node {
 
 
 // MARK: - System callbacks
+
+// Both input and output callbacks are called by th system on the same thread.
 
 private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, timeStamp: UnsafePointer<AudioTimeStamp>, busNumber: UInt32, frameCount: UInt32, buffers: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
 	let obj: System = Bridge(ptr: userData)

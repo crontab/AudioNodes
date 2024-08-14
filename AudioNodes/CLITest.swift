@@ -33,7 +33,7 @@ extension System {
 	func testSine() async {
 		print("--- ", #function)
 		let sine = SineGenerator(freq: 440, format: streamFormat, isEnabled: true)
-		connect(sine)
+		connectSource(sine)
 		await Sleep(1)
 		sine.isEnabled = false
 		await Sleep(1)
@@ -50,9 +50,9 @@ extension System {
 		let sine1 = SineGenerator(freq: 440, format: streamFormat, isEnabled: true)
 		let sine2 = SineGenerator(freq: 480, format: streamFormat, isEnabled: true)
 		let mixer = Mixer(format: streamFormat, busCount: 2)
-		mixer.buses[0].connect(sine1)
-		mixer.buses[1].connect(sine2)
-		connect(mixer)
+		mixer.buses[0].connectSource(sine1)
+		mixer.buses[1].connectSource(sine2)
+		connectSource(mixer)
 		await Sleep(1)
 		mixer.buses[0].setVolume(0.5, duration: 1)
 		await Sleep(1)
@@ -67,7 +67,7 @@ extension System {
 		print("--- ", #function)
 		let progress = PlayerProgress()
 		let player = FilePlayer(url: resUrl("eyes-demo.m4a"), format: streamFormat, delegate: progress)!
-		connect(player)
+		connectSource(player)
 		player.isEnabled = true
 		await Sleep(5)
 		await smoothDisconnect()
@@ -81,7 +81,7 @@ extension System {
 		["deux.m4a", "trois.m4a"].forEach {
 			precondition(player.addFile(url: resUrl($0)))
 		}
-		connect(player)
+		connectSource(player)
 		player.isEnabled = true
 		await Sleep(2)
 		player.time = 0.15
@@ -116,7 +116,7 @@ extension System {
 
 		let progress = PlayerProgress()
 		let player = MemoryPlayer(data: data, isEnabled: true, delegate: progress)
-		connect(player)
+		connectSource(player)
 
 		await Sleep(3)
 		await smoothDisconnect()

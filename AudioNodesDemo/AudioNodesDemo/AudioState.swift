@@ -25,7 +25,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 			if isRunning {
 				Task {
 					system.start()
-					system.connect(root)
+					system.connectSource(root)
 				}
 			}
 			else {
@@ -135,7 +135,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 	private func initializeOutputGraph() {
 		guard !isOutputInitialized else { return }
 		isOutputInitialized = true
-		root.buses[0].connect(player)
+		root.buses[0].connectSource(player)
 		root.connectMonitor(outputMeter)
 	}
 

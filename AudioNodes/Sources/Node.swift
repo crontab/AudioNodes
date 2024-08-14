@@ -68,16 +68,16 @@ class Node: @unchecked Sendable {
 	}
 
 	/// Connects a node that should provide source data. Each node should be connected to only one other node at a time. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge.
-	func connect(_ input: Node) {
+	func connectSource(_ source: Node) {
 		withAudioLock {
-			config$.input = input
+			config$.source = source
 		}
 	}
 
 	/// Disconnects input. See also `smoothDisconnect()`.
 	func disconnect() {
 		withAudioLock {
-			config$.input = nil
+			config$.source = nil
 		}
 	}
 
@@ -115,7 +115,7 @@ class Node: @unchecked Sendable {
 
 	// MARK: - Internal: rendering
 
-	/// Abstract overridable function that's called if this node is enabled, not bypassing and is connected to another node is `input`. Subclasses either generate or mutate the sound in this routine.
+	/// Abstract overridable function that's called if this node is enabled, not bypassing and is connected to another node as `source`. Subclasses either generate or mutate the sound in this routine.
 	func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		Abstract()
 	}
@@ -172,7 +172,7 @@ class Node: @unchecked Sendable {
 		var status: OSStatus = noErr
 
 		// 5. Pull input data
-		if let input = _config.input {
+		if let input = _config.source {
 			status = input._internalPull(frameCount: frameCount, buffers: buffers)
 		}
 
@@ -181,8 +181,8 @@ class Node: @unchecked Sendable {
 			if !_config.bypass {
 				status = _render(frameCount: frameCount, buffers: buffers)
 			}
-			else if _config.input == nil {
-				// Bypassing and no input specified, fill with silence. If this node is also muted, silence will be filled twice but we are fine with it, don't want to complicate this function any further.
+			else if _config.source == nil {
+				// Bypassing and no source specified, fill with silence. If this node is also muted, silence will be filled twice but we are fine with it, don't want to complicate this function any further.
 				FillSilence(frameCount: frameCount, buffers: buffers)
 			}
 		}
@@ -230,13 +230,13 @@ class Node: @unchecked Sendable {
 	func _reset() {
 		_prevEnabled = _config.enabled
 		_prevMuted = _config.muted
-		_config.input?._reset()
+		_config.source?._reset()
 	}
 
 
 	// MARK: - Internal: Connection management
 
-	var _isInputConnected: Bool { _config.input != nil }
+	var _isInputConnected: Bool { _config.source != nil }
 	var _isEnabled: Bool { _config.enabled }
 
 
@@ -244,7 +244,7 @@ class Node: @unchecked Sendable {
 
 	private struct Config {
 		var monitor: Monitor?
-		var input: Node?
+		var source: Node?
 		var enabled: Bool
 		var muted: Bool = false
 		var bypass: Bool = false
