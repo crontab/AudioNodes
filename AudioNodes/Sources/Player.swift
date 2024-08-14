@@ -20,35 +20,35 @@ protocol PlayerDelegate: AnyObject, Sendable {
 }
 
 
-// MARK: - Player protocol
+// MARK: - Abstract Player
 
-/// Protocol that defines the most basic player interface. Passed as an argument in `PlayerDelegate` methods; also FilePlayer, QueuePlayer and AudioData conform to this protocol.
-protocol Player: Sendable {
-	var time: TimeInterval { get }
-	var duration: TimeInterval { get }
-	var isAtEnd: Bool { get }
-	var playerDelegate: PlayerDelegate? { get }
+/// Abstract node that defines the most basic player interface. Passed as an argument in `PlayerDelegate` methods; also FilePlayer, QueuePlayer and AudioData conform to this protocol.
+class Player: Node {
+	var time: TimeInterval { 0 }
+	var duration: TimeInterval { 0 }
+	var isAtEnd: Bool { true }
 
-	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int
-}
+	init(isEnabled: Bool, delegate: PlayerDelegate?) {
+		self.delegate = delegate
+		super.init(isEnabled: isEnabled)
+	}
 
-
-extension Player {
-
-	func didPlaySomeAsync() {
-		guard let playerDelegate else { return }
+	final func didPlaySomeAsync() {
+		guard let delegate else { return }
 		Task.detached { @AudioActor in
-			playerDelegate.player(self, isAt: time)
+			delegate.player(self, isAt: self.time)
 		}
 	}
 
-	func didEndPlayingAsync() {
-		guard let playerDelegate else { return }
+	final func didEndPlayingAsync() {
+		guard let delegate else { return }
 		Task.detached { @AudioActor in
-			playerDelegate.player(self, isAt: duration)
-			playerDelegate.playerDidEndPlaying(self)
+			delegate.player(self, isAt: self.duration)
+			delegate.playerDidEndPlaying(self)
 		}
 	}
+
+	private weak var delegate: PlayerDelegate?
 }
 
 
@@ -59,19 +59,19 @@ extension Player {
 /// You normally use the `isEnable` property to start and stop the playback. When disabled, this node returns silence to the upstream nodes.
 /// Once end of file is reached, `isEnable` flips to `false` automatically. You can restart the playback by setting `time` to `0` and enabling the node again.
 /// You can pass a delegate to the constructor of `FilePlayer`; your delegate should conform to Sendable and the overridden methods should assume being executed on `AudioActor`.
-class FilePlayer: Node, Player {
+class FilePlayer: Player {
 
 	/// Get or set the current time within the file. The granularity is approximately 10ms.
-	var time: TimeInterval {
+	override var time: TimeInterval {
 		get { withAudioLock { time$ } }
 		set { withAudioLock { time$ = newValue } }
 	}
 
 	/// Returns the total duration of the audio file. If the system sampling rate is the same as the file's own then the value is highly accurate; however if it's not then this value may be slightly off due to floating point arithmetic quirks. Most of the time the inaccuracy may be ignored in your code.
-	var duration: TimeInterval { duration$ } // no need for a lock
+	override var duration: TimeInterval { duration$ } // no need for a lock
 
 	/// Indicates whether end of file was reached while playing the file.
-	var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
+	override var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
 
 	func setAtEnd() { withAudioLock { playhead$ = file.estimatedTotalFrames } }
 
@@ -82,8 +82,7 @@ class FilePlayer: Node, Player {
 			return nil
 		}
 		self.file = file
-		self.playerDelegate = delegate
-		super.init(isEnabled: isEnabled)
+		super.init(isEnabled: isEnabled, delegate: delegate)
 		prepopulateCacheAsync(position: 0)
 	}
 
@@ -96,8 +95,9 @@ class FilePlayer: Node, Player {
 	}
 
 
+	// This method is also called directly from QueuePlayer, i.e. bypassing the usual rendering chain; it's because QueuePlayer needs an extra argument `offset`.
 	@discardableResult
-	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
+	fileprivate final func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
 		var framesCopied = offset
 		var reachedEnd = false
 
@@ -160,7 +160,6 @@ class FilePlayer: Node, Player {
 
 
 	private let file: AsyncAudioFileReader
-	weak var playerDelegate: PlayerDelegate?
 
 	private var lastKnownPlayhead$: Int = 0
 	private var playhead$: Int?
@@ -179,19 +178,19 @@ class FilePlayer: Node, Player {
 // MARK: - QueuePlayer
 
 /// Meta-player that provides gapless playback of multiple files. This node treats a series of files as a whole, it supports time positioning and `duration` within the whole. Think of Pink Floyd's *Wish You Were Here*, you absolutely *should* provide gapless playback for the entire album. Questions?
-class QueuePlayer: Node, Player {
+class QueuePlayer: Player {
 
 	/// Gets and sets the time position within the entire series of audio files.
-	var time: TimeInterval {
+	override var time: TimeInterval {
 		get { withAudioLock { time$ } }
 		set { withAudioLock { time$ = newValue } }
 	}
 
 	/// Returns the total duration of the entire series of audio files.
-	var duration: TimeInterval { withAudioLock { items$.map { $0.duration$ }.reduce(0, +) } }
+	override var duration: TimeInterval { withAudioLock { items$.map { $0.duration$ }.reduce(0, +) } }
 
 	/// Indicates whether the player has reached the end of the series of files.
-	var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
+	override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
 
 
 	/// Adds a file player to the queue. Can be done at any time during playback or not. Queue player creates FilePlayer objects internally, meaning that `url` can only point to a local file. Returns `false` if there was an error opening the audio file.
@@ -209,22 +208,14 @@ class QueuePlayer: Node, Player {
 	/// Creates a queue player node. The `format argument should be the same as the current system output's format which you can obtain via `System`'s `.streamFormat` property.
 	init(format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		self.format = format
-		self.playerDelegate = delegate
-		super.init(isEnabled: isEnabled)
+		super.init(isEnabled: isEnabled, delegate: delegate)
 	}
 
 
 	// Internal
 
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		read(frameCount: frameCount, buffers: buffers, offset: 0)
-		return noErr
-	}
-
-
-	@discardableResult
-	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
-		var framesWritten = offset
+		var framesWritten = 0
 
 		while true {
 			if !_items.indices.contains(_currentIndex) {
@@ -255,7 +246,7 @@ class QueuePlayer: Node, Player {
 			lastKnownIndex$ = _currentIndex
 		}
 
-		return framesWritten - offset
+		return noErr
 	}
 
 
@@ -300,11 +291,42 @@ class QueuePlayer: Node, Player {
 
 
 	private let format: StreamFormat
-	weak var playerDelegate: PlayerDelegate?
 
 	private var items$: [FilePlayer] = []
 	private var _items: [FilePlayer] = []
 	private var lastKnownIndex$: Int = 0
 	private var currentIndex$: Int?
 	private var _currentIndex: Int = 0
+}
+
+
+// MARK: - MemoryPlayer
+
+class MemoryPlayer: Player {
+
+	let data: AudioData
+
+	override var time: TimeInterval { data.time }
+	override var duration: TimeInterval { data.duration }
+	override var isAtEnd: Bool { data.isAtEnd }
+
+
+	init(data: AudioData, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
+		self.data = data
+		super.init(isEnabled: isEnabled, delegate: delegate)
+	}
+
+
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		let result = data.read(frameCount: frameCount, buffers: buffers, offset: 0)
+		if result < frameCount {
+			FillSilence(frameCount: frameCount, buffers: buffers, offset: result)
+			isEnabled = false
+			didEndPlayingAsync()
+		}
+		else {
+			didPlaySomeAsync()
+		}
+		return noErr
+	}
 }

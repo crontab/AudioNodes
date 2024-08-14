@@ -16,42 +16,44 @@ protocol RecorderDelegate: AnyObject, Sendable {
 }
 
 
-protocol Recorder: Sendable {
-	var duration: TimeInterval { get }
-	var isFull: Bool { get }
-	var recorderDelegate: RecorderDelegate? { get }
+class Recorder: Monitor {
+	var capacity: TimeInterval { 0 }
+	var duration: TimeInterval { 0 }
+	var isFull: Bool { true }
 
-	func stop()
-	func write(frameCount: Int, buffers: AudioBufferListPtr) -> Int
-}
+	init(isEnabled: Bool, delegate: RecorderDelegate?) {
+		self.delegate = delegate
+		super.init(isEnabled: isEnabled)
+	}
 
-
-extension Recorder {
-
-	func didRecordSomeAsync() {
-		guard let recorderDelegate else { return }
+	final func didRecordSomeAsync() {
+		guard let delegate else { return }
 		Task.detached { @AudioActor in
-			recorderDelegate.recorder(self, isAt: duration)
+			delegate.recorder(self, isAt: self.duration)
 		}
 	}
 
-	func didEndRecordingAsync() {
-		guard let recorderDelegate else { return }
+	final func didEndRecordingAsync() {
+		guard let delegate else { return }
 		Task.detached { @AudioActor in
-			recorderDelegate.recorder(self, isAt: duration)
-			recorderDelegate.recorderDidEndRecording(self)
+			delegate.recorder(self, isAt: self.duration)
+			delegate.recorderDidEndRecording(self)
 		}
 	}
+
+	private weak var delegate: RecorderDelegate?
 }
 
 
 // MARK: - FileRecorder
 
-class FileRecorder: Monitor, Recorder {
+class FileRecorder: Recorder {
 
-	var duration: TimeInterval { withAudioLock { Double(lastKnownPlayhead$) / file.format.sampleRate } }
+	override var capacity: TimeInterval { .greatestFiniteMagnitude } // TODO: available disk space?
 
-	var isFull: Bool { withAudioLock { lastKnownPlayhead$ >= frameCapacity } }
+	override var duration: TimeInterval { withAudioLock { Double(lastKnownPlayhead$) / file.format.sampleRate } }
+
+	override var isFull: Bool { withAudioLock { lastKnownPlayhead$ >= frameCapacity } }
 
 
 	init?(url: URL, format: StreamFormat, fileSampleRate: Double, compressed: Bool = true, capacity: TimeInterval, delegate: RecorderDelegate? = nil, isEnabled: Bool = false) {
@@ -60,14 +62,7 @@ class FileRecorder: Monitor, Recorder {
 		}
 		self.file = file
 		self.frameCapacity = Int(capacity * format.sampleRate)
-		super.init(isEnabled: isEnabled)
-	}
-
-
-	// Internal
-
-	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
-		write(frameCount: frameCount, buffers: buffers)
+		super.init(isEnabled: isEnabled, delegate: delegate)
 	}
 
 
@@ -76,8 +71,9 @@ class FileRecorder: Monitor, Recorder {
 	}
 
 
-	@discardableResult
-	func write(frameCount: Int, buffers: AudioBufferListPtr) -> Int {
+	// Internal
+
+	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		let toWrite = min(frameCount, frameCapacity - _playhead)
 		if toWrite > 0, file.writeAsync(frameCount: toWrite, buffers: buffers) == nil {
 			_playhead += toWrite
@@ -85,23 +81,37 @@ class FileRecorder: Monitor, Recorder {
 				lastKnownPlayhead$ = _playhead
 			}
 			didRecordSomeAsync()
-			return frameCount
 		}
 		else {
 			isEnabled = false
 			didEndRecordingAsync()
-			return 0
 		}
 	}
 
 
 	// Private
 
-	var recorderDelegate: (any RecorderDelegate)?
-
 	private let file: AudioFileWriter
 	private let frameCapacity: Int
 
 	private var _playhead: Int = 0
 	private var lastKnownPlayhead$: Int = 0
+}
+
+
+// MARK: - MemoryRecorder
+
+class MemoryRecorder: Recorder {
+
+	let data: AudioData
+
+	override var capacity: TimeInterval { data.capacity }
+	override var duration: TimeInterval { data.duration }
+	override var isFull: Bool { data.isFull }
+
+
+	init(data: AudioData, isEnabled: Bool = false, delegate: RecorderDelegate? = nil) {
+		self.data = data
+		super.init(isEnabled: isEnabled, delegate: delegate)
+	}
 }
