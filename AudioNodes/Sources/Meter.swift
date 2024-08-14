@@ -25,9 +25,10 @@ private let BINS_PER_SEC: Float = 25 // update frequency is 25 times per second,
 class Meter: Monitor {
 
 	/// Creates a meter node; the audio format should be known at the time of creation. You can obtain the format from `System`'s `.streamFormat` property.
-	init(format: StreamFormat, delegate: MeterDelegate) {
+	init(format: StreamFormat, isEnabled: Bool = true, delegate: MeterDelegate) {
 		self.binFrames = Int(format.sampleRate / Double(BINS_PER_SEC))
 		self.delegate = delegate
+		super.init(isEnabled: isEnabled)
 	}
 
 

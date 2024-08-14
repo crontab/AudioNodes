@@ -17,12 +17,12 @@ struct SectionView<Content: View, Title: View>: View {
 	var body: some View {
 		content()
 			.padding(.vertical, 24)
-			.padding(.horizontal, 28)
+			.padding(.horizontal, 16)
 			.background {
 				RoundedRectangle(cornerRadius: 12)
 					.fill(.clear)
 					.stroke(.white.opacity(0.2), lineWidth: 2)
-					.padding(8)
+					.padding(.vertical, 8)
 					.mask {
 						ZStack { // inverted mask trick
 							Rectangle()

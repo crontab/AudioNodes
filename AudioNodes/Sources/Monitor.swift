@@ -13,9 +13,16 @@ import Foundation
 /// A simpler abstract passive node that can be attached to any audio node using `connectMonitor()`.
 class Monitor: @unchecked Sendable {
 
+	/// Indicates whether monitoring should be skipped. If disabled, none of the connected monitors receive data anymore.
 	var isEnabled: Bool {
-		get { withAudioLock { enabled$ } }
-		set { withAudioLock { enabled$ = newValue } }
+		get { withAudioLock { config$.enabled } }
+		set { withAudioLock { config$.enabled = newValue } }
+	}
+
+	/// Indicates whether this monitor should skip its own `_monitor()` call. Connected monitors will still receive data.
+	var isBypassing: Bool {
+		get { withAudioLock { config$.bypass } }
+		set { withAudioLock { config$.bypass = newValue } }
 	}
 
 	/// Abstract overridable function that's called if it's connected to an audio node. Monitors are not supposed to modify data.
@@ -23,10 +30,24 @@ class Monitor: @unchecked Sendable {
 		Abstract()
 	}
 
+	/// Connects a monitor object to the given monitor..
+	func connectMonitor(_ monitor: Monitor) {
+		withAudioLock {
+			config$.monitor = monitor
+		}
+	}
+
+	/// Disconnects the monitor.
+	func disconnectMonitor() {
+		withAudioLock {
+			config$.monitor = nil
+		}
+	}
+
 
 	init(isEnabled: Bool = true) {
-		_enabled = isEnabled
-		enabled$ = isEnabled
+		_config = .init(enabled: isEnabled)
+		config$ = .init(enabled: isEnabled)
 	}
 
 
@@ -41,22 +62,32 @@ class Monitor: @unchecked Sendable {
 
 	// Internal
 
-	final func _internalRender(frameCount: Int, buffers: AudioBufferListPtr) {
+	final func _internalMonitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		withAudioLock {
 			_willRender$()
 		}
-		guard _enabled else { return }
-		_monitor(frameCount: frameCount, buffers: buffers)
+		if _config.enabled {
+			if !_config.bypass {
+				_monitor(frameCount: frameCount, buffers: buffers)
+			}
+			_config.monitor?._internalMonitor(frameCount: frameCount, buffers: buffers)
+		}
 	}
 
 
 	func _willRender$() {
-		_enabled = enabled$
+		_config = config$
 	}
 
 
 	// Private
 
-	private var enabled$: Bool // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
-	private var _enabled: Bool // config used during the rendering cycle
+	private struct Config {
+		var monitor: Monitor?
+		var bypass: Bool = false
+		var enabled: Bool
+	}
+
+	private var config$: Config
+	private var _config: Config
 }

@@ -108,7 +108,10 @@ extension System {
 			if status != noErr || numRead == 0 {
 				break
 			}
-			data.write(frameCount: Int(numRead), buffers: buffers, offset: 0)
+			let result = data.write(frameCount: Int(numRead), buffers: buffers)
+			if result < numRead {
+				break
+			}
 		}
 
 		let progress = PlayerProgress()
@@ -128,10 +131,10 @@ struct CLI {
 		let system = System(isStereo: true)
 		system.start()
 //		await system.testSine()
-		await system.testMixer()
+//		await system.testMixer()
 //		await system.testFile()
-		await system.testQueuePlayer()
-//		await system.testMemoryPlayer()
+//		await system.testQueuePlayer()
+		await system.testMemoryPlayer()
 	}
 
 

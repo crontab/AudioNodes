@@ -138,7 +138,7 @@ final class Mixer: Node {
 		var first = true
 		for bus in buses {
 			let status = first ?
-				bus._internalRender(frameCount: frameCount, buffers: buffers)
+				bus._internalPull(frameCount: frameCount, buffers: buffers)
 					: _renderAndMix(node: bus, frameCount: frameCount, buffers: buffers)
 			first = false
 			if status != noErr {
@@ -154,7 +154,7 @@ final class Mixer: Node {
 
 	private func _renderAndMix(node: Node, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		var status: OSStatus
-		status = node._internalRender(frameCount: frameCount, buffers: _scratchBuffer.buffers)
+		status = node._internalPull(frameCount: frameCount, buffers: _scratchBuffer.buffers)
 		for i in 0..<buffers.count {
 			let src = _scratchBuffer.buffers[i]
 			let dst = buffers[i]

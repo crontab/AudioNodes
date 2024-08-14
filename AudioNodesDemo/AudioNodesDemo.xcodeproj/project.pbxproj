@@ -24,7 +24,11 @@
 		3643100A2C69F26D000CF9F3 /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310092C69F26D000CF9F3 /* Monitor.swift */; };
 		3643100E2C69F300000CF9F3 /* Meter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3643100D2C69F300000CF9F3 /* Meter.swift */; };
 		364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310112C6A09C1000CF9F3 /* SectionView.swift */; };
+		364643C32C6D16B30038F237 /* deux.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 369CCACB2C6B52BC002F462B /* deux.m4a */; };
+		364643C42C6D16BA0038F237 /* trois.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 369CCACC2C6B52BC002F462B /* trois.m4a */; };
 		3655FFDE2C6BC811000DE2B6 /* AudioData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3655FFDD2C6BC811000DE2B6 /* AudioData.swift */; };
+		365B397E2C6C8DC600DF2AF2 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365B397D2C6C8DC600DF2AF2 /* Recorder.swift */; };
+		36ADA3152C6C300C006916A0 /* AudioFileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36ADA3142C6C300C006916A0 /* AudioFileWriter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,8 +51,10 @@
 		3643100D2C69F300000CF9F3 /* Meter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meter.swift; sourceTree = "<group>"; };
 		364310112C6A09C1000CF9F3 /* SectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionView.swift; sourceTree = "<group>"; };
 		3655FFDD2C6BC811000DE2B6 /* AudioData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioData.swift; sourceTree = "<group>"; };
+		365B397D2C6C8DC600DF2AF2 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		369CCACB2C6B52BC002F462B /* deux.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = deux.m4a; sourceTree = "<group>"; };
 		369CCACC2C6B52BC002F462B /* trois.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = trois.m4a; sourceTree = "<group>"; };
+		36ADA3142C6C300C006916A0 /* AudioFileWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioFileWriter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,11 +116,13 @@
 				36430FFE2C69C52D000CF9F3 /* Utilities.swift */,
 				36430FFA2C69C52D000CF9F3 /* Node.swift */,
 				364310092C69F26D000CF9F3 /* Monitor.swift */,
+				3655FFDD2C6BC811000DE2B6 /* AudioData.swift */,
 				3643100D2C69F300000CF9F3 /* Meter.swift */,
 				36430FF92C69C52D000CF9F3 /* Mixer.swift */,
 				36430FF82C69C52D000CF9F3 /* AudioFileReader.swift */,
-				3655FFDD2C6BC811000DE2B6 /* AudioData.swift */,
+				36ADA3142C6C300C006916A0 /* AudioFileWriter.swift */,
 				36430FFB2C69C52D000CF9F3 /* Player.swift */,
+				365B397D2C6C8DC600DF2AF2 /* Recorder.swift */,
 				36430FFC2C69C52D000CF9F3 /* SineGenerator.swift */,
 				36430FFD2C69C52D000CF9F3 /* System.swift */,
 			);
@@ -181,6 +189,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				363478BA2C692BD7004BB3B8 /* Assets.xcassets in Resources */,
+				364643C32C6D16B30038F237 /* deux.m4a in Resources */,
+				364643C42C6D16BA0038F237 /* trois.m4a in Resources */,
 				363478C52C692C25004BB3B8 /* eyes-demo.m4a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -201,9 +211,11 @@
 				363244602C6961280021C8BE /* Globals.swift in Sources */,
 				363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */,
 				364310012C69C52D000CF9F3 /* Mixer.swift in Sources */,
+				365B397E2C6C8DC600DF2AF2 /* Recorder.swift in Sources */,
 				3655FFDE2C6BC811000DE2B6 /* AudioData.swift in Sources */,
 				364310032C69C52D000CF9F3 /* Player.swift in Sources */,
 				3643100E2C69F300000CF9F3 /* Meter.swift in Sources */,
+				36ADA3152C6C300C006916A0 /* AudioFileWriter.swift in Sources */,
 				364310042C69C52D000CF9F3 /* SineGenerator.swift in Sources */,
 				364310002C69C52D000CF9F3 /* AudioFileReader.swift in Sources */,
 				3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */,
@@ -346,6 +358,7 @@
 				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Need access to microphone to test recording";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -379,6 +392,7 @@
 				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Need access to microphone to test recording";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

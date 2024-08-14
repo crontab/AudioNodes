@@ -232,7 +232,7 @@ class QueuePlayer: Node, Player {
 				break
 			}
 			let player = _items[_currentIndex]
-			// Note that we bypass the usual rendering call _internalRender(). This is a bit dangerous in case changes are made in Node or FilePlayer. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
+			// Note that we bypass the usual rendering call _internalPull(). This is a bit dangerous in case changes are made in Node or FilePlayer. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
 			withAudioLock {
 				player._willRender$()
 			}

@@ -212,18 +212,11 @@ final class System: Node {
 		}
 
 
-		final override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-			// Already rendered by the system in inputRenderCallback()
-			return noErr
-		}
-
-
 		deinit {
 			renderBuffer.unsafeMutablePointer.deallocate()
 		}
 
 
-		// We override isEnabled rather than use _reset() because start()/stop() should be invoked on the main thread
 		override var isEnabled: Bool {
 			didSet {
 				guard oldValue != isEnabled else {
@@ -245,6 +238,11 @@ final class System: Node {
 #endif
 			}
 		}
+
+
+		override func connect(_ input: Node) {
+			Unrecoverable(51023) // You can't connect to the input node as a source (not yet at least)
+		}
 	}
 }
 
@@ -254,7 +252,7 @@ final class System: Node {
 private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, timeStamp: UnsafePointer<AudioTimeStamp>, busNumber: UInt32, frameCount: UInt32, buffers: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
 	let obj: System = Bridge(ptr: userData)
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
-	return obj._internalRender(frameCount: Int(frameCount), buffers: AudioBufferListPtr(&buffers!.pointee))
+	return obj._internalPull(frameCount: Int(frameCount), buffers: AudioBufferListPtr(&buffers!.pointee))
 }
 
 
@@ -275,5 +273,5 @@ private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags:
 	NotError(AudioUnitRender(obj.unit, actionFlags, timeStamp, busNumber, frameCount, renderBuffer.unsafeMutablePointer), 51024)
 
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
-	return obj._internalRender(frameCount: Int(frameCount), buffers: obj.renderBuffer)
+	return obj._internalPush(frameCount: Int(frameCount), buffers: obj.renderBuffer)
 }

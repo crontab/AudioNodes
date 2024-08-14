@@ -61,22 +61,68 @@ struct MainView: View {
 
 
 	private func inOut(width: Double) -> some View {
-		HStack {
-			SectionView {
-				Text("OUTPUT")
-					.font(.smallText)
-			} content: {
-				VStack(alignment: .trailing, spacing: 16) {
-					toggle(isOn: $audio.isOutputEnabled, left: "On")
-						.padding(.bottom, 8)
-					ProgressView(value: audio.normalizedOutputGainLeft)
-					ProgressView(value: audio.normalizedOutputGainRight)
-				}
-				.frame(width: min(120, width / 4))
-				.padding(.vertical, 6)
-			}
-
+		HStack(alignment: .bottom) {
+			outputSection(width: width)
 			Spacer()
+			inputSection(width: width)
+		}
+		.frame(height: 144)
+	}
+
+
+	private func outputSection(width: Double) -> some View {
+		SectionView {
+			Text("OUTPUT")
+				.font(.smallText)
+				.foregroundColor(.white.opacity(0.5))
+		} content: {
+			VStack(alignment: .trailing, spacing: 16) {
+				toggle(isOn: $audio.isOutputEnabled, left: "On")
+					.padding(.bottom, 8)
+				Group {
+					ProgressView(value: audio.outputGainLeft)
+					ProgressView(value: audio.outputGainRight)
+				}
+				.tint(.blue)
+			}
+			.frame(width: min(120, width / 4))
+			.frame(maxHeight: .infinity)
+		}
+	}
+
+
+	private func inputSection(width: Double) -> some View {
+		SectionView {
+			Text("INPUT")
+				.font(.smallText)
+				.foregroundColor(.white.opacity(0.5))
+		} content: {
+			VStack(spacing: 16) {
+				HStack(alignment: .center) {
+					Button {
+						
+					} label: {
+						VStack(spacing: 4) {
+							Image(systemName: "circle.fill")
+								.font(.system(size: 12))
+							Text("REC")
+								.font(.smallText)
+						}
+						.padding(.top, 2)
+					}
+					.buttonStyle(.bordered)
+					.tint(audio.isRecording ? .red : .secondary)
+					.disabled(!audio.isInputEnabled)
+
+					Spacer()
+
+					toggle(isOn: $audio.isInputEnabled, left: "On")
+				}
+				ProgressView(value: audio.inputGain)
+					.tint(.red)
+			}
+			.frame(width: min(160, width / 2.5))
+			.frame(maxHeight: .infinity)
 		}
 	}
 
