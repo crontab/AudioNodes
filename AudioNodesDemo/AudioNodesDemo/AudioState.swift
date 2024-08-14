@@ -21,7 +21,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 			if isRunning {
 				Task {
 					system.start()
-					await system.smoothConnect(root)
+					system.connect(root)
 				}
 			}
 			else {

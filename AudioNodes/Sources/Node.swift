@@ -67,32 +67,21 @@ class Node: @unchecked Sendable {
 		set { withAudioLock { config$.bypass = newValue } }
 	}
 
-	/// Connects a node that should provide source data. Each node should be connected to only one other node at a time. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge. See also `smoothConnect()`.
+	/// Connects a node that should provide source data. Each node should be connected to only one other node at a time. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge.
 	func connect(_ input: Node) {
 		withAudioLock {
 			config$.input = input
 		}
 	}
 
-	/// Disconnects input.
+	/// Disconnects input. See also `smoothDisconnect()`.
 	func disconnect() {
 		withAudioLock {
 			config$.input = nil
 		}
 	}
 
-	/// Connects input smoothly, i.e. ensuring no clicks happen. Use this method when connecting nodes while already running and rendering audio.
-	@AudioActor
-	func smoothConnect(_ input: Node) async {
-		let wasMuted = isMuted
-		isMuted = true
-		connect(input)
-		await Sleep(0.011) // the simplest possible synrhonization method, we don't want to complicate things
-		isMuted = wasMuted
-	}
-
 	/// Disconnects input smoothly, i.e. ensuring no clicks happen.
-	@AudioActor
 	func smoothDisconnect() async {
 		let wasMuted = isMuted
 		isMuted = true

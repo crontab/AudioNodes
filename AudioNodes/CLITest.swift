@@ -33,7 +33,7 @@ extension System {
 	func testSine() async {
 		print("--- ", #function)
 		let sine = SineGenerator(freq: 440, format: streamFormat, isEnabled: true)
-		await smoothConnect(sine)
+		connect(sine)
 		await Sleep(1)
 		sine.isEnabled = false
 		await Sleep(1)
@@ -124,7 +124,6 @@ extension System {
 @main
 struct CLI {
 
-	@AudioActor
 	static func runTests() async {
 		let system = System(isStereo: true)
 		system.start()
