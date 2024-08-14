@@ -121,11 +121,14 @@ class FilePlayer: Player {
 		}
 
 		if reachedEnd {
-			isEnabled = false
 			withAudioLock {
 				lastKnownPlayhead$ = file.estimatedTotalFrames
 			}
-			didEndPlayingAsync()
+			// Avoid duplicate calls to didEndPlayingAsync() by checking _isEnabled: when disabling a node, it plays one more cycle by ramping data down.
+			if _isEnabled {
+				isEnabled = false
+				didEndPlayingAsync()
+			}
 		}
 		else {
 			prepopulateCacheAsync(position: _playhead)
@@ -234,16 +237,18 @@ class QueuePlayer: Player {
 			_currentIndex += 1
 		}
 
+		withAudioLock {
+			lastKnownIndex$ = _currentIndex
+		}
+
 		if framesWritten < frameCount {
-			isEnabled = false
-			didEndPlayingAsync()
+			if _isEnabled {
+				isEnabled = false
+				didEndPlayingAsync()
+			}
 		}
 		else {
 			didPlaySomeAsync()
-		}
-
-		withAudioLock {
-			lastKnownIndex$ = _currentIndex
 		}
 
 		return noErr
@@ -321,8 +326,10 @@ class MemoryPlayer: Player {
 		let result = data.read(frameCount: frameCount, buffers: buffers, offset: 0)
 		if result < frameCount {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: result)
-			isEnabled = false
-			didEndPlayingAsync()
+			if _isEnabled {
+				isEnabled = false
+				didEndPlayingAsync()
+			}
 		}
 		else {
 			didPlaySomeAsync()

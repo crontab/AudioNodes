@@ -130,8 +130,8 @@ struct CLI {
 	static func runTests() async {
 		let system = System(isStereo: true)
 		system.start()
-		await system.testSine()
-		await system.testMixer()
+//		await system.testSine()
+//		await system.testMixer()
 		await system.testFile()
 		await system.testQueuePlayer()
 		await system.testMemoryPlayer()

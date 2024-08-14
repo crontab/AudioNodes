@@ -236,8 +236,8 @@ class Node: @unchecked Sendable {
 
 	// MARK: - Internal: Connection management
 
-	var _isInputConnected: Bool { _config.source != nil }
-	var _isEnabled: Bool { _config.enabled }
+	final var _isInputConnected: Bool { _config.source != nil }
+	final var _isEnabled: Bool { _config.enabled }
 
 
 	// MARK: - Private
