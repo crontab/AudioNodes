@@ -11,13 +11,13 @@ import Foundation
 // MARK: - AudioData
 
 /// Up to 60s of in-memory audio data object that can be read or written to. The object can be used with MemoryPlayer and MemoryRecorder nodes. Thread-safe; can be used in both nodes simultanously.
-class AudioData: @unchecked Sendable, Player {
+final class AudioData: @unchecked Sendable {
 
 	var capacity: TimeInterval { Double(frameCapacity) / sampleRate }
-
 	var duration: TimeInterval { withWriteLock { Double(framesWritten) / sampleRate } }
 	var time: TimeInterval { withReadLock { Double(framesRead) / sampleRate } }
 	var isAtEnd: Bool { withWriteLock { withReadLock { framesRead == framesWritten } } }
+	var isFull: Bool { withWriteLock { framesWritten == frameCapacity } }
 
 
 	init(durationSeconds: Int, format: StreamFormat) {
@@ -31,26 +31,20 @@ class AudioData: @unchecked Sendable, Player {
 	}
 
 
-	@discardableResult
-	func write(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
+	func write(frameCount: Int, buffers: AudioBufferListPtr) -> Int {
 		withWriteLock {
-			var framesCopied = offset
+			var framesCopied = 0
 			while framesCopied < frameCount, framesWritten < frameCapacity {
 				let chunk = chunks[framesWritten / chunkCapacity]
 				let copied = Copy(from: buffers, to: chunk.buffers, fromOffset: framesCopied, toOffset: framesWritten % chunkCapacity)
 				framesCopied += copied
 				framesWritten += copied
 			}
-			return framesCopied - offset
+			return framesCopied
 		}
 	}
 
 
-	func prepareRead() { // Player delegate
-	}
-
-
-	@discardableResult
 	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
 		let framesWritten = withWriteLock { self.framesWritten }
 		return withReadLock {
@@ -102,8 +96,6 @@ class AudioData: @unchecked Sendable, Player {
 	private var readSem: DispatchSemaphore = .init(value: 1)
 	private var writeSem: DispatchSemaphore = .init(value: 1)
 
-	var delegate: (any PlayerDelegate)? // unused
-
 	private func withReadLock<T>(execute: () -> T) -> T {
 		readSem.wait()
 		defer { readSem.signal() }
@@ -131,7 +123,7 @@ class MemoryPlayer: Node, Player {
 
 	init(data: AudioData, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		self.data = data
-		self.delegate = delegate
+		self.playerDelegate = delegate
 		super.init(isEnabled: isEnabled)
 	}
 
@@ -139,14 +131,6 @@ class MemoryPlayer: Node, Player {
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		read(frameCount: frameCount, buffers: buffers, offset: 0)
 		return noErr
-	}
-
-
-	func prepareRead() {
-		data.prepareRead()
-		withAudioLock {
-			_willRender$()
-		}
 	}
 
 
@@ -167,5 +151,5 @@ class MemoryPlayer: Node, Player {
 
 	// Private
 
-	weak var delegate: PlayerDelegate?
+	weak var playerDelegate: PlayerDelegate?
 }

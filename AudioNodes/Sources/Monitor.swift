@@ -13,6 +13,11 @@ import Foundation
 /// A simpler abstract passive node that can be attached to any audio node using `connectMonitor()`.
 class Monitor: @unchecked Sendable {
 
+	var isEnabled: Bool {
+		get { withAudioLock { enabled$ } }
+		set { withAudioLock { enabled$ = newValue } }
+	}
+
 	/// Abstract overridable function that's called if it's connected to an audio node. Monitors are not supposed to modify data.
 	func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		Abstract()

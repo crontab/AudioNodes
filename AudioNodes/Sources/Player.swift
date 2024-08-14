@@ -27,9 +27,8 @@ protocol Player: Sendable {
 	var time: TimeInterval { get }
 	var duration: TimeInterval { get }
 	var isAtEnd: Bool { get }
-	var delegate: PlayerDelegate? { get }
+	var playerDelegate: PlayerDelegate? { get }
 
-	func prepareRead() // used in multithreaded runs where config should be copied safely
 	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int
 }
 
@@ -37,17 +36,17 @@ protocol Player: Sendable {
 extension Player {
 
 	func didPlaySomeAsync() {
-		guard let delegate else { return }
+		guard let playerDelegate else { return }
 		Task.detached { @AudioActor in
-			delegate.player(self, isAt: time)
+			playerDelegate.player(self, isAt: time)
 		}
 	}
 
 	func didEndPlayingAsync() {
-		guard let delegate else { return }
+		guard let playerDelegate else { return }
 		Task.detached { @AudioActor in
-			delegate.player(self, isAt: duration)
-			delegate.playerDidEndPlaying(self)
+			playerDelegate.player(self, isAt: duration)
+			playerDelegate.playerDidEndPlaying(self)
 		}
 	}
 }
@@ -83,7 +82,7 @@ class FilePlayer: Node, Player {
 			return nil
 		}
 		self.file = file
-		self.delegate = delegate
+		self.playerDelegate = delegate
 		super.init(isEnabled: isEnabled)
 		prepopulateCacheAsync(position: 0)
 	}
@@ -94,13 +93,6 @@ class FilePlayer: Node, Player {
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		read(frameCount: frameCount, buffers: buffers, offset: 0)
 		return noErr
-	}
-
-
-	func prepareRead() { // Player delegate
-		withAudioLock {
-			_willRender$()
-		}
 	}
 
 
@@ -128,7 +120,7 @@ class FilePlayer: Node, Player {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: framesCopied)
 		}
 
-		if reachedEnd, _isEnabled { // Check enabled status to avoid didEndPlaying() being called twice
+		if reachedEnd {
 			isEnabled = false
 			withAudioLock {
 				lastKnownPlayhead$ = file.estimatedTotalFrames
@@ -168,7 +160,7 @@ class FilePlayer: Node, Player {
 
 
 	private let file: AsyncAudioFileReader
-	weak var delegate: PlayerDelegate?
+	weak var playerDelegate: PlayerDelegate?
 
 	private var lastKnownPlayhead$: Int = 0
 	private var playhead$: Int?
@@ -217,7 +209,7 @@ class QueuePlayer: Node, Player {
 	/// Creates a queue player node. The `format argument should be the same as the current system output's format which you can obtain via `System`'s `.streamFormat` property.
 	init(format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		self.format = format
-		self.delegate = delegate
+		self.playerDelegate = delegate
 		super.init(isEnabled: isEnabled)
 	}
 
@@ -227,13 +219,6 @@ class QueuePlayer: Node, Player {
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		read(frameCount: frameCount, buffers: buffers, offset: 0)
 		return noErr
-	}
-
-
-	func prepareRead() { // Player delegate
-		withAudioLock {
-			_willRender$()
-		}
 	}
 
 
@@ -248,7 +233,9 @@ class QueuePlayer: Node, Player {
 			}
 			let player = _items[_currentIndex]
 			// Note that we bypass the usual rendering call _internalRender(). This is a bit dangerous in case changes are made in Node or FilePlayer. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
-			player.prepareRead()
+			withAudioLock {
+				player._willRender$()
+			}
 			framesWritten += player.read(frameCount: frameCount, buffers: buffers, offset: framesWritten)
 			if framesWritten >= frameCount {
 				break
@@ -256,7 +243,7 @@ class QueuePlayer: Node, Player {
 			_currentIndex += 1
 		}
 
-		if framesWritten < frameCount, _isEnabled {
+		if framesWritten < frameCount {
 			isEnabled = false
 			didEndPlayingAsync()
 		}
@@ -313,7 +300,7 @@ class QueuePlayer: Node, Player {
 
 
 	private let format: StreamFormat
-	weak var delegate: PlayerDelegate?
+	weak var playerDelegate: PlayerDelegate?
 
 	private var items$: [FilePlayer] = []
 	private var _items: [FilePlayer] = []
