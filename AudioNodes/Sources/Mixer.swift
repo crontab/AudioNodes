@@ -15,6 +15,9 @@ import Accelerate
 final class VolumeControl: Node {
 
 	let busNumber: Int? // for debug diagnostics only
+	let format: StreamFormat
+
+	var volume: Float { withAudioLock { lastKnownVolume$ } }
 
 
 	init(format: StreamFormat, busNumber: Int? = nil) {
@@ -79,6 +82,10 @@ final class VolumeControl: Node {
 			}
 		}
 
+		withAudioLock {
+			lastKnownVolume$ = _previous
+		}
+
 		return noErr
 	}
 
@@ -106,8 +113,8 @@ final class VolumeControl: Node {
 		var fadeFrames: Int
 	}
 
-	private let format: StreamFormat
 	private var config$: Config? = nil
+	private var lastKnownVolume$: Float = 1
 	private var _config: Config = .init(fadeEnd: 1, fadeFrames: 0)
 	private var _previous: Float = 1
 }
