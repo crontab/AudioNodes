@@ -54,13 +54,13 @@ final class System: Node {
 
 		switch AVCaptureDevice.authorizationStatus(for: .audio) {
 			case .authorized: // The user has previously granted access
-				input = Input(instance: self)
+				input = Input(system: self)
 				return true
 
 			case .notDetermined: // The user has not yet been asked for access
 				let granted = await AVCaptureDevice.requestAccess(for: .audio)
 				if granted, input == nil {
-					input = Input(instance: self)
+					input = Input(system: self)
 				}
 				return granted
 
@@ -177,14 +177,12 @@ final class System: Node {
 		private weak var system: System?
 
 
-		fileprivate init?(instance: System) {
-			let isStereo = false
-
-			self.unit = instance.unit
-			self.system = instance
+		fileprivate init?(system: System) {
+			self.unit = system.unit
+			self.system = system
 
 			// Render buffer: the input AU will allocate the data buffers, we just supply the buffer headers
-			renderBuffer = AudioBufferList.allocate(maximumBuffers: isStereo ? 2 : 1)
+			renderBuffer = AudioBufferList.allocate(maximumBuffers: system.streamFormat.isStereo ? 2 : 1)
 
 			super.init()
 
@@ -200,7 +198,7 @@ final class System: Node {
 			}
 
 			// Set format and sample rate to the same as hardware output
-			var descr: AudioStreamBasicDescription = .canonical(with: .init(sampleRate: System.hardwareSampleRate(unit: unit), isStereo: isStereo))
+			var descr: AudioStreamBasicDescription = .canonical(with: system.streamFormat)
 			NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51022)
 
 			// Set render callback
