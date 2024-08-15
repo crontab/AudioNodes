@@ -85,8 +85,7 @@ struct MainView: View {
 				}
 				.tint(.blue)
 			}
-			.frame(width: min(120, width / 4))
-			.frame(maxHeight: .infinity)
+			.frame(width: min(120, width / 3))
 		}
 	}
 
@@ -99,29 +98,20 @@ struct MainView: View {
 		} content: {
 			VStack(spacing: 16) {
 				HStack(alignment: .center) {
-					Button {
-						
-					} label: {
-						VStack(spacing: 4) {
-							Image(systemName: "circle.fill")
-								.font(.system(size: 12))
-							Text("REC")
-								.font(.smallText)
-						}
-						.padding(.top, 2)
-					}
-					.buttonStyle(.bordered)
-					.tint(audio.isRecording ? .red : .secondary)
-					.disabled(!audio.isInputEnabled)
-
+//					Text(String(format: "%.1fs", audio.playerTimePosition))
+//						.font(.smallText)
 					Spacer()
-
 					toggle(isOn: $audio.isInputEnabled, left: "On")
+				}
+				HStack {
+					recButton()
+					Spacer()
+					playButton()
 				}
 				ProgressView(value: audio.inputGain)
 					.tint(.red)
 			}
-			.frame(width: min(160, width / 2.5))
+			.frame(width: min(160, width / 3))
 			.frame(maxHeight: .infinity)
 		}
 	}
@@ -156,7 +146,59 @@ struct MainView: View {
 	}
 
 
-	func toggle(isOn: Binding<Bool>, left: String? = nil, right: String? = nil) -> some View {
+	private func recButton() -> some View {
+		audioButton {
+			audio.isRecording = !audio.isRecording
+		} label: {
+			VStack(spacing: 4) {
+				Image(systemName: "circle.fill")
+					.font(.system(size: 12))
+				Text("REC")
+					.font(.smallText)
+			}
+			.padding(.top, 2)
+		}
+		.tint(audio.isRecording ? .red : .secondary)
+		.disabled(!audio.isInputEnabled)
+	}
+
+
+	private func playButton() -> some View {
+		audioButton {
+			audio.isRecordingPlaying = !audio.isRecordingPlaying
+		} label: {
+			VStack(spacing: 4) {
+				Group {
+					if audio.isRecordingPlaying {
+						Image(systemName: "square.fill")
+					}
+					else {
+						Image(systemName: "triangle.fill")
+							.rotationEffect(.degrees(90))
+							.offset(x: 0.5)
+					}
+				}
+				.font(.system(size: 12))
+				Text("PLAY")
+					.font(.smallText)
+			}
+			.padding(.top, 2)
+		}
+		.tint(audio.isRecordingPlaying ? .blue : .secondary)
+		.disabled(!audio.isInputEnabled || audio.recorderPosition == 0)
+	}
+
+
+	private func audioButton<L: View>(action: @escaping () -> Void, label: () -> L) -> some View {
+		Button(action: action) {
+			label()
+				.frame(width: 24)
+		}
+		.buttonStyle(.bordered)
+	}
+
+
+	private func toggle(isOn: Binding<Bool>, left: String? = nil, right: String? = nil) -> some View {
 		HStack(spacing: 8) {
 			if let left {
 				Text(left)

@@ -16,17 +16,15 @@ private func outUrl(_ name: String) -> URL { URL(fileURLWithPath: FileManager.de
 
 
 @MainActor
-final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
+final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, RecorderDelegate {
 
 	@Published var isRunning: Bool = false {
 		didSet {
 			guard isRunning != oldValue else { return }
 			initializeOutputGraph()
 			if isRunning {
-				Task {
-					system.start()
-					system.connectSource(root)
-				}
+				system.start()
+				system.connectSource(mixer)
 			}
 			else {
 				Task {
@@ -78,11 +76,37 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 
 	@Published var isRecording: Bool = false {
 		didSet {
+			guard isRecording != oldValue else { return }
+			if isRecording {
+				isRecordingPlaying = false
+				recorder.isEnabled = false
+				recordingData.clear()
+				recorderPosition = 0
+				recorder.isEnabled = true
+			}
+			else {
+				recorder.isEnabled = false
+			}
+		}
+	}
+
+
+	@Published var isRecordingPlaying: Bool = false {
+		didSet {
+			guard isRecordingPlaying != oldValue else { return }
+			if isRecordingPlaying {
+				isRecording = false
+				if recordingPlayer.isAtEnd {
+					recordingPlayer.reset()
+				}
+			}
+			recordingPlayer.isEnabled = isRecordingPlaying
 		}
 	}
 
 
 	@Published var playerTimePosition: TimeInterval = 0
+	@Published var recorderPosition: TimeInterval = 0
 
 	@Published var outputGainLeft: Float = 0
 	@Published var outputGainRight: Float = 0
@@ -93,23 +117,59 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 	init() {
 		guard !Globals.isPreview else { return }
 		Self.activateAVAudioSession()
+		if System.inputAuthorized {
+			isInputEnabled = true
+		}
 	}
 
 
+	// MARK: - Player delegate
+
 	func player(_ player: Player, isAt time: TimeInterval) {
-//		let time = player.time
-//		Task { @MainActor in
-//			self.playerTimePosition = time
-//		}
+		Task { @MainActor in
+			if player === self.player {
+//				self.playerTimePosition = time
+			}
+			else if player === self.recordingPlayer {
+			}
+		}
 	}
 
 
 	func playerDidEndPlaying(_ player: Player) {
 		Task { @MainActor in
-			self.isPlaying = false
+			if player === self.player {
+				self.isPlaying = false
+			}
+			else if player === self.recordingPlayer {
+				self.isRecordingPlaying = false
+			}
 		}
 	}
 
+
+	// MARK: - Recorder delegate
+
+	@AudioActor
+	private var previousRecPos: TimeInterval = 0
+
+	func recorder(_ recorder: Recorder, isAt time: TimeInterval) {
+		guard abs(time - previousRecPos) >= 0.25 else { return }
+		previousRecPos = time
+		Task { @MainActor in
+			recorderPosition = time
+		}
+	}
+
+
+	func recorderDidEndRecording(_ recorder: Recorder) {
+		Task { @MainActor in
+			isRecording = false
+		}
+	}
+
+
+	// MARK: - Meter delegate
 
 	func meterDidUpdateGains(_ meter: Meter, left: Float, right: Float) {
 		Task { @MainActor in
@@ -132,27 +192,37 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate {
 	}
 
 
+	// MARK: - Private part
+
 	private func initializeOutputGraph() {
 		guard !isOutputInitialized else { return }
 		isOutputInitialized = true
-		root.buses[0].connectSource(player)
-		root.connectMonitor(outputMeter)
+		mixer.buses[0].connectSource(player)
+		mixer.buses[1].connectSource(recordingPlayer)
+		mixer.connectMonitor(outputMeter)
 	}
 
 
 	private func initializeInputGraph() {
 		guard !isInputInitialized else { return }
 		isInputInitialized = true
+		inputMeter.connectMonitor(recorder)
 		system.input?.connectMonitor(inputMeter)
 	}
 
 
-	private var isOutputInitialized: Bool = false, isInputInitialized: Bool = false
-	private lazy var system = System(isStereo: true)
-	private lazy var root: Mixer = .init(format: system.streamFormat, busCount: 1)
-	private lazy var player = FilePlayer(url: fileUrl, format: system.streamFormat, delegate: self)!
-	private lazy var outputMeter = Meter(format: system.streamFormat, delegate: self)
+	private var isOutputInitialized: Bool = false
+	private var isInputInitialized: Bool = false
 
+	private lazy var system = System(isStereo: true)
+	private lazy var mixer: Mixer = .init(format: system.streamFormat, busCount: 2)
+	private lazy var player = FilePlayer(url: fileUrl, format: system.streamFormat, delegate: self)!
+
+	private lazy var recordingData = AudioData(durationSeconds: 30, format: system.streamFormat)
+	private lazy var recorder = MemoryRecorder(data: recordingData, delegate: self)
+	private lazy var recordingPlayer = MemoryPlayer(data: recordingData, delegate: self)
+
+	private lazy var outputMeter = Meter(format: system.streamFormat, delegate: self)
 	private lazy var inputMeter = Meter(format: system.streamFormat, delegate: self)
 
 	private var prevOutLeft: Float = 0, prevOutRight: Float = 0

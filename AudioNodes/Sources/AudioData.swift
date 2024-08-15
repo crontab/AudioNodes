@@ -36,7 +36,7 @@ final class AudioData: @unchecked Sendable {
 			var framesCopied = 0
 			while framesCopied < frameCount, framesWritten < frameCapacity {
 				let chunk = chunks[framesWritten / chunkCapacity]
-				let copied = Copy(from: buffers, to: chunk.buffers, fromOffset: framesCopied, toOffset: framesWritten % chunkCapacity)
+				let copied = Copy(from: buffers, to: chunk.buffers, fromOffset: framesCopied, toOffset: framesWritten % chunkCapacity, framesMax: frameCount - framesCopied)
 				framesCopied += copied
 				framesWritten += copied
 			}
@@ -51,7 +51,7 @@ final class AudioData: @unchecked Sendable {
 			var framesCopied = offset
 			while framesCopied < frameCount, framesRead < framesWritten {
 				let chunk = chunks[framesRead / chunkCapacity]
-				let copied = Copy(from: chunk.buffers, to: buffers, fromOffset: framesRead % chunkCapacity, toOffset: framesCopied)
+				let copied = Copy(from: chunk.buffers, to: buffers, fromOffset: framesRead % chunkCapacity, toOffset: framesCopied, framesMax: frameCount - framesCopied)
 				framesCopied += copied
 				framesRead += copied
 			}
@@ -67,7 +67,7 @@ final class AudioData: @unchecked Sendable {
 	}
 
 
-	func reset() {
+	func clear() {
 		withWriteLock {
 			resetRead()
 			framesWritten = 0

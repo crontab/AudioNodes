@@ -76,6 +76,10 @@ final class System: Node {
 	}
 
 
+	/// Returns current audio input authorization as Bool
+	static var inputAuthorized: Bool { AVCaptureDevice.authorizationStatus(for: .audio) == .authorized }
+
+
 	/// Creates a system I/O node.
 	init(isStereo: Bool) {
 		var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: Self.subtype(), componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)

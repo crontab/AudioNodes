@@ -28,6 +28,8 @@ class Player: Node {
 	var duration: TimeInterval { 0 }
 	var isAtEnd: Bool { true }
 
+	func reset() { }
+
 	init(isEnabled: Bool, delegate: PlayerDelegate?) {
 		self.delegate = delegate
 		super.init(isEnabled: isEnabled)
@@ -72,6 +74,8 @@ class FilePlayer: Player {
 
 	/// Indicates whether end of file was reached while playing the file.
 	override var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
+
+	override func reset() { time = 0 }
 
 	func setAtEnd() { withAudioLock { playhead$ = file.estimatedTotalFrames } }
 
@@ -195,6 +199,7 @@ class QueuePlayer: Player {
 	/// Indicates whether the player has reached the end of the series of files.
 	override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
 
+	override func reset() { time = 0 }
 
 	/// Adds a file player to the queue. Can be done at any time during playback or not. Queue player creates FilePlayer objects internally, meaning that `url` can only point to a local file. Returns `false` if there was an error opening the audio file.
 	func addFile(url: URL) -> Bool {
@@ -314,6 +319,7 @@ class MemoryPlayer: Player {
 	override var time: TimeInterval { data.time }
 	override var duration: TimeInterval { data.duration }
 	override var isAtEnd: Bool { data.isAtEnd }
+	override func reset() { data.resetRead() }
 
 
 	init(data: AudioData, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {

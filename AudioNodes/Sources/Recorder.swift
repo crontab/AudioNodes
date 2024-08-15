@@ -114,4 +114,16 @@ class MemoryRecorder: Recorder {
 		self.data = data
 		super.init(isEnabled: isEnabled, delegate: delegate)
 	}
+
+
+	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
+		let result = data.write(frameCount: frameCount, buffers: buffers)
+		if result < frameCount {
+			isEnabled = false
+			didEndRecordingAsync()
+		}
+		else {
+			didRecordSomeAsync()
+		}
+	}
 }

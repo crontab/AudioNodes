@@ -133,7 +133,8 @@ func Copy(from: AudioBuffer, to: AudioBuffer, frameCount: Int) {
 
 
 @discardableResult
-func Copy(from: AudioBufferListPtr, to: AudioBufferListPtr, fromOffset: Int, toOffset: Int, framesMax: Int = .max) -> Int {
+func Copy(from: AudioBufferListPtr, to: AudioBufferListPtr, fromOffset: Int, toOffset: Int, framesMax: Int) -> Int {
+	// The reason framesMax exists and is enforced is that buffers may be longer than the available data in buffers coming from the system, for some unknown reason.
 	let result = min(from[0].sampleCount - fromOffset, to[0].sampleCount - toOffset, framesMax)
 	precondition(result >= 0)
 	precondition(from.count == to.count)
