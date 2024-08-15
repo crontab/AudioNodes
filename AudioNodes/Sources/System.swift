@@ -15,11 +15,20 @@ import AudioToolbox
 /// System audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using `System`'s `input` node. This node dictates the audio stream format on the entire graph.
 final class System: Node {
 
+	enum InputMode {
+		case normal
+		case voice // with echo cancellation
+		case voiceAGC // echo cancellation and automatic gain control
+	}
+
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
 	private(set) var input: Input?
 
 	/// System input stream format.
 	final let streamFormat: StreamFormat
+
+	/// Input mode
+	final let inputMode: InputMode
 
 
 	/// Indicates whether the audio system is enabled and is rendering data.
@@ -81,7 +90,9 @@ final class System: Node {
 
 
 	/// Creates a system I/O node.
-	init(isStereo: Bool) {
+	init(isStereo: Bool, inputMode: InputMode = .normal) {
+		self.inputMode = inputMode
+
 		var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: Self.subtype(), componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
 		let comp = AudioComponentFindNext(nil, &desc)!
 		var tempUnit: AudioUnit?
@@ -170,7 +181,7 @@ final class System: Node {
 
 	// MARK: - Input
 
-	final class Input: Node {
+	final class Input: Monitor {
 
 		// Input is a special node that's not a real source; it can only be monitored by connecting a Monitor object, possibly chained
 
@@ -242,8 +253,8 @@ final class System: Node {
 		}
 
 
-		override func connectSource(_ source: Node) {
-			Unrecoverable(51023) // You can't connect to the input node as a source (not yet at least)
+		override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
+			// do nothing, the data is received from the system
 		}
 	}
 }
@@ -277,5 +288,5 @@ private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags:
 	NotError(AudioUnitRender(obj.unit, actionFlags, timeStamp, busNumber, frameCount, renderBuffer.unsafeMutablePointer), 51024)
 
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
-	return obj._internalPush(frameCount: Int(frameCount), buffers: obj.renderBuffer)
+	return obj._internalMonitor(frameCount: Int(frameCount), buffers: obj.renderBuffer)
 }

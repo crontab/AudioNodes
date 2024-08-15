@@ -12,7 +12,7 @@ import AudioToolbox
 enum AudioFileError: LocalizedError {
 	case osError(_ status: OSStatus)
 
-	public var errorDescription: String? {
+	var errorDescription: String? {
 		switch self {
 			case .osError(let status):
 				return "OS Error (\(status))"

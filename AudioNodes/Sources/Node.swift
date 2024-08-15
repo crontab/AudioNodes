@@ -121,16 +121,6 @@ class Node: @unchecked Sendable {
 	}
 
 
-	// Called from the system input callback; forwards data to the connected monitor, also:
-	// TODO: accumulate data in a circular buffer to be served as a source for normal nodes
-	final func _internalPush(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		withAudioLock {
-			_willRender$()
-		}
-		return _internalMonitor(status: noErr, frameCount: frameCount, buffers: buffers)
-	}
-
-
 	// Called from the system output callback
 	final func _internalPull(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 
@@ -216,7 +206,8 @@ class Node: @unchecked Sendable {
 	private func _internalMonitor(status: OSStatus, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		if status == noErr, let monitor = _config.monitor {
 			// Call monitor only if there's actual data generated. This helps monitors like file writers only receive actual data, not e.g. silence that can occur due to timing issues with the microphone. This however leaves the monitor unaware of any gaps which may not be good for e.g. meter UI elements. Should find a way to handle these situations.
-			monitor._internalMonitor(frameCount: frameCount, buffers: buffers)
+			_ = monitor._internalMonitor(frameCount: frameCount, buffers: buffers)
+			return noErr
 		}
 		return status
 	}

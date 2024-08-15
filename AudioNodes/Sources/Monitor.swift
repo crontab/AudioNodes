@@ -62,7 +62,7 @@ class Monitor: @unchecked Sendable {
 
 	// Internal
 
-	final func _internalMonitor(frameCount: Int, buffers: AudioBufferListPtr) {
+	final func _internalMonitor(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		withAudioLock {
 			_willRender$()
 		}
@@ -70,8 +70,9 @@ class Monitor: @unchecked Sendable {
 			if !_config.bypass {
 				_monitor(frameCount: frameCount, buffers: buffers)
 			}
-			_config.monitor?._internalMonitor(frameCount: frameCount, buffers: buffers)
+			return _config.monitor?._internalMonitor(frameCount: frameCount, buffers: buffers) ?? noErr
 		}
+		return noErr
 	}
 
 
