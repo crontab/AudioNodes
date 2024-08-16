@@ -16,23 +16,21 @@ struct MainView: View {
 
 
 	var body: some View {
-		GeometryReader { geometry in
-			VStack(spacing: 24) {
-				top()
-				Divider()
+		VStack(spacing: 24) {
+			top()
+			Divider()
 
-				Spacer()
+			Spacer()
 
-				inOut(width: geometry.size.width)
-				Divider()
-				bottom()
-			}
-			.font(.text)
-			.frame(maxWidth: .infinity)
-			.padding(16)
-			.tint(.orange)
-			.background { Color.stdBackground.ignoresSafeArea() }
+			inOut()
+			Divider()
+			bottom()
 		}
+		.font(.text)
+		.frame(maxWidth: .infinity)
+		.padding(16)
+		.tint(.orange)
+		.background { Color.stdBackground.ignoresSafeArea() }
 
 		.onAppear {
 			guard !Globals.isPreview else { return }
@@ -55,29 +53,40 @@ struct MainView: View {
 
 			Spacer()
 
-			toggle(isOn: $audio.isRunning, left: "System")
+			toggle(isOn: $audio.isRunning, left: "On")
 		}
 	}
 
 
-	private func inOut(width: Double) -> some View {
+	private func inOut() -> some View {
 		HStack(alignment: .bottom) {
-			outputSection(width: width)
+			outputSection()
+				.frame(maxWidth: 152)
 			Spacer()
-			inputSection(width: width)
+			VStack {
+				inputSection()
+				voiceSection()
+			}
+			.frame(maxWidth: 152)
 		}
-		.frame(height: 144)
 	}
 
 
-	private func outputSection(width: Double) -> some View {
+	private func voiceSection() -> some View {
 		SectionView {
-			Text("OUTPUT")
-				.font(.smallText)
-				.foregroundColor(.white.opacity(0.5))
-		} content: {
+			VStack(alignment: .trailing) {
+				toggle(isOn: $audio.isVoiceEnabled, left: "Voice mode", enabled: audio.isRunning && audio.isInputEnabled)
+					.padding(.bottom, 8)
+				ProgressView(value: 0)
+			}
+		}
+	}
+
+
+	private func outputSection() -> some View {
+		SectionView {
 			VStack(alignment: .trailing, spacing: 16) {
-				toggle(isOn: $audio.isOutputEnabled, left: "On")
+				toggle(isOn: $audio.isOutputEnabled, left: "Output", enabled: audio.isRunning)
 					.padding(.bottom, 8)
 				Group {
 					ProgressView(value: audio.outputGainLeft)
@@ -85,23 +94,16 @@ struct MainView: View {
 				}
 				.tint(.blue)
 			}
-			.frame(width: min(120, width / 3))
 		}
 	}
 
 
-	private func inputSection(width: Double) -> some View {
+	private func inputSection() -> some View {
 		SectionView {
-			Text("INPUT")
-				.font(.smallText)
-				.foregroundColor(.white.opacity(0.5))
-		} content: {
 			VStack(spacing: 16) {
 				HStack(alignment: .center) {
-//					Text(String(format: "%.1fs", audio.playerTimePosition))
-//						.font(.smallText)
 					Spacer()
-					toggle(isOn: $audio.isInputEnabled, left: "On")
+					toggle(isOn: $audio.isInputEnabled, left: "Input", enabled: audio.isRunning)
 				}
 				HStack {
 					recButton()
@@ -111,8 +113,6 @@ struct MainView: View {
 				ProgressView(value: audio.inputGain)
 					.tint(.red)
 			}
-			.frame(width: min(160, width / 3))
-			.frame(maxHeight: .infinity)
 		}
 	}
 
@@ -139,9 +139,6 @@ struct MainView: View {
 				}
 				.buttonStyle(.bordered)
 			}
-
-			Text(String(format: "%.3fs", audio.playerTimePosition))
-				.font(.smallText)
 		}
 	}
 
@@ -198,14 +195,14 @@ struct MainView: View {
 	}
 
 
-	private func toggle(isOn: Binding<Bool>, left: String? = nil, right: String? = nil) -> some View {
+	private func toggle(isOn: Binding<Bool>, left: String? = nil, right: String? = nil, enabled: Bool = true) -> some View {
 		HStack(spacing: 8) {
 			if let left {
 				Text(left)
 					.foregroundColor(.secondary)
 					.offset(y: 1)
 			}
-			LEDToggle(isOn: isOn)
+			LEDToggle(isOn: isOn, enabled: enabled)
 				.labelsHidden()
 			if let right {
 				Text(right)

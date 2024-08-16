@@ -10,8 +10,14 @@ import SwiftUI
 
 struct SectionView<Content: View, Title: View>: View {
 
-	@ViewBuilder let title: () -> Title
-	@ViewBuilder let content: () -> Content
+	@ViewBuilder private let title: () -> Title
+	@ViewBuilder private let content: () -> Content
+
+
+	init(title: @escaping () -> Title = EmptyView.init, content: @escaping () -> Content) {
+		self.title = title
+		self.content = content
+	}
 
 
 	var body: some View {
