@@ -205,7 +205,7 @@ struct MainView: View {
 					.foregroundColor(.secondary)
 					.offset(y: 1)
 			}
-			Toggle(isOn: isOn) { }
+			LEDToggle(isOn: isOn)
 				.labelsHidden()
 			if let right {
 				Text(right)

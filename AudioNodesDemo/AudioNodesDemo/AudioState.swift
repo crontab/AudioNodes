@@ -20,6 +20,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	@Published var isRunning: Bool = false {
 		didSet {
+			guard !Globals.isPreview else { return }
 			guard isRunning != oldValue else { return }
 			initializeOutputGraph()
 			if isRunning {
@@ -38,6 +39,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	@Published var isOutputEnabled = true {
 		didSet {
+			guard !Globals.isPreview else { return }
 			system.isEnabled = isOutputEnabled
 		}
 	}
@@ -45,6 +47,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	@Published var isInputEnabled = false {
 		didSet {
+			guard !Globals.isPreview else { return }
 			guard isInputEnabled != oldValue else { return }
 			if isInputEnabled {
 				Task {
@@ -66,6 +69,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	@Published var isPlaying: Bool = false {
 		didSet {
+			guard !Globals.isPreview else { return }
 			if isPlaying, player.isAtEnd {
 				player.time = 0
 			}
@@ -76,6 +80,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	@Published var isRecording: Bool = false {
 		didSet {
+			guard !Globals.isPreview else { return }
 			guard isRecording != oldValue else { return }
 			if isRecording {
 				isRecordingPlaying = false
@@ -93,6 +98,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	@Published var isRecordingPlaying: Bool = false {
 		didSet {
+			guard !Globals.isPreview else { return }
 			guard isRecordingPlaying != oldValue else { return }
 			if isRecordingPlaying {
 				isRecording = false
@@ -214,7 +220,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	private var isOutputInitialized: Bool = false
 	private var isInputInitialized: Bool = false
 
-	private lazy var system = System(isStereo: true)
+	private lazy var system = System(isStereo: true, inputMode: .voice)
 	private lazy var mixer: Mixer = .init(format: system.streamFormat, busCount: 2)
 	private lazy var player = FilePlayer(url: fileUrl, format: system.streamFormat, delegate: self)!
 
