@@ -37,6 +37,15 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	}
 
 
+	@Published var isVoiceEnabled: Bool = false {
+		didSet {
+			guard !Globals.isPreview else { return }
+			guard isVoiceEnabled != oldValue else { return }
+			// TODO:
+		}
+	}
+
+
 	@Published var isOutputEnabled = true {
 		didSet {
 			guard !Globals.isPreview else { return }
@@ -209,7 +218,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	private var isOutputInitialized: Bool = false
 	private var isInputInitialized: Bool = false
 
-	private lazy var system = System(isStereo: true, inputMode: .voice)
+	private lazy var system = System(isStereo: true)
 	private lazy var mixer: Mixer = .init(format: system.streamFormat, busCount: 2)
 	private lazy var player = FilePlayer(url: fileUrl, format: system.streamFormat, delegate: self)!
 

@@ -12,24 +12,14 @@ import AudioToolbox
 
 // MARK: - System
 
-/// System audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using `System`'s `input` node. This node dictates the audio stream format on the entire graph.
-final class System: Node {
-
-	enum InputMode {
-		case normal
-		case voice // with echo cancellation
-		case voiceAGC // echo cancellation and automatic gain control
-	}
+/// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using `System`'s `input` node. This node dictates the audio stream format on the entire graph.
+class System: Node {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
 	private(set) var input: Input?
 
-	/// System input stream format.
+	/// System stream format.
 	final let streamFormat: StreamFormat
-
-	/// Input mode
-	final let inputMode: InputMode
-
 
 	/// Indicates whether the audio system is enabled and is rendering data.
 	var isRunning: Bool {
@@ -90,9 +80,7 @@ final class System: Node {
 
 
 	/// Creates a system I/O node.
-	init(isStereo: Bool, inputMode: InputMode = .normal) {
-		self.inputMode = inputMode
-
+	init(isStereo: Bool) {
 		var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: Self.subtype(), componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
 		let comp = AudioComponentFindNext(nil, &desc)!
 		var tempUnit: AudioUnit?
@@ -134,6 +122,8 @@ final class System: Node {
 		// Set up the render callback
 		var callback = AURenderCallbackStruct(inputProc: outputRenderCallback, inputProcRefCon: Bridge(obj: self))
 		NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, SizeOf(callback)), 51004)
+
+		DLOG("\(debugName).streamFormat: sampleRate=\(streamFormat.sampleRate), isStereo=\(streamFormat.isStereo)")
 	}
 
 
@@ -157,7 +147,7 @@ final class System: Node {
 
 	// MARK: - Private
 
-	private let unit: AudioUnit
+	fileprivate final let unit: AudioUnit
 
 
 #if os(iOS)
@@ -221,7 +211,7 @@ final class System: Node {
 			NotError(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Output, 1, &callback, SizeOf(callback)), 51008)
 
 			// Input is disabled by default, so set the internal var:
-			isEnabled = false
+			super.isEnabled = false
 		}
 
 
@@ -258,6 +248,33 @@ final class System: Node {
 		}
 	}
 }
+
+
+// MARK: - Voice
+
+final class Voice: System {
+
+	public enum Mode {
+		case normal
+		case voice
+		case voiceAGC
+	}
+
+	public var mode: Mode = .voice {
+		didSet {
+			// Bypass
+			var flag: UInt32 = mode == .normal ? 1 : 0
+			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51025)
+
+			// AGC
+			flag = mode == .voiceAGC ? 1 : 0
+			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51026)
+		}
+	}
+
+	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_VoiceProcessingIO }
+}
+
 
 
 // MARK: - System callbacks
