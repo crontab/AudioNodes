@@ -9,7 +9,7 @@ import Foundation
 
 
 /// Player feedback delegate; used with both `FilePlayer` and `QueuePlayer`.
-@AudioActor
+@MainActor
 protocol PlayerDelegate: AnyObject, Sendable {
 
 	/// Called by a player node approximately every 10ms. In GUI apps, make sure you reduce the frequency of UI updates since updating them at 100fps may lead to interruptions in audio playback and other undesirable effects. The method is executed on `AudioActor`. This method is also called at the end of a playback just before a call to `playerDidEndPlaying()`.
@@ -37,14 +37,14 @@ class Player: Node {
 
 	final func didPlaySomeAsync() {
 		guard let delegate else { return }
-		Task.detached { @AudioActor in
+		Task.detached { @MainActor in
 			delegate.player(self, isAt: self.time)
 		}
 	}
 
 	final func didEndPlayingAsync() {
 		guard let delegate else { return }
-		Task.detached { @AudioActor in
+		Task.detached { @MainActor in
 			delegate.player(self, isAt: self.duration)
 			delegate.playerDidEndPlaying(self)
 		}

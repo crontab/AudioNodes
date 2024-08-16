@@ -132,68 +132,57 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	// MARK: - Player delegate
 
 	func player(_ player: Player, isAt time: TimeInterval) {
-		Task { @MainActor in
-			if player === self.player {
+		if player === self.player {
 //				self.playerTimePosition = time
-			}
-			else if player === self.recordingPlayer {
-			}
+		}
+		else if player === self.recordingPlayer {
 		}
 	}
 
 
 	func playerDidEndPlaying(_ player: Player) {
-		Task { @MainActor in
-			if player === self.player {
-				self.isPlaying = false
-			}
-			else if player === self.recordingPlayer {
-				self.isRecordingPlaying = false
-			}
+		if player === self.player {
+			self.isPlaying = false
+		}
+		else if player === self.recordingPlayer {
+			self.isRecordingPlaying = false
 		}
 	}
 
 
 	// MARK: - Recorder delegate
 
-	@AudioActor
 	private var previousRecPos: TimeInterval = 0
 
 	func recorder(_ recorder: Recorder, isAt time: TimeInterval) {
 		guard abs(time - previousRecPos) >= 0.25 else { return }
 		previousRecPos = time
-		Task { @MainActor in
-			recorderPosition = time
-		}
+		recorderPosition = time
 	}
 
 
 	func recorderDidEndRecording(_ recorder: Recorder) {
-		Task { @MainActor in
-			isRecording = false
-		}
+		isRecording = false
 	}
 
 
 	// MARK: - Meter delegate
 
 	func meterDidUpdateGains(_ meter: Meter, left: Float, right: Float) {
-		Task { @MainActor in
-			func normalizeDB(_ db: Float) -> Float { 1 - (max(db, -50) / -50) }
+		func normalizeDB(_ db: Float) -> Float { 1 - (max(db, -50) / -50) }
 
-			let newLeft = normalizeDB(left)
-			let newRight = normalizeDB(right)
+		let newLeft = normalizeDB(left)
+		let newRight = normalizeDB(right)
 
-			if meter === outputMeter {
-				prevOutLeft = max(newLeft, prevOutLeft - declineAmount)
-				prevOutRight = max(newRight, prevOutRight - declineAmount)
-				outputGainLeft = prevOutLeft
-				outputGainRight = prevOutRight
-			}
-			else if meter === inputMeter {
-				prevInLeft = max(newLeft, prevInLeft - declineAmount)
-				inputGain = prevInLeft
-			}
+		if meter === outputMeter {
+			prevOutLeft = max(newLeft, prevOutLeft - declineAmount)
+			prevOutRight = max(newRight, prevOutRight - declineAmount)
+			outputGainLeft = prevOutLeft
+			outputGainRight = prevOutRight
+		}
+		else if meter === inputMeter {
+			prevInLeft = max(newLeft, prevInLeft - declineAmount)
+			inputGain = prevInLeft
 		}
 	}
 

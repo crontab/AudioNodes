@@ -9,7 +9,7 @@ import Foundation
 import AudioToolbox
 
 
-@AudioActor
+@MainActor
 protocol RecorderDelegate: AnyObject, Sendable {
 	func recorder(_ recorder: Recorder, isAt time: TimeInterval)
 	func recorderDidEndRecording(_ recorder: Recorder)
@@ -28,14 +28,14 @@ class Recorder: Monitor {
 
 	final func didRecordSomeAsync() {
 		guard let delegate else { return }
-		Task.detached { @AudioActor in
+		Task.detached { @MainActor in
 			delegate.recorder(self, isAt: self.duration)
 		}
 	}
 
 	final func didEndRecordingAsync() {
 		guard let delegate else { return }
-		Task.detached { @AudioActor in
+		Task.detached { @MainActor in
 			delegate.recorder(self, isAt: self.duration)
 			delegate.recorderDidEndRecording(self)
 		}

@@ -27,7 +27,6 @@ class PlayerProgress: PlayerDelegate {
 }
 
 
-@AudioActor
 extension System {
 
 	func testSine() async {

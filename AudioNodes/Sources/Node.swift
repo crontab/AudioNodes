@@ -8,13 +8,6 @@
 import Foundation
 
 
-/// Async public methods use this global actor; it is therefore recommended to mark audio-related logic in your code with AudioActor.
-@globalActor
-actor AudioActor {
-	static var shared = AudioActor()
-}
-
-
 @usableFromInline let audioSem: DispatchSemaphore = .init(value: 1)
 
 @inlinable func withAudioLock<T>(execute: () -> T) -> T {
