@@ -48,8 +48,9 @@ final class AudioData: @unchecked Sendable {
 	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
 		let framesWritten = withWriteLock { self.framesWritten }
 		return withReadLock {
+			let frameCount = min(frameCount, framesWritten - framesRead)
 			var framesCopied = offset
-			while framesCopied < frameCount, framesRead < framesWritten {
+			while framesCopied < frameCount {
 				let chunk = chunks[framesRead / chunkCapacity]
 				let copied = Copy(from: chunk.buffers, to: buffers, fromOffset: framesRead % chunkCapacity, toOffset: framesCopied, framesMax: frameCount - framesCopied)
 				framesCopied += copied

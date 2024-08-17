@@ -12,7 +12,7 @@ import AudioToolbox
 
 // MARK: - Stereo
 
-/// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using the `input` node.
+/// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using the `monoInput` node.
 final class Stereo: System {
 
 	override init(isStereo: Bool = true, sampleRate: Double = 0) {
@@ -63,10 +63,11 @@ final class Voice: System {
 class System: Node {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
-	private(set) var input: Input?
+	private(set) var monoInput: MonoInput?
 
 	/// System stream format.
-	final let streamFormat: StreamFormat
+	final let outputFormat: StreamFormat
+	final let monoInputFormat: StreamFormat
 
 	/// Indicates whether the audio system is enabled and is rendering data.
 	var isRunning: Bool {
@@ -94,19 +95,19 @@ class System: Node {
 	}
 
 
-	/// Requests authorization for audio input on platforms where it's required, and initializes the `input` property.
+	/// Requests authorization for audio input on platforms where it's required, and initializes the `monoInput` property.
 	func requestInputAuthorization() async -> Bool {
-		guard input == nil else { return true }
+		guard monoInput == nil else { return true }
 
 		switch AVCaptureDevice.authorizationStatus(for: .audio) {
 			case .authorized: // The user has previously granted access
-				input = Input(system: self)
+				monoInput = MonoInput(system: self)
 				return true
 
 			case .notDetermined: // The user has not yet been asked for access
 				let granted = await AVCaptureDevice.requestAccess(for: .audio)
-				if granted, input == nil {
-					input = Input(system: self)
+				if granted, monoInput == nil {
+					monoInput = MonoInput(system: self)
 				}
 				return granted
 
@@ -151,13 +152,15 @@ class System: Node {
 		let status = AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &inDescr, &inDescrSize)
 		if status != noErr || inDescr.mChannelsPerFrame == 0 {
 			print("AudioNodes: audio is not available on this system")
-			streamFormat = .default
+			outputFormat = .default
+			monoInputFormat = .defaultMono
 			super.init()
 			isEnabled = false
 			return
 		}
 
-		streamFormat = .init(sampleRate: setSampleRate, isStereo: isStereo)
+		outputFormat = .init(sampleRate: setSampleRate, isStereo: isStereo)
+		monoInputFormat = .init(sampleRate: setSampleRate, isStereo: false)
 
 		super.init()
 
@@ -170,7 +173,7 @@ class System: Node {
 		var callback = AURenderCallbackStruct(inputProc: outputRenderCallback, inputProcRefCon: Bridge(obj: self))
 		NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, SizeOf(callback)), 51004)
 
-		DLOG("\(debugName).streamFormat: sampleRate=\(streamFormat.sampleRate), isStereo=\(streamFormat.isStereo)")
+		DLOG("\(debugName).streamFormat: sampleRate=\(outputFormat.sampleRate), isStereo=\(outputFormat.isStereo)")
 	}
 
 
@@ -211,15 +214,15 @@ class System: Node {
 	}
 
 
-	// MARK: - Input
+	// MARK: - MonoInput
 
-	final class Input: Monitor {
+	final class MonoInput: Monitor {
 
-		// Input is a special node that's not a real source; it can only be monitored by connecting a Monitor object, possibly chained
+		// MonoInput is a special node that's not a real source; it can only be monitored by connecting a Monitor object, possibly chained
 
 		fileprivate final var renderBuffer: AudioBufferListPtr
 
-		// The AudioUnit reference is passed via the initializer; note that in this module it's shared across input and output nodes for the same IO type, i.e. there's one unit instance for Input and Output.
+		// The AudioUnit reference is passed via the initializer; note that in this module it's shared across input and output nodes for the same IO type, i.e. there's one unit instance for MonoInput and Output.
 		fileprivate final var unit: AudioUnit
 		private weak var system: System?
 
@@ -236,11 +239,10 @@ class System: Node {
 			}
 
 			// Set the "soft" format for audio input to make sure the sample rate is the same as for audio output
-			descr = .canonical(with: system.streamFormat)
+			descr = .canonical(with: system.monoInputFormat)
 			NotError(AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, &descrSize), 51022)
 
 			// Render buffer: the input AU will allocate the data buffers, we just supply the buffer headers
-			// NOTE: number of channels here may be different from audio output's; for the built-in microphone it will almost definitely be 1
 			renderBuffer = AudioBufferList.allocate(maximumBuffers: Int(descr.mChannelsPerFrame))
 
 			super.init()
@@ -302,7 +304,7 @@ private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags
 
 private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, timeStamp: UnsafePointer<AudioTimeStamp>, busNumber: UInt32, frameCount: UInt32, buffers unused: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
 
-	let obj: System.Input = Bridge(ptr: userData)
+	let obj: System.MonoInput = Bridge(ptr: userData)
 
 	guard obj.isEnabled else {
 		return noErr

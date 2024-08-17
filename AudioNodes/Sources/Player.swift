@@ -80,7 +80,7 @@ class FilePlayer: Player {
 	func setAtEnd() { withAudioLock { playhead$ = file.estimatedTotalFrames } }
 
 	/// Creates a file player node for a given local audio file; note that remote URL's aren't supported. If any kind of error occurs while attempting to open the file, the constructor returns nil.
-	/// The `format` argument should be the same as the current system output's format which you can obtain via `System`'s `.streamFormat` property.
+	/// The `format` argument should be the same as the current system output's format which you can obtain from one of the  `System` objects.
 	init?(url: URL, format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		guard let file = AsyncAudioFileReader(url: url, format: format) else {
 			return nil
@@ -213,7 +213,7 @@ class QueuePlayer: Player {
 	}
 
 
-	/// Creates a queue player node. The `format argument should be the same as the current system output's format which you can obtain via `System`'s `.streamFormat` property.
+	/// Creates a queue player node. The `format argument should be the same as the current system output's format which you can obtain from one of the  `System` objects.
 	init(format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		self.format = format
 		super.init(isEnabled: isEnabled, delegate: delegate)

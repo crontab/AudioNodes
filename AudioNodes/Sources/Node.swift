@@ -24,6 +24,7 @@ struct StreamFormat: Equatable {
 	let isStereo: Bool
 
 	static var `default`: Self { .init(sampleRate: 48000, isStereo: true) }
+	static var defaultMono: Self { .init(sampleRate: 48000, isStereo: false) }
 }
 
 
