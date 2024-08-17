@@ -135,7 +135,7 @@ final class Mixer: Node {
 	init(format: StreamFormat, busCount: Int) {
 		Assert(busCount > 0 && busCount <= 128, 51041)
 		buses = (0..<busCount).map { Bus(format: format, busNumber: $0) }
-		_scratchBuffer = .init(isStereo: true, capacity: 4096) // don't want to allocate this under semaphore, should be enough
+		_scratchBuffer = .init(isStereo: format.isStereo, capacity: 4096) // don't want to allocate this under semaphore, should be enough
 	}
 
 

@@ -60,7 +60,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 			guard isInputEnabled != oldValue else { return }
 			if isInputEnabled {
 				Task {
-					if await system.requestInputAuthorization(), let input = system.input {
+					if await (isVoiceEnabled ? voice : system).requestInputAuthorization(), let input = system.input {
 						initializeInputGraph()
 						input.isEnabled = true
 					}
@@ -198,6 +198,8 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	// MARK: - Private part
 
+	private var isOutputInitialized: Bool = false
+
 	private func initializeOutputGraph() {
 		guard !isOutputInitialized else { return }
 		isOutputInitialized = true
@@ -207,6 +209,8 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	}
 
 
+	private var isInputInitialized: Bool = false
+
 	private func initializeInputGraph() {
 		guard !isInputInitialized else { return }
 		isInputInitialized = true
@@ -215,10 +219,9 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	}
 
 
-	private var isOutputInitialized: Bool = false
-	private var isInputInitialized: Bool = false
+	private lazy var system = System() // with default hardware sampling rate
+	private lazy var voice = Voice(sampleRate: system.streamFormat.sampleRate) // request same rate as the high-quality output; will likely be mono
 
-	private lazy var system = System(isStereo: true)
 	private lazy var mixer: Mixer = .init(format: system.streamFormat, busCount: 2)
 	private lazy var player = FilePlayer(url: fileUrl, format: system.streamFormat, delegate: self)!
 

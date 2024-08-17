@@ -80,25 +80,24 @@ class System: Node {
 
 
 	/// Creates a system I/O node.
-	init(isStereo: Bool) {
+	init(isStereo: Bool = true, sampleRate: Double = 0) {
 		var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: Self.subtype(), componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
 		let comp = AudioComponentFindNext(nil, &desc)!
 		var tempUnit: AudioUnit?
 		NotError(AudioComponentInstanceNew(comp, &tempUnit), 51000)
 		unit = tempUnit!
 
-		// Get output descr parameters
-		var descr = AudioStreamBasicDescription()
-		var descrSize = SizeOf(descr)
-		NotError(AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &descr, &descrSize), 51005)
-
-		if descr.mSampleRate == 0 {
-			descr.mSampleRate = Self.hardwareSampleRate(unit: unit)
-			precondition(descr.mSampleRate > 0)
+		// Determine optimal output sample rate
+		var setSampleRate: Double = sampleRate
+		if setSampleRate == 0 {
+			var descr = AudioStreamBasicDescription()
+			var descrSize = SizeOf(descr)
+			NotError(AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &descr, &descrSize), 51005)
+			setSampleRate = descr.mSampleRate > 0 ? descr.mSampleRate : Self.hardwareSampleRate(unit)
 		}
 
 		// Limit output sample rate to 48kHz. There may be some crazy external DAC connected to the Mac, haven't tried though
-		// descr.mSampleRate = min(descr.mSampleRate, 48000)
+		// setSampleRate = min(setSampleRate, 48000)
 
 		// Read hardware format, make sure it's non-empty
 		var inDescr = AudioStreamBasicDescription(), inDescrSize = SizeOf(inDescr)
@@ -111,12 +110,13 @@ class System: Node {
 			return
 		}
 
-		streamFormat = .init(sampleRate: descr.mSampleRate, isStereo: isStereo)
+		streamFormat = .init(sampleRate: setSampleRate, isStereo: isStereo)
 
 		super.init()
 
 		// Now set our format parameters using the same sampling rate
-		descr = .canonical(with: .init(sampleRate: descr.mSampleRate, isStereo: isStereo))
+		var descr = AudioStreamBasicDescription.canonical(with: .init(sampleRate: setSampleRate, isStereo: isStereo))
+		let descrSize = SizeOf(descr)
 		NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &descr, descrSize), 51006)
 
 		// Set up the render callback
@@ -157,7 +157,7 @@ class System: Node {
 #endif
 
 
-	private static func hardwareSampleRate(unit: AudioUnit) -> Double {
+	private static func hardwareSampleRate(_ unit: AudioUnit) -> Double {
 #if os(iOS)
 		return AVAudioSession.sharedInstance().sampleRate
 #else
@@ -186,25 +186,22 @@ class System: Node {
 			self.unit = system.unit
 			self.system = system
 
-			// Render buffer: the input AU will allocate the data buffers, we just supply the buffer headers
-			renderBuffer = AudioBufferList.allocate(maximumBuffers: system.streamFormat.isStereo ? 2 : 1)
-
-			super.init()
-
-			// Tell the unit to allocate buffers - this is the default and it doesn't work on macOS anyway, fails with -10877
-			// var one: UInt32 = 1
-			// NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_ShouldAllocateBuffer, kAudioUnitScope_Output, 1, &one, SizeOf(one)), 51002)
-
 			// Read hardware format, make sure it's non-empty
-			var inDescr = AudioStreamBasicDescription(), inDescrSize = SizeOf(inDescr)
-			let status = AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 1, &inDescr, &inDescrSize)
-			if status != noErr || inDescr.mChannelsPerFrame == 0 {
+			var descr = AudioStreamBasicDescription(), descrSize = SizeOf(descr)
+			let status = AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 1, &descr, &descrSize)
+			if status != noErr || descr.mChannelsPerFrame == 0 {
 				return nil
 			}
 
-			// Set format and sample rate to the same as hardware output
-			var descr: AudioStreamBasicDescription = .canonical(with: system.streamFormat)
-			NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51022)
+			// Set the "soft" format for audio input to make sure the sample rate is the same as for audio output
+			descr = .canonical(with: system.streamFormat)
+			NotError(AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, &descrSize), 51022)
+
+			// Render buffer: the input AU will allocate the data buffers, we just supply the buffer headers
+			// NOTE: number of channels here may be different from audio output's; for the built-in microphone it will almost definitely be 1
+			renderBuffer = AudioBufferList.allocate(maximumBuffers: Int(descr.mChannelsPerFrame))
+
+			super.init()
 
 			// Set render callback
 			var callback = AURenderCallbackStruct(inputProc: inputRenderCallback, inputProcRefCon: Bridge(obj: self))
@@ -254,13 +251,14 @@ class System: Node {
 
 final class Voice: System {
 
-	public enum Mode {
+	enum Mode {
 		case normal
 		case voice
 		case voiceAGC
 	}
 
-	public var mode: Mode = .voice {
+
+	var mode: Mode = .voice {
 		didSet {
 			// Bypass
 			var flag: UInt32 = mode == .normal ? 1 : 0
@@ -272,9 +270,14 @@ final class Voice: System {
 		}
 	}
 
+
+	init(sampleRate: Double = 0) {
+		super.init(isStereo: false, sampleRate: sampleRate)
+	}
+
+
 	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_VoiceProcessingIO }
 }
-
 
 
 // MARK: - System callbacks
