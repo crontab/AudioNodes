@@ -75,7 +75,7 @@ class FileRecorder: Recorder {
 
 	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		let toWrite = min(frameCount, frameCapacity - _playhead)
-		if toWrite > 0, file.writeAsync(frameCount: toWrite, buffers: buffers) == nil {
+		if toWrite > 0, file.writeAsync(frameCount: toWrite, buffers: buffers) == noErr {
 			_playhead += toWrite
 			withAudioLock {
 				lastKnownPlayhead$ = _playhead

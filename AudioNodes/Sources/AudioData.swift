@@ -13,17 +13,17 @@ import Foundation
 /// Up to 60s of in-memory audio data object that can be read or written to. The object can be used with MemoryPlayer and MemoryRecorder nodes. Thread-safe; can be used in both nodes simultanously.
 final class AudioData: @unchecked Sendable {
 
-	var capacity: TimeInterval { Double(frameCapacity) / sampleRate }
-	var duration: TimeInterval { withWriteLock { Double(framesWritten) / sampleRate } }
-	var time: TimeInterval { withReadLock { Double(framesRead) / sampleRate } }
+	var capacity: TimeInterval { Double(frameCapacity) / format.sampleRate }
+	var duration: TimeInterval { withWriteLock { Double(framesWritten) / format.sampleRate } }
+	var time: TimeInterval { withReadLock { Double(framesRead) / format.sampleRate } }
 	var isAtEnd: Bool { withWriteLock { withReadLock { framesRead == framesWritten } } }
 	var isFull: Bool { withWriteLock { framesWritten == frameCapacity } }
 
 
 	init(durationSeconds: Int, format: StreamFormat) {
 		Assert(durationSeconds > 0 && durationSeconds <= 60, 51070)
-		self.sampleRate = format.sampleRate
-		let chunkCapacity = Int(ceil(sampleRate))
+		self.format = format
+		let chunkCapacity = Int(ceil(format.sampleRate))
 		chunks = (0..<durationSeconds).map { _ in
 			SafeAudioBufferList(isStereo: format.isStereo, capacity: chunkCapacity)
 		}
@@ -76,6 +76,27 @@ final class AudioData: @unchecked Sendable {
 	}
 
 
+	func writeToFile(url: URL, fileSampleRate: Double) -> Bool {
+		guard duration > 0 else { return false }
+		guard let file = AudioFileWriter(url: url, format: format, fileSampleRate: fileSampleRate, compressed: true, async: false) else {
+			return false
+		}
+		var written = 0
+		for chunk in chunks {
+			let total = withWriteLock { framesWritten }
+			let toWrite = min(chunk.frameCount, total - written)
+			if file.writeSync(frameCount: toWrite, buffers: chunk.buffers) != noErr {
+				return false
+			}
+			written += toWrite
+			if written == total {
+				break
+			}
+		}
+		return true
+	}
+
+
 	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
 
 
@@ -86,7 +107,7 @@ final class AudioData: @unchecked Sendable {
 
 	// Private
 
-	private let sampleRate: Double
+	private let format: StreamFormat
 	private let chunkCapacity: Int
 	private let chunks: [SafeAudioBufferList]
 

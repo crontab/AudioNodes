@@ -9,18 +9,6 @@ import Foundation
 import AudioToolbox
 
 
-enum AudioFileError: LocalizedError {
-	case osError(_ status: OSStatus)
-
-	var errorDescription: String? {
-		switch self {
-			case .osError(let status):
-				return "OS Error (\(status))"
-		}
-	}
-}
-
-
 final class AudioFileWriter {
 
 	final let url: URL
@@ -46,6 +34,9 @@ final class AudioFileWriter {
 			return nil
 		}
 
+		var clientDescr = AudioStreamBasicDescription.canonical(with: format)
+		NotError(ExtAudioFileSetProperty(fileRef, kExtAudioFileProperty_ClientDataFormat, SizeOf(clientDescr), &clientDescr), 51017)
+
 		if async {
 			ExtAudioFileWriteAsync(fileRef, 0, nil)
 		}
@@ -62,22 +53,22 @@ final class AudioFileWriter {
 	}
 
 
-	func writeSync(frameCount: Int, buffers: AudioBufferListPtr) -> Error? {
+	func writeSync(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		let status = ExtAudioFileWrite(fileRef, UInt32(frameCount), buffers.unsafePointer)
 		if status != noErr {
 			DLOG("AudioFileWriter: write failed (\(status))")
-			return AudioFileError.osError(status)
+			return status
 		}
-		return nil
+		return noErr
 	}
 
 
-	func writeAsync(frameCount: Int, buffers: AudioBufferListPtr) -> Error? {
+	func writeAsync(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		let status = ExtAudioFileWriteAsync(fileRef, UInt32(frameCount), buffers.unsafePointer)
 		if status != noErr {
 			DLOG("AudioFileWriter: write failed (\(status))")
-			return AudioFileError.osError(status)
+			return status
 		}
-		return nil
+		return noErr
 	}
 }

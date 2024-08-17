@@ -14,6 +14,8 @@ private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "
 struct MainView: View {
 	@EnvironmentObject private var audio: AudioState
 
+	@State private var showShare: URL?
+
 
 	var body: some View {
 		VStack(spacing: 24) {
@@ -35,6 +37,10 @@ struct MainView: View {
 		.onAppear {
 			guard !Globals.isPreview else { return }
 			audio.isRunning = true
+		}
+
+		.sheet(item: $showShare) { item in
+			ShareTempFileView(url: item)
 		}
 	}
 
@@ -110,6 +116,9 @@ struct MainView: View {
 					Spacer()
 					playButton()
 				}
+				HStack {
+					saveButton()
+				}
 				ProgressView(value: audio.inputGain)
 					.tint(.red)
 			}
@@ -143,17 +152,32 @@ struct MainView: View {
 	}
 
 
+	@State private var saving: Bool = false
+
+	private func saveButton() -> some View {
+		audioButton("Save") {
+			saving = true
+			Task {
+				let url = Globals.tempFileURL(ext: "m4a")
+				DLOG("Saving file to: \(url)")
+				if audio.saveRecording(to: url) {
+					showShare = url
+				}
+				saving = false
+			}
+		} label: {
+			Image(systemName: "square.and.arrow.down.fill")
+		}
+		.tint(.secondary)
+		.disabled(audio.recorderPosition == 0 || saving)
+	}
+
+
 	private func recButton() -> some View {
-		audioButton {
+		audioButton("Rec") {
 			audio.isRecording = !audio.isRecording
 		} label: {
-			VStack(spacing: 4) {
-				Image(systemName: "circle.fill")
-					.font(.system(size: 12))
-				Text("REC")
-					.font(.smallText)
-			}
-			.padding(.top, 2)
+			Image(systemName: "circle.fill")
 		}
 		.tint(audio.isRecording ? .red : .secondary)
 		.disabled(!audio.isInputEnabled)
@@ -161,35 +185,33 @@ struct MainView: View {
 
 
 	private func playButton() -> some View {
-		audioButton {
+		audioButton("Play") {
 			audio.isRecordingPlaying = !audio.isRecordingPlaying
 		} label: {
-			VStack(spacing: 4) {
-				Group {
-					if audio.isRecordingPlaying {
-						Image(systemName: "square.fill")
-					}
-					else {
-						Image(systemName: "triangle.fill")
-							.rotationEffect(.degrees(90))
-							.offset(x: 0.5)
-					}
-				}
-				.font(.system(size: 12))
-				Text("PLAY")
-					.font(.smallText)
+			if audio.isRecordingPlaying {
+				Image(systemName: "square.fill")
 			}
-			.padding(.top, 2)
+			else {
+				Image(systemName: "triangle.fill")
+					.rotationEffect(.degrees(90))
+					.offset(x: 0.5)
+			}
 		}
 		.tint(audio.isRecordingPlaying ? .blue : .secondary)
 		.disabled(!audio.isInputEnabled || audio.recorderPosition == 0)
 	}
 
 
-	private func audioButton<L: View>(action: @escaping () -> Void, label: () -> L) -> some View {
+	private func audioButton<L: View>(_ title: String, action: @escaping () -> Void, @ViewBuilder label: () -> L) -> some View {
 		Button(action: action) {
-			label()
-				.frame(width: 24)
+			VStack(spacing: 4) {
+				label()
+					.font(.system(size: 12))
+				Text(title.uppercased())
+					.font(.smallText)
+			}
+			.padding(.top, 2)
+			.frame(width: 24)
 		}
 		.buttonStyle(.bordered)
 	}

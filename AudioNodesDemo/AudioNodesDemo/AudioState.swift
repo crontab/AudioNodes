@@ -9,10 +9,9 @@ import Foundation
 import AVFAudio
 
 
+private let FileSampleRate: Double = 48000
+
 private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "m4a")!
-
-private func outUrl(_ name: String) -> URL { URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appending(path: "../").appendingPathComponent(name) }
-
 
 
 @MainActor
@@ -134,6 +133,11 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	@Published var outputGainRight: Float = 0
 
 	@Published var inputGain: Float = 0
+
+
+	func saveRecording(to url: URL) -> Bool {
+		recordingData.writeToFile(url: url, fileSampleRate: FileSampleRate)
+	}
 
 
 	init() {

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3628CB172C70F90200FD125E /* FileDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628CB162C70F90200FD125E /* FileDialogs.swift */; };
 		3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632443D2C695B4B0021C8BE /* FontEx.swift */; };
 		363244602C6961280021C8BE /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632445F2C6961280021C8BE /* Globals.swift */; };
 		363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */; };
@@ -34,6 +35,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3628CB162C70F90200FD125E /* FileDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDialogs.swift; sourceTree = "<group>"; };
 		3632443D2C695B4B0021C8BE /* FontEx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontEx.swift; sourceTree = "<group>"; };
 		3632445F2C6961280021C8BE /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		363478B22C692BD6004BB3B8 /* AudioNodesDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioNodesDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -94,6 +96,7 @@
 				36430FFF2C69C52D000CF9F3 /* Sources */,
 				3632445F2C6961280021C8BE /* Globals.swift */,
 				3632443D2C695B4B0021C8BE /* FontEx.swift */,
+				3628CB162C70F90200FD125E /* FileDialogs.swift */,
 				36CADFA62C6F46D0004E0373 /* LEDToggle.swift */,
 				364310112C6A09C1000CF9F3 /* SectionView.swift */,
 				364310072C69C909000CF9F3 /* AudioState.swift */,
@@ -228,6 +231,7 @@
 				364310002C69C52D000CF9F3 /* AudioFileReader.swift in Sources */,
 				3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */,
 				364310022C69C52D000CF9F3 /* Node.swift in Sources */,
+				3628CB172C70F90200FD125E /* FileDialogs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
