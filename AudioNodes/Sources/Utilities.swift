@@ -135,15 +135,25 @@ func Copy(from: AudioBuffer, to: AudioBuffer, frameCount: Int) {
 @discardableResult
 func Copy(from: AudioBufferListPtr, to: AudioBufferListPtr, fromOffset: Int, toOffset: Int, framesMax: Int) -> Int {
 	// The reason framesMax exists and is enforced is that buffers may be longer than the available data in buffers coming from the system, for some unknown reason.
-	let result = min(from[0].sampleCount - fromOffset, to[0].sampleCount - toOffset, framesMax)
-	precondition(result >= 0)
-	precondition(from.count == to.count)
-	if result > 0 {
-		for i in 0..<from.count {
-			memcpy(to[i].samples + toOffset, from[i].samples + fromOffset, result * SizeOfSample)
+	let toCopy = min(from[0].sampleCount - fromOffset, to[0].sampleCount - toOffset, framesMax)
+	precondition(from.count > 0 && to.count > 0)
+	precondition(toCopy >= 0)
+	if toCopy > 0 {
+		let common = min(to.count, from.count)
+
+		// 1. Copy to common channels first
+		for i in 0..<common {
+			memcpy(to[i].samples + toOffset, from[i].samples + fromOffset, toCopy * SizeOfSample)
 		}
+
+		// 2. If theere's a channel number mismatch, fill the missing channels with the first channel from source (likely just mono-to-stereo)
+		for i in common..<to.count {
+			memcpy(to[i].samples + toOffset, from[0].samples + fromOffset, toCopy * SizeOfSample)
+		}
+
+		// 3. We don't do stere-to-mono at the moment
 	}
-	return result
+	return toCopy
 }
 
 
