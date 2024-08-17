@@ -127,7 +127,7 @@ extension System {
 struct CLI {
 
 	static func runTests() async {
-		let system = System(isStereo: true)
+		let system = Stereo()
 		system.start()
 //		await system.testSine()
 //		await system.testMixer()

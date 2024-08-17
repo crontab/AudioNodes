@@ -10,9 +10,56 @@ import AVFoundation
 import AudioToolbox
 
 
+// MARK: - Stereo
+
+/// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using the `input` node.
+final class Stereo: System {
+
+	override init(isStereo: Bool = true, sampleRate: Double = 0) {
+		super.init(isStereo: isStereo, sampleRate: sampleRate)
+	}
+
+#if os(iOS)
+	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_RemoteIO }
+#else
+	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_DefaultOutput }
+#endif
+}
+
+
+// MARK: - Voice
+
+/// Lower quality mono I/O with voice processing (echo cancellation and possibly automatic gain control; see `mode`).
+final class Voice: System {
+
+	enum Mode {
+		case normal
+		case voice
+		case voiceAGC
+	}
+
+	var mode: Mode = .voice {
+		didSet {
+			// Bypass
+			var flag: UInt32 = mode == .normal ? 1 : 0
+			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51025)
+
+			// AGC
+			flag = mode == .voiceAGC ? 1 : 0
+			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51026)
+		}
+	}
+
+	init(sampleRate: Double = 0) {
+		super.init(isStereo: false, sampleRate: sampleRate)
+	}
+
+	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_VoiceProcessingIO }
+}
+
+
 // MARK: - System
 
-/// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using `System`'s `input` node. This node dictates the audio stream format on the entire graph.
 class System: Node {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
@@ -80,7 +127,7 @@ class System: Node {
 
 
 	/// Creates a system I/O node.
-	init(isStereo: Bool = true, sampleRate: Double = 0) {
+	fileprivate init(isStereo: Bool = true, sampleRate: Double = 0) {
 		var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: Self.subtype(), componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
 		let comp = AudioComponentFindNext(nil, &desc)!
 		var tempUnit: AudioUnit?
@@ -149,12 +196,7 @@ class System: Node {
 
 	fileprivate final let unit: AudioUnit
 
-
-#if os(iOS)
-	fileprivate class func subtype() -> UInt32 { kAudioUnitSubType_RemoteIO }
-#else
-	fileprivate class func subtype() -> UInt32 { kAudioUnitSubType_DefaultOutput }
-#endif
+	fileprivate class func subtype() -> UInt32 { Abstract() }
 
 
 	private static func hardwareSampleRate(_ unit: AudioUnit) -> Double {
@@ -244,39 +286,6 @@ class System: Node {
 			// do nothing, the data is received from the system
 		}
 	}
-}
-
-
-// MARK: - Voice
-
-final class Voice: System {
-
-	enum Mode {
-		case normal
-		case voice
-		case voiceAGC
-	}
-
-
-	var mode: Mode = .voice {
-		didSet {
-			// Bypass
-			var flag: UInt32 = mode == .normal ? 1 : 0
-			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51025)
-
-			// AGC
-			flag = mode == .voiceAGC ? 1 : 0
-			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51026)
-		}
-	}
-
-
-	init(sampleRate: Double = 0) {
-		super.init(isStereo: false, sampleRate: sampleRate)
-	}
-
-
-	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_VoiceProcessingIO }
 }
 
 

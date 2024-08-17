@@ -24,13 +24,13 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 			guard isRunning != oldValue else { return }
 			initializeOutputGraph()
 			if isRunning {
-				system.start()
-				system.connectSource(mixer)
+				stereo.start()
+				stereo.connectSource(mixer)
 			}
 			else {
 				Task {
-					await system.smoothDisconnect()
-					system.stop()
+					await stereo.smoothDisconnect()
+					stereo.stop()
 				}
 			}
 		}
@@ -49,7 +49,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	@Published var isOutputEnabled = true {
 		didSet {
 			guard !Globals.isPreview else { return }
-			system.isEnabled = isOutputEnabled
+			stereo.isEnabled = isOutputEnabled
 		}
 	}
 
@@ -60,7 +60,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 			guard isInputEnabled != oldValue else { return }
 			if isInputEnabled {
 				Task {
-					if await (isVoiceEnabled ? voice : system).requestInputAuthorization(), let input = system.input {
+					if await (isVoiceEnabled ? voice : stereo).requestInputAuthorization(), let input = stereo.input {
 						initializeInputGraph()
 						input.isEnabled = true
 					}
@@ -70,7 +70,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 				}
 			}
 			else {
-				system.input?.isEnabled = false
+				stereo.input?.isEnabled = false
 			}
 		}
 	}
@@ -215,22 +215,22 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 		guard !isInputInitialized else { return }
 		isInputInitialized = true
 		inputMeter.connectMonitor(recorder)
-		system.input?.connectMonitor(inputMeter)
+		stereo.input?.connectMonitor(inputMeter)
 	}
 
 
-	private lazy var system = System() // with default hardware sampling rate
-	private lazy var voice = Voice(sampleRate: system.streamFormat.sampleRate) // request same rate as the high-quality output; will likely be mono
+	private lazy var stereo = Stereo() // with default hardware sampling rate
+	private lazy var voice = Voice(sampleRate: stereo.streamFormat.sampleRate) // request same rate as the high-quality output; will likely be mono
 
-	private lazy var mixer: Mixer = .init(format: system.streamFormat, busCount: 2)
-	private lazy var player = FilePlayer(url: fileUrl, format: system.streamFormat, delegate: self)!
+	private lazy var mixer: Mixer = .init(format: stereo.streamFormat, busCount: 2)
+	private lazy var player = FilePlayer(url: fileUrl, format: stereo.streamFormat, delegate: self)!
 
-	private lazy var recordingData = AudioData(durationSeconds: 30, format: system.streamFormat)
+	private lazy var recordingData = AudioData(durationSeconds: 30, format: stereo.streamFormat)
 	private lazy var recorder = MemoryRecorder(data: recordingData, delegate: self)
 	private lazy var recordingPlayer = MemoryPlayer(data: recordingData, delegate: self)
 
-	private lazy var outputMeter = Meter(format: system.streamFormat, delegate: self)
-	private lazy var inputMeter = Meter(format: system.streamFormat, delegate: self)
+	private lazy var outputMeter = Meter(format: stereo.streamFormat, delegate: self)
+	private lazy var inputMeter = Meter(format: stereo.streamFormat, delegate: self)
 
 	private var prevOutLeft: Float = 0, prevOutRight: Float = 0
 	private var prevInLeft: Float = 0
