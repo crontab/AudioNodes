@@ -45,18 +45,21 @@ extension System {
 
 
 	func testMixer() async {
+		enum Channel: Int, CaseIterable {
+			case one, two
+		}
 		print("--- ", #function)
 		let sine1 = SineGenerator(freq: 440, format: outputFormat, isEnabled: true)
 		let sine2 = SineGenerator(freq: 480, format: outputFormat, isEnabled: true)
-		let mixer = Mixer(format: outputFormat, busCount: 2)
-		mixer.buses[0].connectSource(sine1)
-		mixer.buses[1].connectSource(sine2)
+		let mixer = EnumMixer<Channel>(format: outputFormat)
+		mixer[.one].connectSource(sine1)
+		mixer[.two].connectSource(sine2)
 		connectSource(mixer)
 		await Sleep(1)
-		mixer.buses[0].setVolume(0.5, duration: 1)
+		mixer[.one].setVolume(0.5, duration: 1)
 		await Sleep(1)
-		mixer.buses[0].setVolume(1, duration: 0)
-		mixer.buses[1].setVolume(0.5, duration: 1)
+		mixer[.one].setVolume(1, duration: 0)
+		mixer[.two].setVolume(0.5, duration: 1)
 		await Sleep(2)
 		await smoothDisconnect()
 	}

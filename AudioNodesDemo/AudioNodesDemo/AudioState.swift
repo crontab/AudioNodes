@@ -85,10 +85,10 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	@Published var isPlaying: Bool = false {
 		didSet {
 			guard !Globals.isPreview else { return }
-			if isPlaying, player.isAtEnd {
-				player.time = 0
+			if isPlaying, filePlayer.isAtEnd {
+				filePlayer.time = 0
 			}
-			player.isEnabled = isPlaying
+			filePlayer.isEnabled = isPlaying
 		}
 	}
 
@@ -153,7 +153,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	// MARK: - Player delegate
 
 	func player(_ player: Player, isAt time: TimeInterval) {
-		if player === self.player {
+		if player === self.filePlayer {
 //				self.playerTimePosition = time
 		}
 		else if player === self.recordingPlayer {
@@ -162,7 +162,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 
 	func playerDidEndPlaying(_ player: Player) {
-		if player === self.player {
+		if player === self.filePlayer {
 			self.isPlaying = false
 		}
 		else if player === self.recordingPlayer {
@@ -210,13 +210,18 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	// MARK: - Private part
 
+	private enum InChannel: Int, CaseIterable {
+		case filePlayer
+		case recordingPlayer
+	}
+
 	private var isOutputInitialized: Bool = false
 
 	private func initializeOutputGraph() {
 		guard !isOutputInitialized else { return }
 		isOutputInitialized = true
-		mixer.buses[0].connectSource(player)
-		mixer.buses[1].connectSource(recordingPlayer)
+		mixer[.filePlayer].connectSource(filePlayer)
+		mixer[.recordingPlayer].connectSource(recordingPlayer)
 		mixer.connectMonitor(outputMeter)
 	}
 
@@ -234,8 +239,8 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	private lazy var voice = Voice(sampleRate: stereo.outputFormat.sampleRate) // request same rate as the high-quality output
 	private var input: System.MonoInput? { isVoiceEnabled ? voice.monoInput : stereo.monoInput }
 
-	private lazy var mixer: Mixer = .init(format: stereo.outputFormat, busCount: 2)
-	private lazy var player = FilePlayer(url: fileUrl, format: stereo.outputFormat, delegate: self)!
+	private lazy var mixer: EnumMixer<InChannel> = .init(format: stereo.outputFormat)
+	private lazy var filePlayer = FilePlayer(url: fileUrl, format: stereo.outputFormat, delegate: self)!
 
 	private lazy var recordingData = AudioData(durationSeconds: 30, format: stereo.monoInputFormat)
 	private lazy var recorder = MemoryRecorder(data: recordingData, delegate: self)

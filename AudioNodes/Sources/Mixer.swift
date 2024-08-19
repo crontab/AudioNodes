@@ -123,12 +123,12 @@ final class VolumeControl: Node {
 // MARK: - Mixer
 
 /// Mixer node with a predetermined number of buses; each bus is a VolumeControl object.
-final class Mixer: Node {
+class Mixer: Node {
 
 	typealias Bus = VolumeControl
 
 	/// Immutable array of buses; each element is a VolumeControl node.
-	let buses: [Bus] // not atomic because it's immutable
+	final let buses: [Bus] // not atomic because it's immutable
 
 
 	/// Creates a Mixer object with a given number of buses; up to 128 is allowed.
@@ -174,4 +174,19 @@ final class Mixer: Node {
 	// Private
 
 	private var _scratchBuffer: SafeAudioBufferList
+}
+
+
+// MARK: - EnumMixer
+
+/// Type-safe variant of mixer that takes an `enum` as a basis for accessing the buses. The `enum` should conform to `CaseIterable` and have an `Int` raw value type.
+class EnumMixer<Enum: RawRepresentable & CaseIterable>: Mixer where Enum.RawValue == Int {
+
+	init(format: StreamFormat) {
+		super.init(format: format, busCount: Enum.allCases.count)
+	}
+
+	final subscript (_ index: Enum) -> Bus {
+		buses[index.rawValue]
+	}
 }
