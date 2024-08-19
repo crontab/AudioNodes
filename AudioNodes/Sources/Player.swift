@@ -54,7 +54,6 @@ class Player: Node {
 }
 
 
-
 // MARK: - FilePlayer
 
 /// Loads and plays an audio file; backed by the ExtAudioFile\* system interface. For each file that you want to play you create a separate FilePlayer node. This component uses a fixed amount of memory regarless of the file size; it employs smart look-ahead buffering.
@@ -159,9 +158,8 @@ class FilePlayer: Player {
 	// Private
 
 	private func prepopulateCacheAsync(position: Int) {
-		let file = file
-		Task.detached { @AudioFileActor in
-			file.prepopulate(position: position)
+		Task.detached {
+			self.file.prepopulate(position: position)
 		}
 	}
 

@@ -38,6 +38,7 @@
 		3628CB162C70F90200FD125E /* FileDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDialogs.swift; sourceTree = "<group>"; };
 		3632443D2C695B4B0021C8BE /* FontEx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontEx.swift; sourceTree = "<group>"; };
 		3632445F2C6961280021C8BE /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
+		363338422C72FFE600A05415 /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = TODO.md; path = ../TODO.md; sourceTree = "<group>"; };
 		363478B22C692BD6004BB3B8 /* AudioNodesDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioNodesDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioNodesDemoApp.swift; sourceTree = "<group>"; };
 		363478B72C692BD6004BB3B8 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -77,6 +78,7 @@
 		363478A92C692BD6004BB3B8 = {
 			isa = PBXGroup;
 			children = (
+				363338422C72FFE600A05415 /* TODO.md */,
 				363478B42C692BD6004BB3B8 /* AudioNodesDemo */,
 				363478B32C692BD6004BB3B8 /* Products */,
 			);

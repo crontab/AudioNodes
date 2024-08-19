@@ -9,13 +9,6 @@ import Foundation
 import AudioToolbox
 
 
-@globalActor
-actor AudioFileActor {
-	static var shared = AudioFileActor()
-}
-
-
-@AudioFileActor
 class AudioFileReader {
 
 	final let url: URL
@@ -26,7 +19,6 @@ class AudioFileReader {
 	fileprivate final let fileRef: ExtAudioFileRef
 
 
-	nonisolated
 	init?(url: URL, format: StreamFormat) {
 		self.url = url
 		self.format = format
@@ -88,7 +80,7 @@ class AudioFileReader {
 	}
 
 
-	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout UInt32) -> OSStatus {
+	final func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout UInt32) -> OSStatus {
 		for i in 0..<buffers.count {
 			buffers[i].sampleCount = frameCount
 		}
@@ -196,7 +188,6 @@ final class AsyncAudioFileReader: AudioFileReader {
 	private let blockSize: Int
 	private(set) var exactTotalFrames: Int?
 
-	nonisolated(unsafe) // protected by a semaphore
 	private var cachedBlocks = Cache(capacity: 8)
 
 
@@ -234,7 +225,6 @@ final class AsyncAudioFileReader: AudioFileReader {
 
 
 	// Can be called from the audio thread
-	nonisolated
 	func _blockAt(position: Int) -> Block? {
 		let offset = (position / blockSize) * blockSize
 		return cachedBlocks.blockFor(offset: offset)

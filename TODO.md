@@ -1,7 +1,6 @@
 
-- Offline file reader
 - Waveform builder
-- Offile processor
+- Offline processor (?)
 - Noise reduction
 - AGC
 - EQ

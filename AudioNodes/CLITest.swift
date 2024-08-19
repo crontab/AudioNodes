@@ -91,7 +91,6 @@ extension System {
 	}
 
 
-	@AudioFileActor
 	func testMemoryPlayer() async {
 		print("--- ", #function)
 
