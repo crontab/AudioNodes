@@ -104,7 +104,7 @@ extension System {
 		let frameCount = buffers[0].sampleCount
 
 		while true {
-			var numRead: UInt32 = 0
+			var numRead = 0
 			let status = file.readSync(frameCount: frameCount, buffers: buffers, numRead: &numRead)
 			if status != noErr || numRead == 0 {
 				break
@@ -116,11 +116,24 @@ extension System {
 		}
 
 		let progress = PlayerProgress()
-		let player = MemoryPlayer(data: data, isEnabled: true, delegate: progress)
+		let player = MemoryPlayer(data: data, delegate: progress)
 		connectSource(player)
 
+		let waveform = await Task.detached {
+			Waveform.fromSource(data, barsPerSec: 4)
+		}.value
+
+		player.reset()
+		player.isEnabled = true
 		await Sleep(3)
 		await smoothDisconnect()
+
+		if let waveform {
+			let s = waveform.toHexString()
+			print(s)
+			let w = Waveform.fromHexString(s)
+			assert(w.series == waveform.series)
+		}
 	}
 }
 
@@ -133,8 +146,8 @@ struct CLI {
 		system.start()
 //		await system.testSine()
 //		await system.testMixer()
-		await system.testFile()
-		await system.testQueuePlayer()
+//		await system.testFile()
+//		await system.testQueuePlayer()
 		await system.testMemoryPlayer()
 	}
 

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3630FF5B2C74595500806161 /* Waveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3630FF5A2C74595500806161 /* Waveform.swift */; };
+		3630FF5D2C74595F00806161 /* Ducker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3630FF5C2C74595F00806161 /* Ducker.swift */; };
 		363244582C695FC80021C8BE /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632444A2C695EE90021C8BE /* Node.swift */; };
 		363244592C695FC80021C8BE /* AudioFileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632444C2C695EE90021C8BE /* AudioFileReader.swift */; };
 		3632445A2C695FC80021C8BE /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632444D2C695EE90021C8BE /* Player.swift */; };
@@ -35,6 +37,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3630FF5A2C74595500806161 /* Waveform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Waveform.swift; sourceTree = "<group>"; };
+		3630FF5C2C74595F00806161 /* Ducker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ducker.swift; sourceTree = "<group>"; };
 		363244492C695EE90021C8BE /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		3632444A2C695EE90021C8BE /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		3632444B2C695EE90021C8BE /* Mixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mixer.swift; sourceTree = "<group>"; };
@@ -72,11 +76,13 @@
 				36ADA3102C6BE7E8006916A0 /* AudioData.swift */,
 				3643100F2C69F30D000CF9F3 /* Meter.swift */,
 				3632444B2C695EE90021C8BE /* Mixer.swift */,
+				3630FF5C2C74595F00806161 /* Ducker.swift */,
 				3632444C2C695EE90021C8BE /* AudioFileReader.swift */,
 				36ADA3122C6C2DC9006916A0 /* AudioFileWriter.swift */,
 				3632444D2C695EE90021C8BE /* Player.swift */,
 				365B397F2C6C8ECA00DF2AF2 /* Recorder.swift */,
 				3632444E2C695EE90021C8BE /* SineGenerator.swift */,
+				3630FF5A2C74595500806161 /* Waveform.swift */,
 				3632444F2C695EE90021C8BE /* System.swift */,
 			);
 			path = Sources;
@@ -171,7 +177,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				36FF52C82C661FD7006428FE /* CLITest.swift in Sources */,
+				3630FF5D2C74595F00806161 /* Ducker.swift in Sources */,
 				363244582C695FC80021C8BE /* Node.swift in Sources */,
+				3630FF5B2C74595500806161 /* Waveform.swift in Sources */,
 				365B39802C6C8ECA00DF2AF2 /* Recorder.swift in Sources */,
 				36ADA3112C6BE7E8006916A0 /* AudioData.swift in Sources */,
 				363244592C695FC80021C8BE /* AudioFileReader.swift in Sources */,

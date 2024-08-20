@@ -9,7 +9,7 @@ import Foundation
 import AudioToolbox
 
 
-class AudioFileReader {
+class AudioFileReader: StaticDataSource {
 
 	final let url: URL
 	final let format: StreamFormat
@@ -80,17 +80,23 @@ class AudioFileReader {
 	}
 
 
-	final func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout UInt32) -> OSStatus {
+	func resetRead() -> OSStatus {
+		return ExtAudioFileSeek(fileRef, 0)
+	}
+
+
+	final func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
 		for i in 0..<buffers.count {
 			buffers[i].sampleCount = frameCount
 		}
-		numRead = UInt32(frameCount)
-		let status = ExtAudioFileRead(fileRef, &numRead, buffers.unsafeMutablePointer)
+		var _numRead: UInt32 = UInt32(frameCount)
+		let status = ExtAudioFileRead(fileRef, &_numRead, buffers.unsafeMutablePointer)
 		if status != noErr {
 			numRead = 0
 			FillSilence(frameCount: frameCount, buffers: buffers)
 			return status
 		}
+		numRead = Int(_numRead)
 		if numRead < frameCount {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: Int(numRead))
 		}

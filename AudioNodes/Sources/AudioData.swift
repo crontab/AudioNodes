@@ -8,16 +8,24 @@
 import Foundation
 
 
+protocol StaticDataSource {
+	var format: StreamFormat { get }
+	func resetRead() -> OSStatus
+	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus // expected to fill silence if numRead < buffer size
+}
+
+
 // MARK: - AudioData
 
 /// Up to 60s of in-memory audio data object that can be read or written to. The object can be used with MemoryPlayer and MemoryRecorder nodes. Thread-safe; can be used in both nodes simultanously.
-final class AudioData: @unchecked Sendable {
+final class AudioData: @unchecked Sendable, StaticDataSource {
 
 	var capacity: TimeInterval { Double(frameCapacity) / format.sampleRate }
 	var duration: TimeInterval { withWriteLock { Double(framesWritten) / format.sampleRate } }
 	var time: TimeInterval { withReadLock { Double(framesRead) / format.sampleRate } }
 	var isAtEnd: Bool { withWriteLock { withReadLock { framesRead == framesWritten } } }
 	var isFull: Bool { withWriteLock { framesWritten == frameCapacity } }
+	let format: StreamFormat
 
 
 	init(durationSeconds: Int, format: StreamFormat) {
@@ -61,10 +69,23 @@ final class AudioData: @unchecked Sendable {
 	}
 
 
-	func resetRead() {
+	// StaticDataSource protocol
+	@discardableResult
+	func resetRead() -> OSStatus {
 		withReadLock {
 			framesRead = 0
 		}
+		return noErr
+	}
+
+
+	// StaticDataSource protocol
+	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
+		numRead = read(frameCount: frameCount, buffers: buffers, offset: 0)
+		if numRead < frameCount {
+			FillSilence(frameCount: frameCount, buffers: buffers, offset: Int(numRead))
+		}
+		return noErr
 	}
 
 
@@ -107,7 +128,6 @@ final class AudioData: @unchecked Sendable {
 
 	// Private
 
-	private let format: StreamFormat
 	private let chunkCapacity: Int
 	private let chunks: [SafeAudioBufferList]
 
