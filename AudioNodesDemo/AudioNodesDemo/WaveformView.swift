@@ -17,22 +17,24 @@ struct WaveformView: View {
 
 	var body: some View {
 		GeometryReader { geometry in
-			ScrollView(.horizontal, showsIndicators: false) {
-				let barWidth = 2.0
-				let barSpacing = 1.0
-				let dbMin = -48.0
-				let dbBand = -dbMin
-				HStack(alignment: .bottom, spacing: barSpacing) {
-					ForEach(waveform.series.indices, id: \.self) { index in
-						let value = waveform.series[index]
-						let h = (max(dbMin, min(0, Double(value))) - dbMin) / dbBand // 0...1
-						RoundedRectangle(cornerRadius: 0.5)
-							.fill(color)
-							.frame(width: barWidth, height: h * (geometry.size.height - barWidth) + barWidth)
+			VStack {
+				Spacer()
+				LegacyScrollView(action: .constant(scrollable ? .idle : .disable)) {
+					let barWidth = 2.0
+					let barSpacing = 1.0
+					let dbMin = -48.0
+					let dbBand = -dbMin
+					HStack(alignment: .bottom, spacing: barSpacing) {
+						ForEach(waveform.series.indices, id: \.self) { index in
+							let value = waveform.series[index]
+							let h = (max(dbMin, min(0, Double(value))) - dbMin) / dbBand // 0...1
+							RoundedRectangle(cornerRadius: 0.5)
+								.fill(color)
+								.frame(width: barWidth, height: h * (geometry.size.height - barWidth) + barWidth)
+						}
 					}
+					.padding(.horizontal, scrollable ? Self.Padding : 0)
 				}
-				.padding(.horizontal, scrollable ? Self.Padding : 0)
-				.frame(maxHeight: .infinity, alignment: .bottom)
 			}
 
 			.mask {
@@ -52,8 +54,6 @@ struct WaveformView: View {
 					Rectangle()
 				}
 			}
-
-			.scrollDisabled(!scrollable)
 		}
 		.clipped()
 	}
