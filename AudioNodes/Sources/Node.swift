@@ -69,7 +69,7 @@ class Node: @unchecked Sendable {
 	}
 
 	/// Disconnects input. See also `smoothDisconnect()`.
-	func disconnect() {
+	func disconnectSource() {
 		withAudioLock {
 			config$.source = nil
 		}
@@ -80,7 +80,7 @@ class Node: @unchecked Sendable {
 		let wasMuted = isMuted
 		isMuted = true
 		await Sleep(0.011)
-		disconnect()
+		disconnectSource()
 		isMuted = wasMuted
 	}
 

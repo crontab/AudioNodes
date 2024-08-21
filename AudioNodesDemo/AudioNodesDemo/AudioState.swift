@@ -85,6 +85,11 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	@Published var isPlaying: Bool = false {
 		didSet {
 			guard !Globals.isPreview else { return }
+			guard isPlaying != oldValue else { return }
+			guard let filePlayer else {
+				isPlaying = false
+				return
+			}
 			if isPlaying, filePlayer.isAtEnd {
 				filePlayer.time = 0
 			}
@@ -134,9 +139,34 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	@Published var inputGain: Float = 0
 
+	@Published var trackWaveform: Waveform?
+	@Published var voiceWaveform: Waveform?
+
 
 	func saveRecording(to url: URL) -> Bool {
 		recordingData.writeToFile(url: url, fileSampleRate: FileSampleRate)
+	}
+
+
+	func loadFile(url: URL) async {
+		if let filePlayer {
+			filePlayer.isEnabled = false
+			await mixer[.filePlayer].smoothDisconnect()
+		}
+		guard let newPlayer = FilePlayer(url: url, format: stereo.outputFormat, delegate: self) else {
+			return
+		}
+		filePlayer = newPlayer
+		mixer[.filePlayer].connectSource(newPlayer)
+		playerTimePosition = 0
+		resetInputGain()
+
+		Task {
+			guard let file = AudioFileReader(url: url, format: stereo.outputFormat) else {
+				return
+			}
+			trackWaveform = Waveform.fromSource(file, barsPerSec: 4)
+		}
 	}
 
 
@@ -146,6 +176,9 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 		if System.inputAuthorized {
 			isInputEnabled = true
 //			isVoiceEnabled = true // also enables input
+		}
+		Task {
+			await loadFile(url: fileUrl)
 		}
 	}
 
@@ -189,6 +222,10 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	// MARK: - Meter delegate
 
+	private let declineAmount: Float = 0.05
+	private var prevOutLeft: Float = 0, prevOutRight: Float = 0
+	private var prevInLeft: Float = 0
+
 	func meterDidUpdateGains(_ meter: Meter, left: Float, right: Float) {
 		func normalizeDB(_ db: Float) -> Float { 1 - (max(db, -50) / -50) }
 
@@ -208,6 +245,14 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	}
 
 
+	private func resetInputGain() {
+		outputGainLeft = 0
+		outputGainRight = 0
+		prevOutLeft = 0
+		prevOutRight = 0
+	}
+
+
 	// MARK: - Private part
 
 	private enum InChannel: Int, CaseIterable {
@@ -220,7 +265,6 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	private func initializeOutputGraph() {
 		guard !isOutputInitialized else { return }
 		isOutputInitialized = true
-		mixer[.filePlayer].connectSource(filePlayer)
 		mixer[.recordingPlayer].connectSource(recordingPlayer)
 		mixer.connectMonitor(outputMeter)
 	}
@@ -240,7 +284,7 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 	private var input: System.MonoInput? { isVoiceEnabled ? voice.monoInput : stereo.monoInput }
 
 	private lazy var mixer: EnumMixer<InChannel> = .init(format: stereo.outputFormat)
-	private lazy var filePlayer = FilePlayer(url: fileUrl, format: stereo.outputFormat, delegate: self)!
+	private var filePlayer: FilePlayer?
 
 	private lazy var recordingData = AudioData(durationSeconds: 30, format: stereo.monoInputFormat)
 	private lazy var recorder = MemoryRecorder(data: recordingData, delegate: self)
@@ -248,10 +292,6 @@ final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, Recorde
 
 	private lazy var outputMeter = Meter(format: stereo.outputFormat, delegate: self)
 	private lazy var inputMeter = Meter(format: stereo.monoInputFormat, delegate: self)
-
-	private var prevOutLeft: Float = 0, prevOutRight: Float = 0
-	private var prevInLeft: Float = 0
-	private let declineAmount: Float = 0.05
 
 
 	private static func activateAVAudioSession() {
