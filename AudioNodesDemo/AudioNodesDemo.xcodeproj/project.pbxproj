@@ -29,6 +29,7 @@
 		364643C32C6D16B30038F237 /* deux.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 369CCACB2C6B52BC002F462B /* deux.m4a */; };
 		364643C42C6D16BA0038F237 /* trois.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 369CCACC2C6B52BC002F462B /* trois.m4a */; };
 		3655FFDE2C6BC811000DE2B6 /* AudioData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3655FFDD2C6BC811000DE2B6 /* AudioData.swift */; };
+		3657F73C2C752599000F99ED /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3657F73B2C752599000F99ED /* WaveformView.swift */; };
 		365B397E2C6C8DC600DF2AF2 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365B397D2C6C8DC600DF2AF2 /* Recorder.swift */; };
 		366F6DF82C6EBEDF0014C692 /* Ducker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 366F6DF72C6EBEDF0014C692 /* Ducker.swift */; };
 		36ADA3152C6C300C006916A0 /* AudioFileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36ADA3142C6C300C006916A0 /* AudioFileWriter.swift */; };
@@ -58,6 +59,7 @@
 		3643100D2C69F300000CF9F3 /* Meter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meter.swift; sourceTree = "<group>"; };
 		364310112C6A09C1000CF9F3 /* SectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionView.swift; sourceTree = "<group>"; };
 		3655FFDD2C6BC811000DE2B6 /* AudioData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioData.swift; sourceTree = "<group>"; };
+		3657F73B2C752599000F99ED /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
 		365B397D2C6C8DC600DF2AF2 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		366F6DF72C6EBEDF0014C692 /* Ducker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ducker.swift; sourceTree = "<group>"; };
 		369CCACB2C6B52BC002F462B /* deux.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = deux.m4a; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 				3628CB162C70F90200FD125E /* FileDialogs.swift */,
 				36CADFA62C6F46D0004E0373 /* LEDToggle.swift */,
 				364310112C6A09C1000CF9F3 /* SectionView.swift */,
+				3657F73B2C752599000F99ED /* WaveformView.swift */,
 				364310072C69C909000CF9F3 /* AudioState.swift */,
 				363478B72C692BD6004BB3B8 /* MainView.swift */,
 				363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */,
@@ -216,6 +219,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3657F73C2C752599000F99ED /* WaveformView.swift in Sources */,
 				364310052C69C52D000CF9F3 /* System.swift in Sources */,
 				3643100A2C69F26D000CF9F3 /* Monitor.swift in Sources */,
 				364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */,
