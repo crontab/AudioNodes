@@ -1,6 +1,6 @@
 //
 //  Waveform.swift
-//  AudioNodesDemo
+//  AudioNodes
 //
 //  Created by Hovik Melikyan on 20.08.24.
 //

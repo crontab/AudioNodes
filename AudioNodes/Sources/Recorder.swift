@@ -1,6 +1,6 @@
 //
 //  Recorder.swift
-//  AudioNodesDemo
+//  AudioNodes
 //
 //  Created by Hovik Melikyan on 14.08.24.
 //

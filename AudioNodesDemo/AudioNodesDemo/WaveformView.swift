@@ -1,6 +1,5 @@
 //
 //  WaveformView.swift
-//  AudioNodesDemo
 //
 //  Created by Hovik Melikyan on 20.08.24.
 //

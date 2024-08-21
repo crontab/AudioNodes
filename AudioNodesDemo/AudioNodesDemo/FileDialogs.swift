@@ -1,6 +1,5 @@
 //
 //  FileDialogs.swift
-//  AudioNodesDemo
 //
 //  Created by Hovik Melikyan on 17.08.24.
 //

@@ -1,6 +1,5 @@
 //
 //  SectionView.swift
-//  AudioNodesDemo
 //
 //  Created by Hovik Melikyan on 12.08.24.
 //

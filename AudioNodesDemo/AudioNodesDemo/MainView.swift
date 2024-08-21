@@ -1,6 +1,5 @@
 //
 //  MainView.swift
-//  AudioNodesDemo
 //
 //  Created by Hovik Melikyan on 11.08.24.
 //

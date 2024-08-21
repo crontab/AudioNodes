@@ -1,6 +1,5 @@
 //
 //  LEDToggle.swift
-//  AudioNodesDemo
 //
 //  Created by Hovik Melikyan on 16.08.24.
 //

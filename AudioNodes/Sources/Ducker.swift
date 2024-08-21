@@ -1,6 +1,6 @@
 //
 //  Ducker.swift
-//  AudioNodesDemo
+//  AudioNodes
 //
 //  Created by Hovik Melikyan on 16.08.24.
 //
