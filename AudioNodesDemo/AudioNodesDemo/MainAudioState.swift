@@ -1,5 +1,5 @@
 //
-//  AudioState.swift
+//  MainAudioState.swift
 //
 //  Created by Hovik Melikyan on 12.08.24.
 //
@@ -14,7 +14,7 @@ private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "
 
 
 @MainActor
-final class AudioState: ObservableObject, PlayerDelegate, MeterDelegate, RecorderDelegate {
+final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, RecorderDelegate {
 
 	@Published var isRunning: Bool = false {
 		didSet {

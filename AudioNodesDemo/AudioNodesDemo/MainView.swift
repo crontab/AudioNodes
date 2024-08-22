@@ -11,7 +11,7 @@ private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "
 
 
 struct MainView: View {
-	@EnvironmentObject private var audio: AudioState
+	@StateObject private var audio: MainAudioState = .init()
 
 	@State private var showShare: URL?
 
@@ -237,5 +237,4 @@ struct MainView: View {
 
 #Preview {
 	MainView()
-		.environmentObject(AudioState())
 }

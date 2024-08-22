@@ -10,13 +10,9 @@ import SwiftUI
 @main
 struct AudioNodesDemoApp: App {
 
-	@StateObject private var audio: AudioState = .init()
-
-
 	var body: some Scene {
 		WindowGroup {
 			MainView()
-				.environmentObject(audio)
 		}
 	}
 }
