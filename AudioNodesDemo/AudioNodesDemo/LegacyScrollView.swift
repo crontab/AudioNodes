@@ -44,6 +44,8 @@ struct LegacyScrollView<Content: View>: UIViewRepresentable {
 		let scrollView = HostedScrollView(host: host)
 		scrollView.showsVerticalScrollIndicator = false
 		scrollView.showsHorizontalScrollIndicator = false
+		scrollView.alwaysBounceVertical = axis == .vertical
+		scrollView.alwaysBounceHorizontal = axis == .horizontal
 		scrollView.delegate = context.coordinator
 
 		scrollView.addSubview(host.view)

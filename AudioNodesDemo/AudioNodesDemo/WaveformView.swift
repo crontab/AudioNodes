@@ -10,6 +10,8 @@ import SwiftUI
 struct WaveformView: View {
 
 	static let Padding = 30.0 // for scrollable only
+	static let BarWidth = 2.0
+	static let BarSpacing = 1.0
 
 	let waveform: Waveform
 	let color: Color
@@ -17,24 +19,24 @@ struct WaveformView: View {
 
 	var body: some View {
 		GeometryReader { geometry in
-			VStack {
-				Spacer()
-				LegacyScrollView(action: .constant(scrollable ? .idle : .disable)) {
-					let barWidth = 2.0
-					let barSpacing = 1.0
-					let dbMin = -48.0
-					let dbBand = -dbMin
-					HStack(alignment: .bottom, spacing: barSpacing) {
+			LegacyScrollView(action: .constant(scrollable ? .idle : .disable)) {
+				ZStack(alignment: .bottom) {
+					Rectangle()
+						.fill(.clear)
+					HStack(alignment: .bottom, spacing: Self.BarSpacing) {
+						let dbMin = -48.0
+						let dbBand = -dbMin
 						ForEach(waveform.series.indices, id: \.self) { index in
 							let value = waveform.series[index]
-							let h = (max(dbMin, min(0, Double(value))) - dbMin) / dbBand // 0...1
+							let h = (max(dbMin, min(0, Double(value))) - dbMin) / dbBand
 							RoundedRectangle(cornerRadius: 0.5)
 								.fill(color)
-								.frame(width: barWidth, height: h * (geometry.size.height - barWidth) + barWidth)
+								.frame(width: Self.BarWidth, height: max(Self.BarWidth, h * (geometry.size.height)))
 						}
 					}
 					.padding(.horizontal, scrollable ? Self.Padding : 0)
 				}
+				.frame(height: geometry.size.height)
 			}
 
 			.mask {
@@ -55,17 +57,17 @@ struct WaveformView: View {
 				}
 			}
 		}
-		.clipped()
 	}
 }
 
 
 #Preview {
-	VStack {
-		WaveformView(waveform: .fromHexString("d0e4efe8f0eaf1e7f0e9f0ecedeeebefeaf1e8f1eaf1e9efe8eee9edeeeceff1eff2f0f0f0f0f2ee"), color: .orange)
-			.frame(width: 100, height: 32)
+	VStack(spacing: 0) {
 		WaveformView(waveform: .fromHexString("d0e4efe8f0eaf1e7f0e9f0ecedeeebefeaf1e8f1eaf1e9efe8eee9edeeeceff1eff2f0f0f0f0f2ee"), color: .orange, scrollable: false)
-			.frame(width: 100, height: 32)
+			.padding(.horizontal, WaveformView.Padding)
+			.frame(width: 270, height: 40)
+		WaveformView(waveform: .fromHexString("d0e4efe8f0eaf1e7f0e9f0ecedeeebefeaf1e8f1eaf1e9efe8eee9edeeeceff1eff2f0f0f0f0f2ee"), color: .orange.opacity(0.6))
+			.frame(width: 270, height: 20)
 			.scaleEffect(y: -1)
 	}
 }
