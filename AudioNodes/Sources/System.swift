@@ -302,6 +302,12 @@ private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags
 }
 
 
+#if DEBUG
+nonisolated(unsafe)
+var lastFrameCount: UInt32 = 0
+#endif
+
+
 private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, timeStamp: UnsafePointer<AudioTimeStamp>, busNumber: UInt32, frameCount: UInt32, buffers unused: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
 
 	let obj: System.MonoInput = Bridge(ptr: userData)
@@ -309,6 +315,15 @@ private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags:
 	guard obj.isEnabled else {
 		return noErr
 	}
+
+#if DEBUG
+	if frameCount != lastFrameCount {
+		lastFrameCount = frameCount
+		Task.detached {
+			print("Buffer size:", frameCount)
+		}
+	}
+#endif
 
 	let renderBuffer = obj.renderBuffer
 	for i in 0..<renderBuffer.count {

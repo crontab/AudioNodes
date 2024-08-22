@@ -15,6 +15,7 @@ class AudioFileReader: StaticDataSource {
 	final let format: StreamFormat
 	final let lengthFactor: Double
 	final let estimatedTotalFrames: Int
+	final var estimatedDuration: TimeInterval { Double(estimatedTotalFrames) / format.sampleRate }
 
 	fileprivate final let fileRef: ExtAudioFileRef
 

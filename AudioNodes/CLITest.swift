@@ -11,6 +11,8 @@ import AudioToolbox
 
 func resUrl(_ name: String) -> URL { URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appending(path: "AudioNodesDemo/AudioNodesDemo/Resources/").appendingPathComponent(name) }
 
+func tempRecUrl(_ name: String) -> URL { URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("..").appendingPathComponent(name) }
+
 
 class PlayerProgress: PlayerDelegate {
 	func player(_ player: Player, isAt time: TimeInterval) {
@@ -135,6 +137,23 @@ extension System {
 			assert(w.series == waveform.series)
 		}
 	}
+
+
+	func testNR() async {
+		print("--- ", #function)
+		let url = tempRecUrl("ios.m4a")
+		guard let data = AudioData(url: url, format: monoInputFormat) else {
+			print("ERROR: couldn't load file", url.path(percentEncoded: false))
+			return
+		}
+
+		let progress = PlayerProgress()
+		let player = MemoryPlayer(data: data, delegate: progress)
+		connectSource(player)
+		player.isEnabled = true
+		await Sleep(7)
+		await smoothDisconnect()
+	}
 }
 
 
@@ -148,7 +167,8 @@ struct CLI {
 //		await system.testMixer()
 //		await system.testFile()
 //		await system.testQueuePlayer()
-		await system.testMemoryPlayer()
+//		await system.testMemoryPlayer()
+		await system.testNR()
 	}
 
 

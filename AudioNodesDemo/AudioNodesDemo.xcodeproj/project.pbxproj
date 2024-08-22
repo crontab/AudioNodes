@@ -64,6 +64,7 @@
 		3657F73B2C752599000F99ED /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
 		365B397D2C6C8DC600DF2AF2 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		366F6DF72C6EBEDF0014C692 /* Ducker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ducker.swift; sourceTree = "<group>"; };
+		36806EBA2C77995400D4566F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		369CCACB2C6B52BC002F462B /* deux.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = deux.m4a; sourceTree = "<group>"; };
 		369CCACC2C6B52BC002F462B /* trois.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = trois.m4a; sourceTree = "<group>"; };
 		36ADA3142C6C300C006916A0 /* AudioFileWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioFileWriter.swift; sourceTree = "<group>"; };
@@ -101,6 +102,7 @@
 		363478B42C692BD6004BB3B8 /* AudioNodesDemo */ = {
 			isa = PBXGroup;
 			children = (
+				36806EBA2C77995400D4566F /* Info.plist */,
 				36430FFF2C69C52D000CF9F3 /* Sources */,
 				3632445F2C6961280021C8BE /* Globals.swift */,
 				3632443D2C695B4B0021C8BE /* FontEx.swift */,
@@ -384,6 +386,7 @@
 				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AudioNodesDemo/Info.plist;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Need access to microphone to test recording";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -418,6 +421,7 @@
 				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AudioNodesDemo/Info.plist;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Need access to microphone to test recording";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

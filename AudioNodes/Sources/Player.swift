@@ -176,7 +176,7 @@ class FilePlayer: Player {
 		set { playhead$ = Int(newValue * file.format.sampleRate).clamped(to: 0...file.estimatedTotalFrames) }
 	}
 
-	fileprivate var duration$: TimeInterval { Double(file.estimatedTotalFrames) / file.format.sampleRate }
+	fileprivate var duration$: TimeInterval { file.estimatedDuration }
 }
 
 
