@@ -105,7 +105,7 @@ class MemoryRecorder: Recorder {
 
 	let data: AudioData
 
-	override var capacity: TimeInterval { data.capacity }
+	override var capacity: TimeInterval { TimeInterval(data.capacity) }
 	override var duration: TimeInterval { data.duration }
 	override var isFull: Bool { data.isFull }
 

@@ -27,7 +27,7 @@ private let MaxDuration = 60
 /// Up to 60s of in-memory audio data object that can be read or written to. The object can be used with MemoryPlayer and MemoryRecorder nodes. Thread-safe; can be used in both nodes simultanously.
 final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 
-	var capacity: TimeInterval { Double(frameCapacity) / format.sampleRate }
+	var capacity: Int { chunks.count }
 	var duration: TimeInterval { withWriteLock { Double(framesWritten) / format.sampleRate } }
 	var time: TimeInterval { withReadLock { Double(framesRead) / format.sampleRate } }
 	var isAtEnd: Bool { withWriteLock { withReadLock { framesRead == framesWritten } } }
@@ -38,7 +38,7 @@ final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 	init(durationSeconds: Int, format: StreamFormat) {
 		Assert(durationSeconds > 0 && durationSeconds <= MaxDuration, 51070)
 		self.format = format
-		let chunkCapacity = Int(ceil(format.sampleRate))
+		let chunkCapacity = Int(ceil(format.sampleRate)) // 1s
 		chunks = (0..<durationSeconds).map { _ in
 			SafeAudioBufferList(isStereo: format.isStereo, capacity: chunkCapacity)
 		}

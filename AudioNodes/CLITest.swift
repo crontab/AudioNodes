@@ -32,7 +32,7 @@ class PlayerProgress: PlayerDelegate {
 extension System {
 
 	func testSine() async {
-		print("--- ", #function)
+		print("---", #function)
 		let sine = SineGenerator(freq: 440, format: outputFormat, isEnabled: true)
 		connectSource(sine)
 		await Sleep(1)
@@ -50,7 +50,7 @@ extension System {
 		enum Channel: Int, CaseIterable {
 			case one, two
 		}
-		print("--- ", #function)
+		print("---", #function)
 		let sine1 = SineGenerator(freq: 440, format: outputFormat, isEnabled: true)
 		let sine2 = SineGenerator(freq: 480, format: outputFormat, isEnabled: true)
 		let mixer = EnumMixer<Channel>(format: outputFormat)
@@ -68,7 +68,7 @@ extension System {
 
 
 	func testFile() async {
-		print("--- ", #function)
+		print("---", #function)
 		let progress = PlayerProgress()
 		let player = FilePlayer(url: resUrl("eyes-demo.m4a"), format: outputFormat, delegate: progress)!
 		connectSource(player)
@@ -79,7 +79,7 @@ extension System {
 
 
 	func testQueuePlayer() async {
-		print("--- ", #function)
+		print("---", #function)
 		let progress = PlayerProgress()
 		let player = QueuePlayer(format: outputFormat, delegate: progress)
 		["deux.m4a", "trois.m4a"].forEach {
@@ -97,7 +97,7 @@ extension System {
 
 
 	func testMemoryPlayer() async {
-		print("--- ", #function)
+		print("---", #function)
 
 		let data = AudioData(durationSeconds: 2, format: outputFormat)
 		let file = AudioFileReader(url: resUrl("eyes-demo.m4a"), format: outputFormat)!
@@ -140,19 +140,47 @@ extension System {
 
 
 	func testNR() async {
-		print("--- ", #function)
+		print("---", #function)
 		let url = tempRecUrl("ios.m4a")
-		guard let data = AudioData(url: url, format: monoInputFormat) else {
+		guard let original = AudioData(url: url, format: monoInputFormat) else {
 			print("ERROR: couldn't load file", url.path(percentEncoded: false))
 			return
 		}
 
 		let progress = PlayerProgress()
-		let player = MemoryPlayer(data: data, delegate: progress)
-		connectSource(player)
-		player.isEnabled = true
-		await Sleep(7)
-		await smoothDisconnect()
+
+//		do {
+//			print("--- playing original")
+//			let player = MemoryPlayer(data: original, delegate: progress)
+//			connectSource(player)
+//			player.isEnabled = true
+//			await Sleep(player.duration)
+//			await smoothDisconnect()
+//		}
+
+		// Process
+		let processed = AudioData(durationSeconds: original.capacity, format: original.format)
+		do {
+			print("--- processing")
+			original.resetRead()
+			let processor = OfflineProcessor(source: original, sink: processed)
+			let noiseGate = NoiseGate(format: original.format)
+			noiseGate.connectSource(processor)
+			let result = processor.process(entry: noiseGate)
+			if result != noErr {
+				processed.clear()
+			}
+		}
+
+		// Play processed
+		do {
+			print("--- playing processed")
+			let player = MemoryPlayer(data: processed, delegate: progress)
+			connectSource(player)
+			player.isEnabled = true
+			await Sleep(player.duration)
+			await smoothDisconnect()
+		}
 	}
 }
 

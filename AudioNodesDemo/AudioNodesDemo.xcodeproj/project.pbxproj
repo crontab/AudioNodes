@@ -136,18 +136,18 @@
 			isa = PBXGroup;
 			children = (
 				36430FFE2C69C52D000CF9F3 /* Utilities.swift */,
+				3655FFDD2C6BC811000DE2B6 /* AudioData.swift */,
+				36430FF82C69C52D000CF9F3 /* AudioFileReader.swift */,
+				36ADA3142C6C300C006916A0 /* AudioFileWriter.swift */,
+				3630FF582C74594600806161 /* Waveform.swift */,
 				36917D822C7851F400F440AF /* Source.swift */,
 				364310092C69F26D000CF9F3 /* Monitor.swift */,
-				3655FFDD2C6BC811000DE2B6 /* AudioData.swift */,
 				3643100D2C69F300000CF9F3 /* Meter.swift */,
 				36430FF92C69C52D000CF9F3 /* Mixer.swift */,
 				366F6DF72C6EBEDF0014C692 /* Ducker.swift */,
-				36430FF82C69C52D000CF9F3 /* AudioFileReader.swift */,
-				36ADA3142C6C300C006916A0 /* AudioFileWriter.swift */,
 				36430FFB2C69C52D000CF9F3 /* Player.swift */,
 				365B397D2C6C8DC600DF2AF2 /* Recorder.swift */,
 				36430FFC2C69C52D000CF9F3 /* SineGenerator.swift */,
-				3630FF582C74594600806161 /* Waveform.swift */,
 				36917D802C784BA700F440AF /* OfflineProcessor.swift */,
 				36430FFD2C69C52D000CF9F3 /* System.swift */,
 			);
