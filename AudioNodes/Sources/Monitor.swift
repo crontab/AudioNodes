@@ -11,7 +11,7 @@ import Foundation
 // MARK: - Monitor
 
 /// A simpler abstract passive node that can be attached to any audio node using `connectMonitor()`.
-class Monitor: @unchecked Sendable {
+class Monitor: Node {
 
 	/// Indicates whether monitoring should be skipped. If disabled, none of the connected monitors receive data anymore.
 	var isEnabled: Bool {
@@ -48,15 +48,6 @@ class Monitor: @unchecked Sendable {
 	init(isEnabled: Bool = true) {
 		_config = .init(enabled: isEnabled)
 		config$ = .init(enabled: isEnabled)
-	}
-
-
-	/// Name of the node for debug printing
-	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
-
-
-	deinit {
-		DLOG("deinit \(debugName)")
 	}
 
 

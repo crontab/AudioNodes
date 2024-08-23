@@ -17,7 +17,6 @@
 		363478C52C692C25004BB3B8 /* eyes-demo.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 363478C42C692C19004BB3B8 /* eyes-demo.m4a */; };
 		364310002C69C52D000CF9F3 /* AudioFileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36430FF82C69C52D000CF9F3 /* AudioFileReader.swift */; };
 		364310012C69C52D000CF9F3 /* Mixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36430FF92C69C52D000CF9F3 /* Mixer.swift */; };
-		364310022C69C52D000CF9F3 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36430FFA2C69C52D000CF9F3 /* Node.swift */; };
 		364310032C69C52D000CF9F3 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36430FFB2C69C52D000CF9F3 /* Player.swift */; };
 		364310042C69C52D000CF9F3 /* SineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36430FFC2C69C52D000CF9F3 /* SineGenerator.swift */; };
 		364310052C69C52D000CF9F3 /* System.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36430FFD2C69C52D000CF9F3 /* System.swift */; };
@@ -33,6 +32,8 @@
 		3657F73C2C752599000F99ED /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3657F73B2C752599000F99ED /* WaveformView.swift */; };
 		365B397E2C6C8DC600DF2AF2 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365B397D2C6C8DC600DF2AF2 /* Recorder.swift */; };
 		366F6DF82C6EBEDF0014C692 /* Ducker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 366F6DF72C6EBEDF0014C692 /* Ducker.swift */; };
+		36917D812C784BA700F440AF /* OfflineProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36917D802C784BA700F440AF /* OfflineProcessor.swift */; };
+		36917D832C7851F400F440AF /* Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36917D822C7851F400F440AF /* Source.swift */; };
 		36ADA3152C6C300C006916A0 /* AudioFileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36ADA3142C6C300C006916A0 /* AudioFileWriter.swift */; };
 		36CADFA72C6F46D0004E0373 /* LEDToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36CADFA62C6F46D0004E0373 /* LEDToggle.swift */; };
 /* End PBXBuildFile section */
@@ -50,7 +51,6 @@
 		363478C42C692C19004BB3B8 /* eyes-demo.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = "eyes-demo.m4a"; sourceTree = "<group>"; };
 		36430FF82C69C52D000CF9F3 /* AudioFileReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioFileReader.swift; sourceTree = "<group>"; };
 		36430FF92C69C52D000CF9F3 /* Mixer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mixer.swift; sourceTree = "<group>"; };
-		36430FFA2C69C52D000CF9F3 /* Node.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		36430FFB2C69C52D000CF9F3 /* Player.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		36430FFC2C69C52D000CF9F3 /* SineGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SineGenerator.swift; sourceTree = "<group>"; };
 		36430FFD2C69C52D000CF9F3 /* System.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
@@ -65,6 +65,8 @@
 		365B397D2C6C8DC600DF2AF2 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		366F6DF72C6EBEDF0014C692 /* Ducker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ducker.swift; sourceTree = "<group>"; };
 		36806EBA2C77995400D4566F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		36917D802C784BA700F440AF /* OfflineProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfflineProcessor.swift; sourceTree = "<group>"; };
+		36917D822C7851F400F440AF /* Source.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Source.swift; sourceTree = "<group>"; };
 		369CCACB2C6B52BC002F462B /* deux.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = deux.m4a; sourceTree = "<group>"; };
 		369CCACC2C6B52BC002F462B /* trois.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = trois.m4a; sourceTree = "<group>"; };
 		36ADA3142C6C300C006916A0 /* AudioFileWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioFileWriter.swift; sourceTree = "<group>"; };
@@ -134,7 +136,7 @@
 			isa = PBXGroup;
 			children = (
 				36430FFE2C69C52D000CF9F3 /* Utilities.swift */,
-				36430FFA2C69C52D000CF9F3 /* Node.swift */,
+				36917D822C7851F400F440AF /* Source.swift */,
 				364310092C69F26D000CF9F3 /* Monitor.swift */,
 				3655FFDD2C6BC811000DE2B6 /* AudioData.swift */,
 				3643100D2C69F300000CF9F3 /* Meter.swift */,
@@ -146,6 +148,7 @@
 				365B397D2C6C8DC600DF2AF2 /* Recorder.swift */,
 				36430FFC2C69C52D000CF9F3 /* SineGenerator.swift */,
 				3630FF582C74594600806161 /* Waveform.swift */,
+				36917D802C784BA700F440AF /* OfflineProcessor.swift */,
 				36430FFD2C69C52D000CF9F3 /* System.swift */,
 			);
 			name = Sources;
@@ -227,6 +230,7 @@
 				3657F73C2C752599000F99ED /* WaveformView.swift in Sources */,
 				364310052C69C52D000CF9F3 /* System.swift in Sources */,
 				3643100A2C69F26D000CF9F3 /* Monitor.swift in Sources */,
+				36917D832C7851F400F440AF /* Source.swift in Sources */,
 				364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */,
 				363478B82C692BD6004BB3B8 /* MainView.swift in Sources */,
 				364310082C69C909000CF9F3 /* MainAudioState.swift in Sources */,
@@ -234,6 +238,7 @@
 				364310062C69C52D000CF9F3 /* Utilities.swift in Sources */,
 				363244602C6961280021C8BE /* Globals.swift in Sources */,
 				363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */,
+				36917D812C784BA700F440AF /* OfflineProcessor.swift in Sources */,
 				366F6DF82C6EBEDF0014C692 /* Ducker.swift in Sources */,
 				36CADFA72C6F46D0004E0373 /* LEDToggle.swift in Sources */,
 				364310012C69C52D000CF9F3 /* Mixer.swift in Sources */,
@@ -246,7 +251,6 @@
 				364310042C69C52D000CF9F3 /* SineGenerator.swift in Sources */,
 				364310002C69C52D000CF9F3 /* AudioFileReader.swift in Sources */,
 				3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */,
-				364310022C69C52D000CF9F3 /* Node.swift in Sources */,
 				3628CB172C70F90200FD125E /* FileDialogs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

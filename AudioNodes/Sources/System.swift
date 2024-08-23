@@ -60,7 +60,7 @@ final class Voice: System {
 
 // MARK: - System
 
-class System: Node {
+class System: Source {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
 	private(set) var monoInput: MonoInput?

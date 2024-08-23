@@ -9,7 +9,7 @@ import Foundation
 
 
 /// Processes audio data offline using a given source, sink and a chain of Node objects. The offile driver should be connected as a source at the end of the chain; you then call `process(entry:)` with the first node in the chain as an argument.
-class OfflineProcessor: Node {
+class OfflineProcessor: Source {
 
 	init(source: StaticDataSource, sink: StaticDataSink, divisor: Int = 100) {
 		precondition(source.format == sink.format)
@@ -20,7 +20,7 @@ class OfflineProcessor: Node {
 	}
 
 
-	func process(entry: Node) -> OSStatus {
+	func process(entry: Source) -> OSStatus {
 		let frameCount = scratch.capacity
 		while true {
 			numRead = 0 // our _render() below should be called as a result of the chain processing

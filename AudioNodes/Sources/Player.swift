@@ -23,7 +23,7 @@ protocol PlayerDelegate: AnyObject, Sendable {
 // MARK: - Abstract Player
 
 /// Abstract node that defines the most basic player interface. Passed as an argument in `PlayerDelegate` methods; also FilePlayer, QueuePlayer and AudioData conform to this protocol.
-class Player: Node {
+class Player: Source {
 	var time: TimeInterval { 0 }
 	var duration: TimeInterval { 0 }
 	var isAtEnd: Bool { true }
@@ -64,12 +64,12 @@ class FilePlayer: Player {
 
 	/// Get or set the current time within the file. The granularity is approximately 10ms.
 	override var time: TimeInterval {
-		get { withAudioLock { time$ } }
-		set { withAudioLock { time$ = newValue } }
+		get { Double(lastKnownPlayhead$) / file.format.sampleRate }
+		set { playhead$ = Int(newValue * file.format.sampleRate).clamped(to: 0...file.estimatedTotalFrames) }
 	}
 
 	/// Returns the total duration of the audio file. If the system sampling rate is the same as the file's own then the value is highly accurate; however if it's not then this value may be slightly off due to floating point arithmetic quirks. Most of the time the inaccuracy may be ignored in your code.
-	override var duration: TimeInterval { duration$ } // no need for a lock
+	override var duration: TimeInterval { file.estimatedDuration } // no need for a lock
 
 	/// Indicates whether end of file was reached while playing the file.
 	override var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
@@ -169,14 +169,6 @@ class FilePlayer: Player {
 	private var lastKnownPlayhead$: Int = 0
 	private var playhead$: Int?
 	private var _playhead: Int = 0
-
-	// Internal methods exposed mainly for QueuePlayer to avoid recursive semaphore locks:
-	fileprivate var time$: TimeInterval {
-		get { Double(lastKnownPlayhead$) / file.format.sampleRate }
-		set { playhead$ = Int(newValue * file.format.sampleRate).clamped(to: 0...file.estimatedTotalFrames) }
-	}
-
-	fileprivate var duration$: TimeInterval { file.estimatedDuration }
 }
 
 
@@ -192,7 +184,7 @@ class QueuePlayer: Player {
 	}
 
 	/// Returns the total duration of the entire series of audio files.
-	override var duration: TimeInterval { withAudioLock { items$.map { $0.duration$ }.reduce(0, +) } }
+	override var duration: TimeInterval { items$.map { $0.duration }.reduce(0, +) } // no need for a lock
 
 	/// Indicates whether the player has reached the end of the series of files.
 	override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
@@ -230,7 +222,7 @@ class QueuePlayer: Player {
 			}
 			let player = _items[_currentIndex]
 			// Note that we bypass the usual rendering call _internalPull(). This is a bit dangerous in case changes are made in Node or FilePlayer. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
-			withAudioLock {
+			player.withAudioLock {
 				player._willRender$()
 			}
 			framesWritten += player.read(frameCount: frameCount, buffers: buffers, offset: framesWritten)
@@ -272,8 +264,8 @@ class QueuePlayer: Player {
 
 	private var time$: TimeInterval {
 		get {
-			items$[..<lastKnownIndex$].map { $0.duration$ }.reduce(0, +)
-				+ (items$.indices.contains(lastKnownIndex$) ? items$[lastKnownIndex$].time$ : 0)
+			items$[..<lastKnownIndex$].map { $0.duration }.reduce(0, +)
+				+ (items$.indices.contains(lastKnownIndex$) ? items$[lastKnownIndex$].time : 0)
 		}
 		set {
 			var time = newValue
@@ -281,16 +273,16 @@ class QueuePlayer: Player {
 				let item = items$[i]
 				if time == 0 {
 					// succeeding item, reset to 0
-					item.time$ = 0
+					item.time = 0
 				}
-				else if time >= item.duration$ {
+				else if time >= item.duration {
 					// preceding item, do nothing
-					time -= item.duration$
+					time -= item.duration
 				}
 				else {
 					// an item that should become current
 					currentIndex$ = i
-					item.time$ = time
+					item.time = time
 					time = 0
 				}
 			}

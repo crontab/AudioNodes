@@ -8,17 +8,6 @@
 import Foundation
 
 
-@usableFromInline let audioSem: DispatchSemaphore = .init(value: 1)
-
-@inlinable func withAudioLock<T>(execute: () -> T) -> T {
-	audioSem.wait()
-	defer {
-		audioSem.signal()
-	}
-	return execute()
-}
-
-
 struct StreamFormat: Equatable {
 	let sampleRate: Double
 	let isStereo: Bool
@@ -30,12 +19,35 @@ struct StreamFormat: Equatable {
 
 // MARK: - Node
 
-
 // NB: names that start with an underscore are executed or accessed on the system audio thread. Names that end with $ should be called only within a semaphore lock, i.e. withAudioLock { }
 
 
-/// Generic abstract audio node; all other generator and filter types are subclasses of `Node`. All public methods are thread-safe.
 class Node: @unchecked Sendable {
+
+	@inlinable
+	func withAudioLock<T>(execute: () -> T) -> T {
+		audioSem.wait()
+		defer {
+			audioSem.signal()
+		}
+		return execute()
+	}
+
+	/// Name of the node for debug printing
+	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
+
+	deinit {
+		DLOG("deinit \(debugName)")
+	}
+
+	private let audioSem: DispatchSemaphore = .init(value: 1)
+}
+
+
+// MARK: - Source
+
+/// Generic abstract audio node; all other generator and filter types are subclasses of `Node`. All public methods are thread-safe.
+class Source: Node {
 
 	init(isEnabled: Bool = true) {
 		_prevEnabled = isEnabled
@@ -56,7 +68,7 @@ class Node: @unchecked Sendable {
 	}
 
 	/// Connects a node that should provide source data. Each node should be connected to only one other node at a time. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge.
-	func connectSource(_ source: Node) {
+	func connectSource(_ source: Source) {
 		withAudioLock {
 			config$.source = source
 		}
@@ -90,14 +102,6 @@ class Node: @unchecked Sendable {
 		withAudioLock {
 			config$.monitor = nil
 		}
-	}
-
-	/// Name of the node for debug printing
-	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
-
-
-	deinit {
-		DLOG("deinit \(debugName)")
 	}
 
 
@@ -196,7 +200,7 @@ class Node: @unchecked Sendable {
 
 	private struct Config {
 		var monitor: Monitor?
-		var source: Node?
+		var source: Source?
 		var enabled: Bool
 		var bypass: Bool = false
 	}

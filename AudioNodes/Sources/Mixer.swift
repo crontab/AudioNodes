@@ -12,7 +12,7 @@ import Accelerate
 // MARK: - VolumeControl
 
 /// Audio node/filter that can control the gain. Supports timed transitions. It's a standalone component that's also used internally by the Mixer node.
-final class VolumeControl: Node {
+final class VolumeControl: Source {
 
 	let busNumber: Int? // for debug diagnostics only
 	let format: StreamFormat
@@ -123,7 +123,7 @@ final class VolumeControl: Node {
 // MARK: - Mixer
 
 /// Mixer node with a predetermined number of buses; each bus is a VolumeControl object.
-class Mixer: Node {
+class Mixer: Source {
 
 	typealias Bus = VolumeControl
 
@@ -159,7 +159,7 @@ class Mixer: Node {
 	}
 
 
-	private func _renderAndMix(node: Node, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	private func _renderAndMix(node: Source, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		var status: OSStatus
 		status = node._internalPull(frameCount: frameCount, buffers: _scratchBuffer.buffers)
 		for i in 0..<buffers.count {

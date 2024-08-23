@@ -8,7 +8,7 @@
 import Foundation
 
 
-final class SineGenerator: Node {
+final class SineGenerator: Source {
 
 	init(freq: Float32, format: StreamFormat, isEnabled: Bool = false) {
 		freq$ = freq
