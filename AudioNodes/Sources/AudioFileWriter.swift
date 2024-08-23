@@ -9,7 +9,7 @@ import Foundation
 import AudioToolbox
 
 
-final class AudioFileWriter {
+final class AudioFileWriter: StaticDataSink {
 
 	final let url: URL
 	final let format: StreamFormat
@@ -53,12 +53,14 @@ final class AudioFileWriter {
 	}
 
 
-	func writeSync(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus {
 		let status = ExtAudioFileWrite(fileRef, UInt32(frameCount), buffers.unsafePointer)
 		if status != noErr {
 			DLOG("AudioFileWriter: write failed (\(status))")
+			numWritten = 0
 			return status
 		}
+		numWritten = frameCount
 		return noErr
 	}
 

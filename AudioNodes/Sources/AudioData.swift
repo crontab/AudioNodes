@@ -10,8 +10,13 @@ import Foundation
 
 protocol StaticDataSource {
 	var format: StreamFormat { get }
-	func resetRead() -> OSStatus
 	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus // expected to fill silence if numRead < buffer size
+}
+
+
+protocol StaticDataSink {
+	var format: StreamFormat { get }
+	func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus
 }
 
 
@@ -20,7 +25,7 @@ protocol StaticDataSource {
 private let MaxDuration = 60
 
 /// Up to 60s of in-memory audio data object that can be read or written to. The object can be used with MemoryPlayer and MemoryRecorder nodes. Thread-safe; can be used in both nodes simultanously.
-final class AudioData: @unchecked Sendable, StaticDataSource {
+final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 
 	var capacity: TimeInterval { Double(frameCapacity) / format.sampleRate }
 	var duration: TimeInterval { withWriteLock { Double(framesWritten) / format.sampleRate } }
@@ -96,13 +101,10 @@ final class AudioData: @unchecked Sendable, StaticDataSource {
 	}
 
 
-	// StaticDataSource protocol
-	@discardableResult
-	func resetRead() -> OSStatus {
+	func resetRead() {
 		withReadLock {
 			framesRead = 0
 		}
-		return noErr
 	}
 
 
@@ -112,6 +114,13 @@ final class AudioData: @unchecked Sendable, StaticDataSource {
 		if numRead < frameCount {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: Int(numRead))
 		}
+		return noErr
+	}
+
+
+	// StaticDataSink protocol
+	func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus {
+		numWritten = write(frameCount: frameCount, buffers: buffers)
 		return noErr
 	}
 
@@ -133,10 +142,11 @@ final class AudioData: @unchecked Sendable, StaticDataSource {
 		for chunk in chunks {
 			let total = withWriteLock { framesWritten }
 			let toWrite = min(chunk.frameCount, total - written)
-			if file.writeSync(frameCount: toWrite, buffers: chunk.buffers) != noErr {
+			var numWritten: Int = 0
+			if file.writeSync(frameCount: toWrite, buffers: chunk.buffers, numWritten: &numWritten) != noErr {
 				return false
 			}
-			written += toWrite
+			written += numWritten
 			if written == total {
 				break
 			}

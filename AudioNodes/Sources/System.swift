@@ -295,17 +295,26 @@ class System: Node {
 
 // Both input and output callbacks are called by th system on the same thread.
 
-private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, timeStamp: UnsafePointer<AudioTimeStamp>, busNumber: UInt32, frameCount: UInt32, buffers: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
-	let obj: System = Bridge(ptr: userData)
-	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
-	return obj._internalPull(frameCount: Int(frameCount), buffers: AudioBufferListPtr(&buffers!.pointee))
-}
-
-
 #if DEBUG
 nonisolated(unsafe)
 var lastFrameCount: UInt32 = 0
 #endif
+
+private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, timeStamp: UnsafePointer<AudioTimeStamp>, busNumber: UInt32, frameCount: UInt32, buffers: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
+
+#if DEBUG
+	if frameCount != lastFrameCount {
+		lastFrameCount = frameCount
+		Task.detached {
+			print("Output buffer size:", frameCount)
+		}
+	}
+#endif
+
+	let obj: System = Bridge(ptr: userData)
+	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
+	return obj._internalPull(frameCount: Int(frameCount), buffers: AudioBufferListPtr(&buffers!.pointee))
+}
 
 
 private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, timeStamp: UnsafePointer<AudioTimeStamp>, busNumber: UInt32, frameCount: UInt32, buffers unused: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
@@ -315,15 +324,6 @@ private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags:
 	guard obj.isEnabled else {
 		return noErr
 	}
-
-#if DEBUG
-	if frameCount != lastFrameCount {
-		lastFrameCount = frameCount
-		Task.detached {
-			print("Buffer size:", frameCount)
-		}
-	}
-#endif
 
 	let renderBuffer = obj.renderBuffer
 	for i in 0..<renderBuffer.count {

@@ -18,10 +18,6 @@ struct Waveform: Sendable {
 
 
 	static func fromSource(_ source: StaticDataSource, barsPerSec: Int) -> Self? {
-		guard source.resetRead() == noErr else {
-			return nil
-		}
-
 		let format = source.format
 		let samplesPerBar = Int(format.sampleRate) / barsPerSec
 		let bufferList = SafeAudioBufferList(isStereo: format.isStereo, capacity: Int(format.sampleRate)) // 1s <- should be in multiples of seconds for simplicity

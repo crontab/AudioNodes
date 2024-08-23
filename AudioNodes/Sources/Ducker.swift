@@ -12,7 +12,6 @@ class Ducker: Meter {
 
 	init(format: StreamFormat, isEnabled: Bool = true, delegate: MeterDelegate?, volumeControl: VolumeControl) {
 		self.volumeControl = volumeControl
-		self.originalVolume = volumeControl.volume
 		super.init(format: format, isEnabled: isEnabled, delegate: delegate)
 	}
 
@@ -27,5 +26,4 @@ class Ducker: Meter {
 
 
 	private let volumeControl: VolumeControl
-	private let originalVolume: Float
 }

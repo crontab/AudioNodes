@@ -19,6 +19,7 @@
 		3643100C2C69F296000CF9F3 /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3643100B2C69F296000CF9F3 /* Monitor.swift */; };
 		364310102C69F30D000CF9F3 /* Meter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3643100F2C69F30D000CF9F3 /* Meter.swift */; };
 		365B39802C6C8ECA00DF2AF2 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365B397F2C6C8ECA00DF2AF2 /* Recorder.swift */; };
+		36917D7B2C77C90300F440AF /* OfflineProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36917D7A2C77C90300F440AF /* OfflineProcessor.swift */; };
 		36ADA3112C6BE7E8006916A0 /* AudioData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36ADA3102C6BE7E8006916A0 /* AudioData.swift */; };
 		36ADA3132C6C2DC9006916A0 /* AudioFileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36ADA3122C6C2DC9006916A0 /* AudioFileWriter.swift */; };
 		36FF52C82C661FD7006428FE /* CLITest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FF52C72C661FD7006428FE /* CLITest.swift */; };
@@ -50,6 +51,7 @@
 		3643100F2C69F30D000CF9F3 /* Meter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Meter.swift; sourceTree = "<group>"; };
 		364643C22C6CFE4F0038F237 /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
 		365B397F2C6C8ECA00DF2AF2 /* Recorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		36917D7A2C77C90300F440AF /* OfflineProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineProcessor.swift; sourceTree = "<group>"; };
 		36ADA3102C6BE7E8006916A0 /* AudioData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioData.swift; sourceTree = "<group>"; };
 		36ADA3122C6C2DC9006916A0 /* AudioFileWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileWriter.swift; sourceTree = "<group>"; };
 		36FF52C42C661FD7006428FE /* AudioNodes */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AudioNodes; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -83,6 +85,7 @@
 				365B397F2C6C8ECA00DF2AF2 /* Recorder.swift */,
 				3632444E2C695EE90021C8BE /* SineGenerator.swift */,
 				3630FF5A2C74595500806161 /* Waveform.swift */,
+				36917D7A2C77C90300F440AF /* OfflineProcessor.swift */,
 				3632444F2C695EE90021C8BE /* System.swift */,
 			);
 			path = Sources;
@@ -189,6 +192,7 @@
 				3632445C2C695FC80021C8BE /* Mixer.swift in Sources */,
 				364310102C69F30D000CF9F3 /* Meter.swift in Sources */,
 				3632445D2C695FC80021C8BE /* System.swift in Sources */,
+				36917D7B2C77C90300F440AF /* OfflineProcessor.swift in Sources */,
 				3632445E2C695FC80021C8BE /* Utilities.swift in Sources */,
 				36ADA3132C6C2DC9006916A0 /* AudioFileWriter.swift in Sources */,
 			);
