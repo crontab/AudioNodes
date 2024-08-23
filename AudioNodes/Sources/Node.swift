@@ -49,12 +49,6 @@ class Node: @unchecked Sendable {
 		set { withAudioLock { config$.enabled = newValue } }
 	}
 
-	/// Unlike isEnabled, isMuted always calls the rendering routines but ignores the data and fills buffers with silence if set to true; like with isEnabled ramping can take place when changing this property
-	var isMuted: Bool {
-		get { withAudioLock { config$.muted } }
-		set { withAudioLock { config$.muted = newValue } }
-	}
-
 	/// Indicates whether custom rendering routine should be called or not; useful for filters or effect type nodes; note that no ramping takes place when changing this property
 	var isBypassing: Bool {
 		get { withAudioLock { config$.bypass } }
@@ -77,11 +71,11 @@ class Node: @unchecked Sendable {
 
 	/// Disconnects input smoothly, i.e. ensuring no clicks happen.
 	func smoothDisconnect() async {
-		let wasMuted = isMuted
-		isMuted = true
+		let wasEnabled = isEnabled
+		isEnabled = true
 		await Sleep(0.011)
 		disconnectSource()
-		isMuted = wasMuted
+		isEnabled = wasEnabled
 	}
 
 	/// Connects a node that serves as an observer of audio data, i.e. a node whose `monitor(frameCount:buffers:)` method will be called with each cycle.
@@ -147,7 +141,7 @@ class Node: @unchecked Sendable {
 			return status
 		}
 
-		// 4. No ramps, fully enabled: pass on to check the mute status
+		// 4. No ramps, fully enabled: pass on to the rendering method
 		return _internalRender2(ramping: false, frameCount: frameCount, buffers: buffers)
 	}
 
@@ -166,38 +160,12 @@ class Node: @unchecked Sendable {
 				status = _render(frameCount: frameCount, buffers: buffers)
 			}
 			else if _config.source == nil {
-				// Bypassing and no source specified, fill with silence. If this node is also muted, silence will be filled twice but we are fine with it, don't want to complicate this function any further.
+				// Bypassing and no source specified, fill with silence.
 				FillSilence(frameCount: frameCount, buffers: buffers)
 			}
 		}
 
-		// 7. Playing muted: keep generating and replacing with silence; the first buffer is smoothened
-		if _config.muted {
-			if !_prevMuted {
-				_prevMuted = true
-				if !ramping {
-					Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
-					return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
-				}
-			}
-			FillSilence(frameCount: frameCount, buffers: buffers)
-			return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
-		}
-
-		// 8. Not muted; ensure switching to unmuted state is smooth too
-		if _prevMuted {
-			_prevMuted = false
-			if !ramping {
-				Smooth(out: false, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
-			}
-		}
-
-		// 9. Notify the monitor (tap) node if there's any
-		return _internalMonitor(status: status, frameCount: frameCount, buffers: buffers)
-	}
-
-
-	private func _internalMonitor(status: OSStatus, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		// 7. Notify the monitor (tap) node if there's any
 		if status == noErr, let monitor = _config.monitor {
 			// Call monitor only if there's actual data generated. This helps monitors like file writers only receive actual data, not e.g. silence that can occur due to timing issues with the microphone. This however leaves the monitor unaware of any gaps which may not be good for e.g. meter UI elements. Should find a way to handle these situations.
 			_ = monitor._internalMonitor(frameCount: frameCount, buffers: buffers)
@@ -214,7 +182,6 @@ class Node: @unchecked Sendable {
 
 	func _reset() {
 		_prevEnabled = _config.enabled
-		_prevMuted = _config.muted
 		_config.source?._reset()
 	}
 
@@ -231,12 +198,10 @@ class Node: @unchecked Sendable {
 		var monitor: Monitor?
 		var source: Node?
 		var enabled: Bool
-		var muted: Bool = false
 		var bypass: Bool = false
 	}
 
 	private var config$: Config // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
 	private var _config: Config // config used during the rendering cycle
 	private var _prevEnabled: Bool
-	private var _prevMuted: Bool = false
 }
