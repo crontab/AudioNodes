@@ -32,7 +32,9 @@ struct LEDToggle: View {
 		.disabled(!enabled)
 		.opacity(enabled ? 1 : 0.3)
 		.onTapGesture {
-			self.isOn.toggle()
+			if enabled {
+				self.isOn.toggle()
+			}
 		}
 	}
 
