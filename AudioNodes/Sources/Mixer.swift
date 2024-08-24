@@ -20,19 +20,23 @@ final class VolumeControl: Source {
 	var volume: Float { withAudioLock { lastKnownVolume$ } }
 
 
-	init(format: StreamFormat, busNumber: Int? = nil) {
+	init(format: StreamFormat, initialVolume: Float = 1, busNumber: Int? = nil) {
 		self.busNumber = busNumber
 		self.format = format
+		self.lastKnownVolume$ = initialVolume
+		self._config = .init(targetVolume: initialVolume, transitionFrames: 0)
+		self._previous = initialVolume
 	}
 
 
 	override var debugName: String { super.debugName + (busNumber.map { "[\($0)]" } ?? "") }
 
+
 	/// Sets the gain, optionally with timed transition. The normal range for the value is 0...1 but values outside of it are also allowed. Any timed request overrides a previous one, but the transition is always smooth.
 	func setVolume(_ volume: Float, duration: TimeInterval = 0) {
 		withAudioLock {
 			let frames = Int(format.sampleRate * duration)
-			config$ = .init(fadeEnd: volume, fadeFrames: frames)
+			config$ = .init(targetVolume: volume, transitionFrames: frames)
 		}
 	}
 
@@ -42,16 +46,16 @@ final class VolumeControl: Source {
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		var current = _previous
 
-		if current != _config.fadeEnd {
+		if current != _config.targetVolume {
 			// Calculate the level that should be set at the end of this cycle (current)
-			if _config.fadeFrames <= frameCount {
-				current = _config.fadeEnd
+			if _config.transitionFrames <= frameCount {
+				current = _config.targetVolume
 			}
 			else {
-				let ratio = Float(frameCount) / Float(_config.fadeFrames)
-				let delta = (_config.fadeEnd - current) * ratio
+				let ratio = Float(frameCount) / Float(_config.transitionFrames)
+				let delta = (_config.targetVolume - current) * ratio
 				current += delta
-				_config.fadeFrames -= frameCount
+				_config.transitionFrames -= frameCount
 			}
 
 			// Make a short transition to the new level, then multiply the rest of the buffer by the new factor
@@ -101,22 +105,23 @@ final class VolumeControl: Source {
 
 	override func _reset() {
 		super._reset()
-		_previous = _config.fadeEnd
-		_config.fadeFrames = 0
+		_previous = _config.targetVolume
+		_config.transitionFrames = 0
+		lastKnownVolume$ = _previous
 	}
 
 
 	// Private
 
 	private struct Config {
-		var fadeEnd: Float
-		var fadeFrames: Int
+		var targetVolume: Float
+		var transitionFrames: Int
 	}
 
 	private var config$: Config? = nil
-	private var lastKnownVolume$: Float = 1
-	private var _config: Config = .init(fadeEnd: 1, fadeFrames: 0)
-	private var _previous: Float = 1
+	private var lastKnownVolume$: Float
+	private var _config: Config
+	private var _previous: Float
 }
 
 
