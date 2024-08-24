@@ -15,6 +15,9 @@ import CoreAudio
 @usableFromInline let SizeOfSample = MemoryLayout<Sample>.size
 
 
+let MIN_LEVEL_DB: Sample = -90
+
+
 // MARK: - Errors, debugging
 
 @inlinable
@@ -172,6 +175,16 @@ func Smooth(out: Bool, frameCount: Int, fadeFrameCount: Int, buffers: AudioBuffe
 		}
 	}
 	return out ? FillSilence(frameCount: frameCount, buffers: buffers, offset: fadeFrameCount) : noErr
+}
+
+
+extension AudioBuffer {
+
+	func rmsDb() -> Sample {
+		var rms: Sample = 0
+		vDSP_rmsqv(samples, 1, &rms, UInt(sampleCount))
+		return (rms == 0) ? MIN_LEVEL_DB : max(MIN_LEVEL_DB, 20 * log10(rms))
+	}
 }
 
 

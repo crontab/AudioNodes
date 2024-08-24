@@ -84,8 +84,8 @@ class Source: Node {
 	/// Disconnects input smoothly, i.e. ensuring no clicks happen.
 	func smoothDisconnect() async {
 		let wasEnabled = isEnabled
-		isEnabled = true
-		await Sleep(0.011)
+		isEnabled = false
+		await Sleep(0.02) // this is not precise, what to do?
 		disconnectSource()
 		isEnabled = wasEnabled
 	}

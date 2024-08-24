@@ -17,8 +17,6 @@ protocol MeterDelegate: AnyObject, Sendable {
 }
 
 
-let MIN_LEVEL_DB: Sample = -90
-
 private let BINS_PER_SEC: Float = 25 // update frequency is 25 times per second, or 40ms
 
 
@@ -37,10 +35,7 @@ class Meter: Monitor {
 
 	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		for i in 0..<min(2, buffers.count) {
-			var rms: Sample = 0
-			vDSP_rmsqv(buffers[i].samples, 1, &rms, UInt(frameCount))
-			let level = (rms == 0) ? MIN_LEVEL_DB : max(MIN_LEVEL_DB, 20 * log10(rms))
-			_peakLevels[i] = max(_peakLevels[i], level)
+			_peakLevels[i] = max(_peakLevels[i], buffers[i].rmsDb())
 		}
 
 		_peakFrames += frameCount

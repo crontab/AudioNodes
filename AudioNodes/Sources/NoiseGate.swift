@@ -20,12 +20,7 @@ class NoiseGate: Source {
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		// Max level on all channels
 		let level: Sample = buffers
-			.map { buffer in
-				// TODO: this should be a utility function and reused in Meter too
-				var rms: Sample = 0
-				vDSP_rmsqv(buffer.samples, 1, &rms, UInt(frameCount))
-				return (rms == 0) ? MIN_LEVEL_DB : max(MIN_LEVEL_DB, 20 * log10(rms))
-			}
+			.map { $0.rmsDb() }
 			.max() ?? MIN_LEVEL_DB
 
 		let ramp = frameCount
