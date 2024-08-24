@@ -139,7 +139,17 @@ class Mixer: Source {
 	/// Creates a Mixer object with a given number of buses; up to 128 is allowed.
 	init(format: StreamFormat, busCount: Int) {
 		Assert(busCount > 0 && busCount <= 128, 51041)
-		buses = (0..<busCount).map { Bus(format: format, busNumber: $0) }
+		buses = (0..<busCount)
+			.map { Bus(format: format, busNumber: $0) }
+		_scratchBuffer = .init(isStereo: format.isStereo, capacity: 4096) // don't want to allocate this under semaphore, should be enough
+	}
+
+
+	/// Creates a Mixer object with an array of initial volume values for each bus; up to 128 buses are allowed
+	init(format: StreamFormat, initialVolumes: [Float]) {
+		Assert(initialVolumes.count <= 128, 51041)
+		buses = initialVolumes.indices
+			.map { Bus(format: format, initialVolume: initialVolumes[$0], busNumber: $0) }
 		_scratchBuffer = .init(isStereo: format.isStereo, capacity: 4096) // don't want to allocate this under semaphore, should be enough
 	}
 
@@ -190,6 +200,13 @@ class EnumMixer<Enum: RawRepresentable & CaseIterable>: Mixer where Enum.RawValu
 	init(format: StreamFormat) {
 		super.init(format: format, busCount: Enum.allCases.count)
 	}
+
+
+	override init(format: StreamFormat, initialVolumes: [Float]) {
+		precondition(initialVolumes.count == Enum.allCases.count)
+		super.init(format: format, initialVolumes: initialVolumes)
+	}
+
 
 	final subscript (_ index: Enum) -> Bus {
 		buses[index.rawValue]
