@@ -34,7 +34,8 @@ class OfflineProcessor: Source {
 			if result != noErr {
 				return result
 			}
-			if numRead < frameCount {
+			if numRead < frameCount || numWritten < numRead {
+				// End of source or end of sink reached
 				return noErr
 			}
 		}
