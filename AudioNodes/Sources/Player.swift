@@ -158,7 +158,7 @@ class FilePlayer: Player {
 	// Private
 
 	private func prepopulateCacheAsync(position: Int) {
-		Task.detached {
+		Task.detached { @AudioFileActor in
 			self.file.prepopulate(position: position)
 		}
 	}

@@ -9,6 +9,12 @@ import Foundation
 import AudioToolbox
 
 
+@globalActor
+actor AudioFileActor {
+	static var shared = AudioFileActor()
+}
+
+
 class AudioFileReader: StaticDataSource {
 
 	final let url: URL
@@ -204,6 +210,7 @@ final class AsyncAudioFileReader: AudioFileReader {
 	}
 
 
+	@AudioFileActor
 	func prepopulate(position: Int) {
 		precondition(position >= 0)
 		for i in 0...2 { // load up to 3 blocks
