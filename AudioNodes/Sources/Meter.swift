@@ -34,7 +34,7 @@ class Meter: Monitor {
 	// Internal
 
 	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
-		for i in 0..<min(2, buffers.count) {
+		for i in 0..<min(_peakLevels.count, buffers.count) {
 			_peakLevels[i] = max(_peakLevels[i], buffers[i].rmsDb())
 		}
 

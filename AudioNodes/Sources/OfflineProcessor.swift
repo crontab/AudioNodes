@@ -8,7 +8,7 @@
 import Foundation
 
 
-/// Processes audio data offline using a given source, sink and a chain of Node objects. The offile processor should be connected as a source at the end of the chain; you then call `process(entry:)` with the first node in the chain as an argument. The `entry` node can even be the processor itself if there are no other nodes in the chain.
+/// Processes audio data offline using a given source, sink and a chain of Node objects. The offile processor should be connected as a source at the end of the chain; you then call `run(entry:)` with the first node in the chain as an argument. The `entry` node can even be the processor itself if there are no other nodes in the chain.
 class OfflineProcessor: Source {
 
 	/// Create an offline processor object with a static source and sink pair. The `divisor` argument is the number of cycles per second; should be in multiples of 25 if you have a Meter or Ducker component in the chain.
@@ -21,11 +21,11 @@ class OfflineProcessor: Source {
 	}
 
 
-	func process(entry: Source) -> OSStatus {
+	func run(entry: Source? = nil) -> OSStatus {
 		let frameCount = scratch.capacity
 		while true {
 			numRead = 0 // our _render() below should be called as a result of the chain processing
-			var result = entry._internalPull(frameCount: frameCount, buffers: scratch.buffers)
+			var result = (entry ?? self)._internalPull(frameCount: frameCount, buffers: scratch.buffers)
 			if result != noErr {
 				return result
 			}

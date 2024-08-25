@@ -9,6 +9,7 @@ import Foundation
 import AVFoundation
 import AudioToolbox
 
+
 func resUrl(_ name: String) -> URL { URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appending(path: "AudioNodesDemo/AudioNodesDemo/Resources/").appendingPathComponent(name) }
 
 func tempRecUrl(_ name: String) -> URL { URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("..").appendingPathComponent(name) }
@@ -122,7 +123,7 @@ extension System {
 		connectSource(player)
 
 		let waveform = await Task.detached {
-			Waveform.fromSource(data, barsPerSec: 4)
+			Waveform.fromSource(data, ticksPerSec: 4)
 		}.value
 
 		player.reset()
@@ -134,7 +135,7 @@ extension System {
 			let s = waveform.toHexString()
 			print(s)
 			let w = Waveform.fromHexString(s)
-			assert(w.series == waveform.series)
+			assert(w.ticks == waveform.ticks)
 		}
 	}
 
@@ -166,7 +167,7 @@ extension System {
 			let processor = OfflineProcessor(source: original, sink: processed)
 			let noiseGate = NoiseGate(format: original.format)
 			noiseGate.connectSource(processor)
-			let result = processor.process(entry: noiseGate)
+			let result = processor.run(entry: noiseGate)
 			if result != noErr {
 				processed.clear()
 			}
@@ -185,6 +186,26 @@ extension System {
 }
 
 
+func rmsTests() {
+
+	// Result: for every 0.1 volume the RMS changes by 4dB
+
+	func testVol(_ volume: Float) {
+		let fmt: StreamFormat = .defaultMono
+		let sine = SineGenerator(freq: 440, volume: volume, format: fmt)
+		let data = AudioData(durationSeconds: 1, format: fmt)
+		_ = OfflineProcessor(source: sine, sink: data)
+			.run()
+		let waveform = Waveform.fromSource(data, ticksPerSec: 4)
+		print("Vol=\(volume), level=\(waveform?.ticks.max() ?? 0)")
+	}
+
+	for i in 0..<10 {
+		testVol(1 - Float(i) / 10)
+	}
+}
+
+
 @main
 struct CLI {
 
@@ -197,6 +218,7 @@ struct CLI {
 //		await system.testQueuePlayer()
 //		await system.testMemoryPlayer()
 		await system.testNR()
+//		rmsTests()
 	}
 
 

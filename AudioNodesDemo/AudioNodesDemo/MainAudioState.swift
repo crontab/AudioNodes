@@ -164,7 +164,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, Rec
 			guard let file = AudioFileReader(url: url, format: stereo.outputFormat) else {
 				return
 			}
-			trackWaveform = Waveform.fromSource(file, barsPerSec: 4)
+			trackWaveform = Waveform.fromSource(file, ticksPerSec: 4)
 		}
 	}
 

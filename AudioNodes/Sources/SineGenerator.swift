@@ -13,10 +13,11 @@ final class SineGenerator: Source, StaticDataSource {
 	let format: StreamFormat
 
 
-	init(freq: Float32, format: StreamFormat, isEnabled: Bool = false) {
+	init(freq: Float32, volume: Float = 1, format: StreamFormat, isEnabled: Bool = false) {
 		self.format = format
 		self.freq$ = freq
-		thetaInc = 2.0 * .pi / format.sampleRate
+		self.factor = FactorFromGain(volume)
+		self.thetaInc = 2.0 * .pi / format.sampleRate
 		precondition(thetaInc > 0)
 		super.init(isEnabled: isEnabled)
 	}
@@ -38,7 +39,7 @@ final class SineGenerator: Source, StaticDataSource {
 		let samples = buffers[0].samples
 		let increment = thetaInc * Double(_freq)
 		for frame in 0..<frameCount {
-			samples[frame] = Sample(sin(_theta))
+			samples[frame] = Sample(sin(_theta)) * factor
 			_theta += increment
 			if _theta > 2.0 * .pi {
 				_theta -= 2.0 * .pi
@@ -54,11 +55,13 @@ final class SineGenerator: Source, StaticDataSource {
 	// Static source protocol
 	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
 		numRead = frameCount
+		_willRender$()
 		return _render(frameCount: frameCount, buffers: buffers)
 	}
 
 
 	private let thetaInc: Double
+	private let factor: Float
 
 	private var freq$: Float
 	private var _freq: Float = 0
