@@ -54,7 +54,15 @@ final class AudioFileWriter: StaticDataSink {
 
 
 	func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus {
+		// Despite that ExtAudioFileWrite() takes frameCount as a parameter, the actual number of samples should still be written into the buffers (why?!)
+		let saveSamples = buffers[0].sampleCount
+		for i in buffers.indices {
+			buffers[i].sampleCount = frameCount
+		}
 		let status = ExtAudioFileWrite(fileRef, UInt32(frameCount), buffers.unsafePointer)
+		for i in buffers.indices {
+			buffers[i].sampleCount = saveSamples
+		}
 		if status != noErr {
 			DLOG("AudioFileWriter: write failed (\(status))")
 			numWritten = 0
@@ -66,7 +74,15 @@ final class AudioFileWriter: StaticDataSink {
 
 
 	func writeAsync(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		// TODO: this is almost a dupe of the above except it uses ExtAudioFileWriteAsync()
+		let saveSamples = buffers[0].sampleCount
+		for i in buffers.indices {
+			buffers[i].sampleCount = frameCount
+		}
 		let status = ExtAudioFileWriteAsync(fileRef, UInt32(frameCount), buffers.unsafePointer)
+		for i in buffers.indices {
+			buffers[i].sampleCount = saveSamples
+		}
 		if status != noErr {
 			DLOG("AudioFileWriter: write failed (\(status))")
 			return status

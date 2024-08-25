@@ -209,7 +209,7 @@ func rmsTests() {
 func levelAnalysis() {
 
 	func run(url: URL) -> ClosedRange<Waveform.Level> {
-		guard let file = AudioFileReader(url: url, format: .defaultMono) else {
+		guard let file = AudioFileReader(url: url, format: .init(sampleRate: 44100, isStereo: false)) else {
 			return 0...0
 		}
 		guard let waveform = Waveform.fromSource(file, ticksPerSec: 24) else {
@@ -221,7 +221,7 @@ func levelAnalysis() {
 		return lower...upper
 	}
 
-	["ios", "iosv", "mac"].forEach { name in
+	["short", "ios", "iosv", "mac"].forEach { name in
 		let range = run(url: tempRecUrl(name + ".m4a"))
 		print(name, range)
 	}
