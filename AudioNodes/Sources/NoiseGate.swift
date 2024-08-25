@@ -9,9 +9,12 @@ import Foundation
 import Accelerate
 
 
+let STD_NOISE_GATE: Float = -40
+
+
 class NoiseGate: Source {
 
-	init(format: StreamFormat, thresholdDb: Float = -40) {
+	init(format: StreamFormat, thresholdDb: Float = STD_NOISE_GATE) {
 		self.format = format
 		self.thresholdDb = thresholdDb
 	}

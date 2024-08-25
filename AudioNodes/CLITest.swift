@@ -206,19 +206,42 @@ func rmsTests() {
 }
 
 
+func levelAnalysis() {
+
+	func run(url: URL) -> ClosedRange<Waveform.Level> {
+		guard let file = AudioFileReader(url: url, format: .defaultMono) else {
+			return 0...0
+		}
+		guard let waveform = Waveform.fromSource(file, ticksPerSec: 24) else {
+			return 0...0
+		}
+		guard let lower = waveform.lower, let upper = waveform.upper, lower <= upper else {
+			return 0...0
+		}
+		return lower...upper
+	}
+
+	["ios", "iosv", "mac"].forEach { name in
+		let range = run(url: tempRecUrl(name + ".m4a"))
+		print(name, range)
+	}
+}
+
+
 @main
 struct CLI {
 
 	static func runTests() async {
-		let system = Stereo()
-		system.start()
+//		let system = Stereo()
+//		system.start()
 //		await system.testSine()
 //		await system.testMixer()
 //		await system.testFile()
 //		await system.testQueuePlayer()
 //		await system.testMemoryPlayer()
-		await system.testNR()
+//		await system.testNR()
 //		rmsTests()
+		levelAnalysis()
 	}
 
 

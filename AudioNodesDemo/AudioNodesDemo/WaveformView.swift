@@ -26,8 +26,8 @@ struct WaveformView: View {
 					HStack(alignment: .bottom, spacing: Self.BarSpacing) {
 						let dbMin = -48.0
 						let dbBand = -dbMin
-						ForEach(waveform.series.indices, id: \.self) { index in
-							let value = waveform.series[index]
+						ForEach(waveform.ticks.indices, id: \.self) { index in
+							let value = waveform.ticks[index]
 							let h = (max(dbMin, min(0, Double(value))) - dbMin) / dbBand
 							RoundedRectangle(cornerRadius: 0.5)
 								.fill(color)

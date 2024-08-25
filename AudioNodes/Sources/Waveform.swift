@@ -15,6 +15,21 @@ struct Waveform: Sendable {
 	static let Range: ClosedRange<Float> = -127...0
 
 	let ticks: [Level]
+	let lower: Level? // can be nil if ticks are empty or if it's all silence
+	let upper: Level?
+
+
+	init(ticks: [Level]) {
+		self.ticks = ticks
+		var lower, upper: Level?
+		for tick in ticks {
+			guard tick > Level(MIN_LEVEL_DB) else { continue }
+			lower = lower.map { min($0, tick) } ?? tick
+			upper = upper.map { max($0, tick) } ?? tick
+		}
+		self.lower = lower
+		self.upper = upper
+	}
 
 
 	func downsampled(by divisor: Int) -> Waveform {
@@ -43,9 +58,9 @@ struct Waveform: Sendable {
 			var offset = 0
 			while offset < numRead {
 				let level = buffers
-					.map { $0.rmsDb(frameCount: samplesPerTick, offset: offset) }
+					.map { $0.rmsDb(frameCount: min(samplesPerTick, numRead - offset), offset: offset) }
 					.reduce(0, +) / Float(buffers.count)
-				ticks.append(Level(level.clamped(to: Range)))
+				ticks.append(Level(level.clamped(to: Self.Range)))
 				offset += samplesPerTick
 			}
 
