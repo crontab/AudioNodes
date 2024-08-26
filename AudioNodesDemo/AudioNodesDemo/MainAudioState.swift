@@ -230,6 +230,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, Rec
 
 		let newLeft = normalizeDB(left)
 		let newRight = normalizeDB(right)
+		precondition((0...1).contains(newLeft) && (0...1).contains(newRight))
 
 		if meter === outputMeter {
 			prevOutLeft = max(newLeft, prevOutLeft - declineAmount)

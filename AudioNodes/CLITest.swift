@@ -208,11 +208,32 @@ func rmsTests() {
 
 func levelAnalysis() {
 
-	func run(url: URL) -> ClosedRange<Waveform.Level> {
-		guard let file = AudioFileReader(url: url, format: .init(sampleRate: 44100, isStereo: false)) else {
-			return 0...0
-		}
-		guard let waveform = Waveform.fromSource(file, ticksPerSec: 24) else {
+//	48000 / 12
+//	short -57...-23
+//	ios -48...-16
+//	iosv -58...-13
+//	mac -69...-27
+//
+//	48000 / 24
+//	short -58...-23
+//	ios -49...-14
+//	iosv -55...-13
+//	mac -70...-26
+//
+//	48000 / 48
+//	short -58...-22
+//	ios -82...-14
+//	iosv -87...-10
+//	mac -71...-26
+//
+//	44100 / 24
+//	short -58...-23
+//	ios -61...-14
+//	iosv -62...-13
+//	mac -76...-26
+
+	func rmsRangeFor(source: StaticDataSource) -> ClosedRange<Waveform.Level> {
+		guard let waveform = Waveform.fromSource(source, ticksPerSec: 48) else {
 			return 0...0
 		}
 		guard let lower = waveform.lower, let upper = waveform.upper, lower <= upper else {
@@ -222,7 +243,10 @@ func levelAnalysis() {
 	}
 
 	["short", "ios", "iosv", "mac"].forEach { name in
-		let range = run(url: tempRecUrl(name + ".m4a"))
+		guard let file = AudioFileReader(url: tempRecUrl(name + ".m4a"), format: .defaultMono) else {
+			return
+		}
+		let range = rmsRangeFor(source: file)
 		print(name, range)
 	}
 }
