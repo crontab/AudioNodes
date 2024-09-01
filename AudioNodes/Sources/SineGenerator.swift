@@ -11,6 +11,7 @@ import Foundation
 final class SineGenerator: Source, StaticDataSource {
 
 	let format: StreamFormat
+	var estimatedDuration: TimeInterval { .infinity }
 
 
 	init(freq: Float32, volume: Float = 1, format: StreamFormat, isEnabled: Bool = false) {
@@ -58,6 +59,9 @@ final class SineGenerator: Source, StaticDataSource {
 		_willRender$()
 		return _render(frameCount: frameCount, buffers: buffers)
 	}
+
+
+	func resetRead() { }
 
 
 	private let thetaInc: Double

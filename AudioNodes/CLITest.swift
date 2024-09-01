@@ -206,6 +206,61 @@ func rmsTests() {
 }
 
 
+func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, nr: Bool, diagName: String) -> Waveform? {
+
+	let format = source.format
+
+	// Calculate the min and max dB levels within 1/48 chunks
+	source.resetRead()
+	guard let waveform = Waveform.fromSource(source, ticksPerSec: 48) else {
+		return nil
+	}
+	guard let range = waveform.range else {
+		return nil
+	}
+
+	// See how much gain should be applied based on how far the quitest part is from the NR level of 40dB (minus 10dB = -50dB) and the loudest part is from our standard -12dB level.
+	// Before running NR we will apply gain that is the minimum of the two:
+	let upperGain = (STD_NORMAL_PEAK - range.upperBound)
+		.clamped(to: -12...24)
+	let lowerGain = (STD_NOISE_GATE - 10 - range.lowerBound)
+		.clamped(to: 0...12)
+
+#if DEBUG
+	print(diagName + ":", "range =", range, "delta.lo =", lowerGain, "hi =", upperGain)
+#endif
+
+	// 1. Pre-NR gain adjustment
+	// We divide the gain by 40 because each 4dB gain roughly translates to 0.1 volume:
+	let preNRGain = nr ? min(upperGain, lowerGain) : 0
+	let preNRNode = VolumeControl(format: format, initialVolume: 1 + preNRGain / 40)
+
+	// 2. Optional NR
+	let nrNode = NoiseGate(format: format, thresholdDb: STD_NOISE_GATE)
+	nrNode.isBypassing = !nr
+
+	// 3. Post-NR gain adjustment
+	let postNRGain = upperGain - preNRGain
+	let postNRNode = VolumeControl(format: format, initialVolume: 1 + postNRGain / 40)
+
+	// 4. Create a processor and connect the chain
+	let processor = OfflineProcessor(source: source, sink: sink, divisor: 25)
+	postNRNode
+		.connectSource(nrNode)
+		.connectSource(preNRNode)
+		.connectSource(processor)
+
+	// 6. Run the processing chain
+	source.resetRead()
+	let result = processor.run(entry: postNRNode)
+	if result != noErr {
+		return nil
+	}
+
+	return waveform
+}
+
+
 func levelAnalysis() {
 
 //	48000 / 12
@@ -232,22 +287,17 @@ func levelAnalysis() {
 //	iosv -62...-13
 //	mac -76...-26
 
-	func rmsRangeFor(source: StaticDataSource) -> ClosedRange<Waveform.Level> {
-		guard let waveform = Waveform.fromSource(source, ticksPerSec: 48) else {
-			return 0...0
-		}
-		guard let lower = waveform.lower, let upper = waveform.upper, lower <= upper else {
-			return 0...0
-		}
-		return lower...upper
-	}
+//	short range = -58.0...-22.0 lowerDelta = 8.0 upperDelta = 10.0
+//	ios range = -82.0...-14.0 lowerDelta = 32.0 upperDelta = 2.0
+//	iosv range = -87.0...-10.0 lowerDelta = 37.0 upperDelta = -2.0
+//	mac range = -71.0...-26.0 lowerDelta = 21.0 upperDelta = 14.0
 
 	["short", "ios", "iosv", "mac"].forEach { name in
 		guard let file = AudioFileReader(url: tempRecUrl(name + ".m4a"), format: .defaultMono) else {
 			return
 		}
-		let range = rmsRangeFor(source: file)
-		print(name, range)
+		let data = AudioData(durationSeconds: Int(ceil(file.estimatedDuration)), format: file.format)
+		_ = adjustVoiceRecording(source: file, sink: data, nr: true, diagName: name)
 	}
 }
 

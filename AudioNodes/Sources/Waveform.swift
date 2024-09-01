@@ -32,6 +32,14 @@ struct Waveform: Sendable {
 	}
 
 
+	var range: ClosedRange<Float>? {
+		guard let lower, let upper, lower <= upper else {
+			return nil
+		}
+		return Float(lower)...Float(upper)
+	}
+
+
 	func downsampled(by divisor: Int) -> Waveform {
 		.init(ticks: ticks
 			.components(maxLength: divisor)

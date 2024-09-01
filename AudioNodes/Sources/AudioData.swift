@@ -10,6 +10,8 @@ import Foundation
 
 protocol StaticDataSource {
 	var format: StreamFormat { get }
+	var estimatedDuration: TimeInterval { get }
+	func resetRead()
 	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus // expected to fill silence if numRead < buffer size
 }
 
@@ -33,7 +35,7 @@ final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 	var isAtEnd: Bool { withWriteLock { withReadLock { framesRead == framesWritten } } }
 	var isFull: Bool { withWriteLock { framesWritten == frameCapacity } }
 	let format: StreamFormat
-
+	var estimatedDuration: TimeInterval { duration }
 
 	init(durationSeconds: Int, format: StreamFormat) {
 		Assert(durationSeconds > 0 && durationSeconds <= MaxDuration, 51070)

@@ -87,8 +87,8 @@ class AudioFileReader: StaticDataSource {
 	}
 
 
-	func resetRead() -> OSStatus {
-		return ExtAudioFileSeek(fileRef, 0)
+	func resetRead() {
+		ExtAudioFileSeek(fileRef, 0)
 	}
 
 

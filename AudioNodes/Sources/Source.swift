@@ -68,10 +68,12 @@ class Source: Node {
 	}
 
 	/// Connects a node that should provide source data. Each node should be connected to only one other node at a time. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge.
-	func connectSource(_ source: Source) {
+	@discardableResult
+	func connectSource<S: Source>(_ source: S) -> S {
 		withAudioLock {
 			config$.source = source
 		}
+		return source
 	}
 
 	/// Disconnects input. See also `smoothDisconnect()`.
@@ -91,10 +93,12 @@ class Source: Node {
 	}
 
 	/// Connects a node that serves as an observer of audio data, i.e. a node whose `monitor(frameCount:buffers:)` method will be called with each cycle.
-	func connectMonitor(_ monitor: Monitor) {
+	@discardableResult
+	func connectMonitor<M: Monitor>(_ monitor: M) -> M {
 		withAudioLock {
 			config$.monitor = monitor
 		}
+		return monitor
 	}
 
 	/// Disconnects the monitor.
