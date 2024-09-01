@@ -183,6 +183,13 @@ extension System {
 			await smoothDisconnect()
 		}
 	}
+
+
+	func testSyncPlayer() async throws {
+		print("---", #function)
+		let url = tempRecUrl("ios.m4a")
+		try await FilePlayer.playAsync(url, format: outputFormat, driver: self)
+	}
 }
 
 
@@ -226,9 +233,7 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, nr: Bo
 	let lowerGain = (STD_NOISE_GATE - 10 - range.lowerBound)
 		.clamped(to: 0...12)
 
-#if DEBUG
-	print(diagName + ":", "range =", range, "delta.lo =", lowerGain, "hi =", upperGain)
-#endif
+	DLOG("\(diagName): range = \(range), delta.lo = \(lowerGain), hi = \(upperGain)")
 
 	// 1. Pre-NR gain adjustment
 	// We divide the gain by 40 because each 4dB gain roughly translates to 0.1 volume:
@@ -305,9 +310,9 @@ func levelAnalysis() {
 @main
 struct CLI {
 
-	static func runTests() async {
-//		let system = Stereo()
-//		system.start()
+	static func runTests() async throws {
+		let system = Stereo()
+		system.start()
 //		await system.testSine()
 //		await system.testMixer()
 //		await system.testFile()
@@ -315,11 +320,17 @@ struct CLI {
 //		await system.testMemoryPlayer()
 //		await system.testNR()
 //		rmsTests()
-		levelAnalysis()
+		try await system.testSyncPlayer()
+//		levelAnalysis()
 	}
 
 
 	static func main() async {
-		await runTests()
+		do {
+			try await runTests()
+		}
+		catch {
+			DLOG("\(error)")
+		}
 	}
 }

@@ -333,3 +333,49 @@ class MemoryPlayer: Player {
 		return noErr
 	}
 }
+
+
+// MARK: - Static async players
+
+private class Coordinator: PlayerDelegate {
+	var continuation: CheckedContinuation<Void, Error>?
+
+	deinit { DLOG("Delegate: deinit") }
+
+	func player(_ player: Player, isAt time: TimeInterval) { }
+
+	func playerDidEndPlaying(_ player: Player) {
+		continuation?.resume()
+	}
+}
+
+
+extension FilePlayer {
+
+	@MainActor
+	static func playAsync(_ url: URL, format: StreamFormat, driver: Source) async throws {
+		let coordinator = Coordinator()
+		return try await withCheckedThrowingContinuation { continuation in
+			coordinator.continuation = continuation
+			guard let player = FilePlayer(url: url, format: format, isEnabled: true, delegate: coordinator) else {
+				continuation.resume(throwing: AudioError.fileOpen)
+				return
+			}
+			driver.connectSource(player)
+		}
+	}
+}
+
+
+extension MemoryPlayer {
+
+	@MainActor
+	static func playAsync(_ data: AudioData, driver: Source) async throws {
+		let coordinator = Coordinator()
+		return try await withCheckedThrowingContinuation { continuation in
+			coordinator.continuation = continuation
+			let player = MemoryPlayer(data: data, isEnabled: true, delegate: coordinator)
+			driver.connectSource(player)
+		}
+	}
+}

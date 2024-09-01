@@ -20,6 +20,16 @@ let MIN_LEVEL_DB: Sample = -90
 
 // MARK: - Errors, debugging
 
+enum AudioError: LocalizedError {
+	case fileOpen
+
+	var errorDescription: String? {
+		switch self {
+			case .fileOpen: "Could not open file"
+		}
+	}
+}
+
 @inlinable
 internal func debugOnly(_ body: () -> Void) {
 	assert({ body(); return true }())
