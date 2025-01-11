@@ -190,6 +190,19 @@ extension System {
 		let url = tempRecUrl("ios.m4a")
 		try await FilePlayer.playAsync(url, format: outputFormat, driver: self)
 	}
+
+
+	func levelAnalysis() async throws {
+		for name in ["ios", "ios2", "ios3", "mac"] {
+			guard let file = AudioFileReader(url: tempRecUrl(name + ".m4a"), format: outputFormat) else {
+				return
+			}
+			let data = AudioData(durationSeconds: Int(ceil(file.estimatedDuration)), format: file.format)
+			_ = adjustVoiceRecording(source: file, sink: data, nr: true, diagName: name)
+			data.resetRead()
+			try await MemoryPlayer.playAsync(data, driver: self)
+		}
+	}
 }
 
 
@@ -229,16 +242,16 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, nr: Bo
 	// See how much gain should be applied based on how far the quitest part is from the NR level of 40dB (minus 10dB = -50dB) and the loudest part is from our standard -12dB level.
 	// Before running NR we will apply gain that is the minimum of the two:
 	let upperGain = (STD_NORMAL_PEAK - range.upperBound)
-		.clamped(to: -12...24)
-	let lowerGain = (STD_NOISE_GATE - 10 - range.lowerBound)
-		.clamped(to: 0...12)
+//		.clamped(to: -12...24)
+	let lowerGain: Float = 0 // (STD_NOISE_GATE - 10 - range.lowerBound)
+//		.clamped(to: 0...12)
 
 	DLOG("\(diagName): range = \(range), delta.lo = \(lowerGain), hi = \(upperGain)")
 
 	// 1. Pre-NR gain adjustment
 	// We divide the gain by 40 because each 4dB gain roughly translates to 0.1 volume:
 	let preNRGain = nr ? min(upperGain, lowerGain) : 0
-	let preNRNode = VolumeControl(format: format, initialVolume: 1 + preNRGain / 40)
+	let preNRNode = VolumeControl(format: format, initialVolume: 1 /*+ preNRGain / 40*/)
 
 	// 2. Optional NR
 	let nrNode = NoiseGate(format: format, thresholdDb: STD_NOISE_GATE)
@@ -255,7 +268,7 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, nr: Bo
 		.connectSource(preNRNode)
 		.connectSource(processor)
 
-	// 6. Run the processing chain
+	// 5. Run the processing chain
 	source.resetRead()
 	let result = processor.run(entry: postNRNode)
 	if result != noErr {
@@ -263,47 +276,6 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, nr: Bo
 	}
 
 	return waveform
-}
-
-
-func levelAnalysis() {
-
-//	48000 / 12
-//	short -57...-23
-//	ios -48...-16
-//	iosv -58...-13
-//	mac -69...-27
-//
-//	48000 / 24
-//	short -58...-23
-//	ios -49...-14
-//	iosv -55...-13
-//	mac -70...-26
-//
-//	48000 / 48
-//	short -58...-22
-//	ios -82...-14
-//	iosv -87...-10
-//	mac -71...-26
-//
-//	44100 / 24
-//	short -58...-23
-//	ios -61...-14
-//	iosv -62...-13
-//	mac -76...-26
-
-//	short range = -58.0...-22.0 lowerDelta = 8.0 upperDelta = 10.0
-//	ios range = -82.0...-14.0 lowerDelta = 32.0 upperDelta = 2.0
-//	iosv range = -87.0...-10.0 lowerDelta = 37.0 upperDelta = -2.0
-//	mac range = -71.0...-26.0 lowerDelta = 21.0 upperDelta = 14.0
-
-	["short", "ios", "iosv", "mac"].forEach { name in
-		guard let file = AudioFileReader(url: tempRecUrl(name + ".m4a"), format: .defaultMono) else {
-			return
-		}
-		let data = AudioData(durationSeconds: Int(ceil(file.estimatedDuration)), format: file.format)
-		_ = adjustVoiceRecording(source: file, sink: data, nr: true, diagName: name)
-	}
 }
 
 
@@ -320,8 +292,8 @@ struct CLI {
 //		await system.testMemoryPlayer()
 //		await system.testNR()
 //		rmsTests()
-		try await system.testSyncPlayer()
-//		levelAnalysis()
+//		try await system.testSyncPlayer()
+		try await system.levelAnalysis()
 	}
 
 
