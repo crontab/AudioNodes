@@ -8,7 +8,7 @@
 import Foundation
 
 
-final class SineGenerator: Source, StaticDataSource {
+final class SineGenerator: Source, StaticDataSource, @unchecked Sendable {
 
 	let format: StreamFormat
 	var estimatedDuration: TimeInterval { .infinity }

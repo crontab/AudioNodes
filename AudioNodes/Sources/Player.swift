@@ -23,7 +23,7 @@ protocol PlayerDelegate: AnyObject, Sendable {
 // MARK: - Abstract Player
 
 /// Abstract node that defines the most basic player interface. Passed as an argument in `PlayerDelegate` methods; also FilePlayer, QueuePlayer and AudioData conform to this protocol.
-class Player: Source {
+class Player: Source, @unchecked Sendable {
 	var time: TimeInterval { 0 }
 	var duration: TimeInterval { 0 }
 	var isAtEnd: Bool { true }
@@ -60,7 +60,7 @@ class Player: Source {
 /// You normally use the `isEnable` property to start and stop the playback. When disabled, this node returns silence to the upstream nodes.
 /// Once end of file is reached, `isEnable` flips to `false` automatically. You can restart the playback by setting `time` to `0` and enabling the node again.
 /// You can pass a delegate to the constructor of `FilePlayer`; your delegate should conform to Sendable and the overridden methods should assume being executed on `MainActor`.
-class FilePlayer: Player {
+class FilePlayer: Player, @unchecked Sendable {
 
 	/// Get or set the current time within the file. The granularity is approximately 10ms.
 	override var time: TimeInterval {
@@ -175,7 +175,7 @@ class FilePlayer: Player {
 // MARK: - QueuePlayer
 
 /// Meta-player that provides gapless playback of multiple files. This node treats a series of files as a whole, it supports time positioning and `duration` within the whole. Think of Pink Floyd's *Wish You Were Here*, you absolutely *should* provide gapless playback for the entire album. Questions?
-class QueuePlayer: Player {
+class QueuePlayer: Player, @unchecked Sendable {
 
 	/// Gets and sets the time position within the entire series of audio files.
 	override var time: TimeInterval {
@@ -302,7 +302,7 @@ class QueuePlayer: Player {
 
 // MARK: - MemoryPlayer
 
-class MemoryPlayer: Player {
+class MemoryPlayer: Player, @unchecked Sendable {
 
 	let data: AudioData
 

@@ -12,7 +12,7 @@ import Accelerate
 // MARK: - VolumeControl
 
 /// Audio node/filter that can control the gain. Supports timed transitions. It's a standalone component that's also used internally by the Mixer node.
-final class VolumeControl: Source {
+final class VolumeControl: Source, @unchecked Sendable {
 
 	let busNumber: Int? // for debug diagnostics only
 	let format: StreamFormat
@@ -128,7 +128,7 @@ final class VolumeControl: Source {
 // MARK: - Mixer
 
 /// Mixer node with a predetermined number of buses; each bus is a VolumeControl object.
-class Mixer: Source {
+class Mixer: Source, @unchecked Sendable {
 
 	typealias Bus = VolumeControl
 
@@ -195,7 +195,7 @@ class Mixer: Source {
 // MARK: - EnumMixer
 
 /// Type-safe variant of mixer that takes an `enum` as a basis for accessing the buses. The `enum` should conform to `CaseIterable` and have an `Int` raw value type.
-class EnumMixer<Enum: RawRepresentable & CaseIterable>: Mixer where Enum.RawValue == Int {
+class EnumMixer<Enum: RawRepresentable & CaseIterable>: Mixer, @unchecked Sendable where Enum.RawValue == Int {
 
 	init(format: StreamFormat) {
 		super.init(format: format, busCount: Enum.allCases.count)

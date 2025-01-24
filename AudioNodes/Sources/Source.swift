@@ -47,7 +47,7 @@ class Node: @unchecked Sendable {
 // MARK: - Source
 
 /// Generic abstract audio node; all other generator and filter types are subclasses of `Node`. All public methods are thread-safe.
-class Source: Node {
+class Source: Node, @unchecked Sendable {
 
 	init(isEnabled: Bool = true) {
 		_prevEnabled = isEnabled

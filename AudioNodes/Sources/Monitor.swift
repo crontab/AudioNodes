@@ -11,7 +11,7 @@ import Foundation
 // MARK: - Monitor
 
 /// A simpler abstract passive node that can be attached to any audio node using `connectMonitor()`.
-class Monitor: Node {
+class Monitor: Node, @unchecked Sendable {
 
 	/// Indicates whether monitoring should be skipped. If disabled, none of the connected monitors receive data anymore.
 	var isEnabled: Bool {

@@ -13,7 +13,7 @@ import AudioToolbox
 // MARK: - Stereo
 
 /// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using the `monoInput` node.
-final class Stereo: System {
+final class Stereo: System, @unchecked Sendable {
 
 	override init(isStereo: Bool = true, sampleRate: Double = 0) {
 		super.init(isStereo: isStereo, sampleRate: sampleRate)
@@ -30,7 +30,7 @@ final class Stereo: System {
 // MARK: - Voice
 
 /// Lower quality mono I/O with voice processing (echo cancellation and possibly automatic gain control; see `mode`).
-final class Voice: System {
+final class Voice: System, @unchecked Sendable {
 
 	enum Mode {
 		case normal
@@ -60,7 +60,7 @@ final class Voice: System {
 
 // MARK: - System
 
-class System: Source {
+class System: Source, @unchecked Sendable {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
 	private(set) var monoInput: MonoInput?
@@ -216,7 +216,7 @@ class System: Source {
 
 	// MARK: - MonoInput
 
-	final class MonoInput: Monitor {
+	final class MonoInput: Monitor, @unchecked Sendable {
 
 		// MonoInput is a special node that's not a real source; it can only be monitored by connecting a Monitor object, possibly chained
 
