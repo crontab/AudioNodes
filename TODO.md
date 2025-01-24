@@ -1,5 +1,4 @@
 
-- Offline processor (?)
 - Noise reduction
 - AGC
 - EQ

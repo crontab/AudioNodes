@@ -37,14 +37,14 @@ class Player: Source, @unchecked Sendable {
 
 	final func didPlaySomeAsync() {
 		guard let delegate else { return }
-		Task.detached { @MainActor in
+		Task.detached { @Sendable @MainActor in
 			delegate.player(self, isAt: self.time)
 		}
 	}
 
 	final func didEndPlayingAsync() {
 		guard let delegate else { return }
-		Task.detached { @MainActor in
+		Task.detached { @Sendable @MainActor in
 			delegate.player(self, isAt: self.duration)
 			delegate.playerDidEndPlaying(self)
 		}
@@ -158,7 +158,7 @@ class FilePlayer: Player, @unchecked Sendable {
 	// Private
 
 	private func prepopulateCacheAsync(position: Int) {
-		Task.detached { @AudioFileActor in
+		Task.detached { @Sendable @AudioFileActor in
 			self.file.prepopulate(position: position)
 		}
 	}

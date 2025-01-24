@@ -28,14 +28,14 @@ class Recorder: Monitor, @unchecked Sendable {
 
 	final func didRecordSomeAsync() {
 		guard let delegate else { return }
-		Task.detached { @MainActor in
+		Task.detached { @Sendable @MainActor in
 			delegate.recorder(self, isAt: self.duration)
 		}
 	}
 
 	final func didEndRecordingAsync() {
 		guard let delegate else { return }
-		Task.detached { @MainActor in
+		Task.detached { @Sendable @MainActor in
 			delegate.recorder(self, isAt: self.duration)
 			delegate.recorderDidEndRecording(self)
 		}
