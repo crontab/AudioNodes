@@ -96,9 +96,8 @@ public final class VolumeControl: Source, @unchecked Sendable {
 
 	override func _willRender$() {
 		super._willRender$()
-		if let config = config$ {
+		if let config = config$.take() {
 			_config = config
-			config$ = nil
 		}
 	}
 

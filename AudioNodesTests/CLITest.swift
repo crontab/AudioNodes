@@ -285,8 +285,8 @@ struct CLI {
 	static func runTests() async throws {
 		let system = Stereo()
 		system.start()
-//		await system.testSine()
-//		await system.testMixer()
+		await system.testSine()
+		await system.testMixer()
 		await system.testFile()
 		await system.testQueuePlayer()
 		await system.testMemoryPlayer()

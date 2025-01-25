@@ -147,9 +147,8 @@ public class FilePlayer: Player, @unchecked Sendable {
 
 	override func _willRender$() {
 		super._willRender$()
-		if let playhead = playhead$ {
+		if let playhead = playhead$.take() {
 			_playhead = playhead
-			playhead$ = nil
 			prepopulateCacheAsync(position: playhead)
 		}
 	}
@@ -253,9 +252,8 @@ class QueuePlayer: Player, @unchecked Sendable {
 	override func _willRender$() {
 		super._willRender$()
 		_items = items$
-		if let currentIndex = currentIndex$ {
+		if let currentIndex = currentIndex$.take() {
 			_currentIndex = currentIndex
-			currentIndex$ = nil
 		}
 	}
 
