@@ -14,6 +14,8 @@
 		363478B82C692BD6004BB3B8 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B72C692BD6004BB3B8 /* MainView.swift */; };
 		363478BA2C692BD7004BB3B8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 363478B92C692BD7004BB3B8 /* Assets.xcassets */; };
 		363478C52C692C25004BB3B8 /* eyes-demo.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 363478C42C692C19004BB3B8 /* eyes-demo.m4a */; };
+		363BEC892D453F9B004C4BAE /* AudioNodes.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 363BEC882D453F9B004C4BAE /* AudioNodes.framework */; };
+		363BEC8A2D453F9B004C4BAE /* AudioNodes.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 363BEC882D453F9B004C4BAE /* AudioNodes.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		364310082C69C909000CF9F3 /* MainAudioState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310072C69C909000CF9F3 /* MainAudioState.swift */; };
 		364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310112C6A09C1000CF9F3 /* SectionView.swift */; };
 		364496CF2C760B6E002669D0 /* LegacyScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364496CE2C760B6E002669D0 /* LegacyScrollView.swift */; };
@@ -22,6 +24,20 @@
 		3657F73C2C752599000F99ED /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3657F73B2C752599000F99ED /* WaveformView.swift */; };
 		36CADFA72C6F46D0004E0373 /* LEDToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36CADFA62C6F46D0004E0373 /* LEDToggle.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		363BEC8B2D453F9B004C4BAE /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				363BEC8A2D453F9B004C4BAE /* AudioNodes.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		3628CB162C70F90200FD125E /* FileDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDialogs.swift; sourceTree = "<group>"; };
@@ -33,6 +49,7 @@
 		363478B72C692BD6004BB3B8 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		363478B92C692BD7004BB3B8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		363478C42C692C19004BB3B8 /* eyes-demo.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = "eyes-demo.m4a"; sourceTree = "<group>"; };
+		363BEC882D453F9B004C4BAE /* AudioNodes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AudioNodes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		364310072C69C909000CF9F3 /* MainAudioState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAudioState.swift; sourceTree = "<group>"; };
 		364310112C6A09C1000CF9F3 /* SectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionView.swift; sourceTree = "<group>"; };
 		364496CE2C760B6E002669D0 /* LegacyScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyScrollView.swift; sourceTree = "<group>"; };
@@ -48,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				363BEC892D453F9B004C4BAE /* AudioNodes.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +77,7 @@
 			children = (
 				363338422C72FFE600A05415 /* TODO.md */,
 				363478B42C692BD6004BB3B8 /* AudioNodesDemo */,
+				363BEC872D453F9B004C4BAE /* Frameworks */,
 				363478B32C692BD6004BB3B8 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,6 +120,14 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		363BEC872D453F9B004C4BAE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				363BEC882D453F9B004C4BAE /* AudioNodes.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -111,6 +138,7 @@
 				363478AE2C692BD6004BB3B8 /* Sources */,
 				363478AF2C692BD6004BB3B8 /* Frameworks */,
 				363478B02C692BD6004BB3B8 /* Resources */,
+				363BEC8B2D453F9B004C4BAE /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

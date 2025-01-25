@@ -7,44 +7,44 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3675DCEF2D453D75002C96BE /* AudioNodes.h in Headers */ = {isa = PBXBuildFile; fileRef = 3675DCE02D453D75002C96BE /* AudioNodes.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3675DCF02D453D75002C96BE /* Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCEA2D453D75002C96BE /* Source.swift */; };
-		3675DCF12D453D75002C96BE /* Waveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCED2D453D75002C96BE /* Waveform.swift */; };
-		3675DCF22D453D75002C96BE /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCE82D453D75002C96BE /* Recorder.swift */; };
-		3675DCF32D453D75002C96BE /* Ducker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCE12D453D75002C96BE /* Ducker.swift */; };
-		3675DCF42D453D75002C96BE /* AudioFileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCDF2D453D75002C96BE /* AudioFileWriter.swift */; };
-		3675DCF52D453D75002C96BE /* System.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCEB2D453D75002C96BE /* System.swift */; };
-		3675DCF62D453D75002C96BE /* Meter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCE22D453D75002C96BE /* Meter.swift */; };
-		3675DCF72D453D75002C96BE /* NoiseGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCE52D453D75002C96BE /* NoiseGate.swift */; };
-		3675DCF82D453D75002C96BE /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCE42D453D75002C96BE /* Monitor.swift */; };
-		3675DCF92D453D75002C96BE /* Mixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCE32D453D75002C96BE /* Mixer.swift */; };
-		3675DCFA2D453D75002C96BE /* AudioFileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCDE2D453D75002C96BE /* AudioFileReader.swift */; };
-		3675DCFB2D453D75002C96BE /* AudioData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCDD2D453D75002C96BE /* AudioData.swift */; };
-		3675DCFC2D453D75002C96BE /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCEC2D453D75002C96BE /* Utilities.swift */; };
-		3675DCFD2D453D75002C96BE /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCE72D453D75002C96BE /* Player.swift */; };
-		3675DCFE2D453D75002C96BE /* SineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCE92D453D75002C96BE /* SineGenerator.swift */; };
-		3675DCFF2D453D75002C96BE /* OfflineProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DCE62D453D75002C96BE /* OfflineProcessor.swift */; };
+		363BECC02D45449B004C4BAE /* OfflineProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB72D45449B004C4BAE /* OfflineProcessor.swift */; };
+		363BECC12D45449B004C4BAE /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB92D45449B004C4BAE /* Recorder.swift */; };
+		363BECC22D45449B004C4BAE /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECBD2D45449B004C4BAE /* Utilities.swift */; };
+		363BECC32D45449B004C4BAE /* Ducker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB22D45449B004C4BAE /* Ducker.swift */; };
+		363BECC42D45449B004C4BAE /* Meter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB32D45449B004C4BAE /* Meter.swift */; };
+		363BECC52D45449B004C4BAE /* Waveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECBE2D45449B004C4BAE /* Waveform.swift */; };
+		363BECC62D45449B004C4BAE /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB82D45449B004C4BAE /* Player.swift */; };
+		363BECC72D45449B004C4BAE /* AudioData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECAE2D45449B004C4BAE /* AudioData.swift */; };
+		363BECC82D45449B004C4BAE /* SineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECBA2D45449B004C4BAE /* SineGenerator.swift */; };
+		363BECC92D45449B004C4BAE /* AudioFileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECAF2D45449B004C4BAE /* AudioFileReader.swift */; };
+		363BECCA2D45449B004C4BAE /* Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECBB2D45449B004C4BAE /* Source.swift */; };
+		363BECCB2D45449B004C4BAE /* AudioFileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB02D45449B004C4BAE /* AudioFileWriter.swift */; };
+		363BECCC2D45449B004C4BAE /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB52D45449B004C4BAE /* Monitor.swift */; };
+		363BECCD2D45449B004C4BAE /* System.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECBC2D45449B004C4BAE /* System.swift */; };
+		363BECCE2D45449B004C4BAE /* Mixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB42D45449B004C4BAE /* Mixer.swift */; };
+		363BECCF2D45449B004C4BAE /* NoiseGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB62D45449B004C4BAE /* NoiseGate.swift */; };
+		363BECD02D45449B004C4BAE /* AudioNodes.h in Headers */ = {isa = PBXBuildFile; fileRef = 363BECB12D45449B004C4BAE /* AudioNodes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		363BECAE2D45449B004C4BAE /* AudioData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioData.swift; sourceTree = "<group>"; };
+		363BECAF2D45449B004C4BAE /* AudioFileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileReader.swift; sourceTree = "<group>"; };
+		363BECB02D45449B004C4BAE /* AudioFileWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileWriter.swift; sourceTree = "<group>"; };
+		363BECB12D45449B004C4BAE /* AudioNodes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioNodes.h; sourceTree = "<group>"; };
+		363BECB22D45449B004C4BAE /* Ducker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ducker.swift; sourceTree = "<group>"; };
+		363BECB32D45449B004C4BAE /* Meter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meter.swift; sourceTree = "<group>"; };
+		363BECB42D45449B004C4BAE /* Mixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mixer.swift; sourceTree = "<group>"; };
+		363BECB52D45449B004C4BAE /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
+		363BECB62D45449B004C4BAE /* NoiseGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoiseGate.swift; sourceTree = "<group>"; };
+		363BECB72D45449B004C4BAE /* OfflineProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineProcessor.swift; sourceTree = "<group>"; };
+		363BECB82D45449B004C4BAE /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		363BECB92D45449B004C4BAE /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		363BECBA2D45449B004C4BAE /* SineGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SineGenerator.swift; sourceTree = "<group>"; };
+		363BECBB2D45449B004C4BAE /* Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Source.swift; sourceTree = "<group>"; };
+		363BECBC2D45449B004C4BAE /* System.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
+		363BECBD2D45449B004C4BAE /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		363BECBE2D45449B004C4BAE /* Waveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Waveform.swift; sourceTree = "<group>"; };
 		3675DCB02D453CEE002C96BE /* AudioNodes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AudioNodes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		3675DCDD2D453D75002C96BE /* AudioData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioData.swift; sourceTree = "<group>"; };
-		3675DCDE2D453D75002C96BE /* AudioFileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileReader.swift; sourceTree = "<group>"; };
-		3675DCDF2D453D75002C96BE /* AudioFileWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileWriter.swift; sourceTree = "<group>"; };
-		3675DCE02D453D75002C96BE /* AudioNodes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioNodes.h; sourceTree = "<group>"; };
-		3675DCE12D453D75002C96BE /* Ducker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ducker.swift; sourceTree = "<group>"; };
-		3675DCE22D453D75002C96BE /* Meter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meter.swift; sourceTree = "<group>"; };
-		3675DCE32D453D75002C96BE /* Mixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mixer.swift; sourceTree = "<group>"; };
-		3675DCE42D453D75002C96BE /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
-		3675DCE52D453D75002C96BE /* NoiseGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoiseGate.swift; sourceTree = "<group>"; };
-		3675DCE62D453D75002C96BE /* OfflineProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineProcessor.swift; sourceTree = "<group>"; };
-		3675DCE72D453D75002C96BE /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
-		3675DCE82D453D75002C96BE /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
-		3675DCE92D453D75002C96BE /* SineGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SineGenerator.swift; sourceTree = "<group>"; };
-		3675DCEA2D453D75002C96BE /* Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Source.swift; sourceTree = "<group>"; };
-		3675DCEB2D453D75002C96BE /* System.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
-		3675DCEC2D453D75002C96BE /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
-		3675DCED2D453D75002C96BE /* Waveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Waveform.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,10 +58,34 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		363BECBF2D45449B004C4BAE /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				363BECAE2D45449B004C4BAE /* AudioData.swift */,
+				363BECAF2D45449B004C4BAE /* AudioFileReader.swift */,
+				363BECB02D45449B004C4BAE /* AudioFileWriter.swift */,
+				363BECB22D45449B004C4BAE /* Ducker.swift */,
+				363BECB32D45449B004C4BAE /* Meter.swift */,
+				363BECB42D45449B004C4BAE /* Mixer.swift */,
+				363BECB52D45449B004C4BAE /* Monitor.swift */,
+				363BECB62D45449B004C4BAE /* NoiseGate.swift */,
+				363BECB72D45449B004C4BAE /* OfflineProcessor.swift */,
+				363BECB82D45449B004C4BAE /* Player.swift */,
+				363BECB92D45449B004C4BAE /* Recorder.swift */,
+				363BECBA2D45449B004C4BAE /* SineGenerator.swift */,
+				363BECBB2D45449B004C4BAE /* Source.swift */,
+				363BECBC2D45449B004C4BAE /* System.swift */,
+				363BECBD2D45449B004C4BAE /* Utilities.swift */,
+				363BECBE2D45449B004C4BAE /* Waveform.swift */,
+				363BECB12D45449B004C4BAE /* AudioNodes.h */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
 		3675DCA62D453CEE002C96BE = {
 			isa = PBXGroup;
 			children = (
-				3675DCEE2D453D75002C96BE /* Sources */,
+				363BECBF2D45449B004C4BAE /* Sources */,
 				3675DCB12D453CEE002C96BE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -74,30 +98,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		3675DCEE2D453D75002C96BE /* Sources */ = {
-			isa = PBXGroup;
-			children = (
-				3675DCEC2D453D75002C96BE /* Utilities.swift */,
-				3675DCDD2D453D75002C96BE /* AudioData.swift */,
-				3675DCDE2D453D75002C96BE /* AudioFileReader.swift */,
-				3675DCDF2D453D75002C96BE /* AudioFileWriter.swift */,
-				3675DCED2D453D75002C96BE /* Waveform.swift */,
-				3675DCEA2D453D75002C96BE /* Source.swift */,
-				3675DCE42D453D75002C96BE /* Monitor.swift */,
-				3675DCE22D453D75002C96BE /* Meter.swift */,
-				3675DCE32D453D75002C96BE /* Mixer.swift */,
-				3675DCE12D453D75002C96BE /* Ducker.swift */,
-				3675DCE72D453D75002C96BE /* Player.swift */,
-				3675DCE82D453D75002C96BE /* Recorder.swift */,
-				3675DCE92D453D75002C96BE /* SineGenerator.swift */,
-				3675DCE52D453D75002C96BE /* NoiseGate.swift */,
-				3675DCE62D453D75002C96BE /* OfflineProcessor.swift */,
-				3675DCEB2D453D75002C96BE /* System.swift */,
-				3675DCE02D453D75002C96BE /* AudioNodes.h */,
-			);
-			path = Sources;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -105,7 +105,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3675DCEF2D453D75002C96BE /* AudioNodes.h in Headers */,
+				363BECD02D45449B004C4BAE /* AudioNodes.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,22 +180,22 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3675DCF02D453D75002C96BE /* Source.swift in Sources */,
-				3675DCF12D453D75002C96BE /* Waveform.swift in Sources */,
-				3675DCF22D453D75002C96BE /* Recorder.swift in Sources */,
-				3675DCF32D453D75002C96BE /* Ducker.swift in Sources */,
-				3675DCF42D453D75002C96BE /* AudioFileWriter.swift in Sources */,
-				3675DCF52D453D75002C96BE /* System.swift in Sources */,
-				3675DCF62D453D75002C96BE /* Meter.swift in Sources */,
-				3675DCF72D453D75002C96BE /* NoiseGate.swift in Sources */,
-				3675DCF82D453D75002C96BE /* Monitor.swift in Sources */,
-				3675DCF92D453D75002C96BE /* Mixer.swift in Sources */,
-				3675DCFA2D453D75002C96BE /* AudioFileReader.swift in Sources */,
-				3675DCFB2D453D75002C96BE /* AudioData.swift in Sources */,
-				3675DCFC2D453D75002C96BE /* Utilities.swift in Sources */,
-				3675DCFD2D453D75002C96BE /* Player.swift in Sources */,
-				3675DCFE2D453D75002C96BE /* SineGenerator.swift in Sources */,
-				3675DCFF2D453D75002C96BE /* OfflineProcessor.swift in Sources */,
+				363BECC02D45449B004C4BAE /* OfflineProcessor.swift in Sources */,
+				363BECC12D45449B004C4BAE /* Recorder.swift in Sources */,
+				363BECC22D45449B004C4BAE /* Utilities.swift in Sources */,
+				363BECC32D45449B004C4BAE /* Ducker.swift in Sources */,
+				363BECC42D45449B004C4BAE /* Meter.swift in Sources */,
+				363BECC52D45449B004C4BAE /* Waveform.swift in Sources */,
+				363BECC62D45449B004C4BAE /* Player.swift in Sources */,
+				363BECC72D45449B004C4BAE /* AudioData.swift in Sources */,
+				363BECC82D45449B004C4BAE /* SineGenerator.swift in Sources */,
+				363BECC92D45449B004C4BAE /* AudioFileReader.swift in Sources */,
+				363BECCA2D45449B004C4BAE /* Source.swift in Sources */,
+				363BECCB2D45449B004C4BAE /* AudioFileWriter.swift in Sources */,
+				363BECCC2D45449B004C4BAE /* Monitor.swift in Sources */,
+				363BECCD2D45449B004C4BAE /* System.swift in Sources */,
+				363BECCE2D45449B004C4BAE /* Mixer.swift in Sources */,
+				363BECCF2D45449B004C4BAE /* NoiseGate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

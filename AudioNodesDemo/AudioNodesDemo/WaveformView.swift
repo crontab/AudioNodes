@@ -5,6 +5,7 @@
 //
 
 import SwiftUI
+import AudioNodes
 
 
 struct WaveformView: View {

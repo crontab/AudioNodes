@@ -12,15 +12,15 @@ import Accelerate
 // MARK: - VolumeControl
 
 /// Audio node/filter that can control the gain. Supports timed transitions. It's a standalone component that's also used internally by the Mixer node.
-final class VolumeControl: Source, @unchecked Sendable {
+public final class VolumeControl: Source, @unchecked Sendable {
 
-	let busNumber: Int? // for debug diagnostics only
-	let format: StreamFormat
+	public let busNumber: Int? // for debug diagnostics only
+	public let format: StreamFormat
 
-	var volume: Float { withAudioLock { lastKnownVolume$ } }
+	public var volume: Float { withAudioLock { lastKnownVolume$ } }
 
 
-	init(format: StreamFormat, initialVolume: Float = 1, busNumber: Int? = nil) {
+	public init(format: StreamFormat, initialVolume: Float = 1, busNumber: Int? = nil) {
 		self.busNumber = busNumber
 		self.format = format
 		self.lastKnownVolume$ = initialVolume
@@ -33,7 +33,7 @@ final class VolumeControl: Source, @unchecked Sendable {
 
 
 	/// Sets the gain, optionally with timed transition. The normal range for the value is 0...1 but values outside of it are also allowed. Any timed request overrides a previous one, but the transition is always smooth.
-	func setVolume(_ volume: Float, duration: TimeInterval = 0) {
+	public func setVolume(_ volume: Float, duration: TimeInterval = 0) {
 		withAudioLock {
 			let frames = Int(format.sampleRate * duration)
 			config$ = .init(targetVolume: volume, transitionFrames: frames)
@@ -128,16 +128,16 @@ final class VolumeControl: Source, @unchecked Sendable {
 // MARK: - Mixer
 
 /// Mixer node with a predetermined number of buses; each bus is a VolumeControl object.
-class Mixer: Source, @unchecked Sendable {
+public class Mixer: Source, @unchecked Sendable {
 
-	typealias Bus = VolumeControl
+	public typealias Bus = VolumeControl
 
 	/// Immutable array of buses; each element is a VolumeControl node.
-	final let buses: [Bus] // not atomic because it's immutable
+	public final let buses: [Bus] // not atomic because it's immutable
 
 
 	/// Creates a Mixer object with a given number of buses; up to 128 is allowed.
-	init(format: StreamFormat, busCount: Int) {
+	public init(format: StreamFormat, busCount: Int) {
 		Assert(busCount > 0 && busCount <= 128, 51041)
 		buses = (0..<busCount)
 			.map { Bus(format: format, busNumber: $0) }
@@ -146,7 +146,7 @@ class Mixer: Source, @unchecked Sendable {
 
 
 	/// Creates a Mixer object with an array of initial volume values for each bus; up to 128 buses are allowed
-	init(format: StreamFormat, initialVolumes: [Float]) {
+	public init(format: StreamFormat, initialVolumes: [Float]) {
 		Assert(initialVolumes.count <= 128, 51041)
 		buses = initialVolumes.indices
 			.map { Bus(format: format, initialVolume: initialVolumes[$0], busNumber: $0) }
@@ -195,9 +195,9 @@ class Mixer: Source, @unchecked Sendable {
 // MARK: - EnumMixer
 
 /// Type-safe variant of mixer that takes an `enum` as a basis for accessing the buses. The `enum` should conform to `CaseIterable` and have an `Int` raw value type.
-class EnumMixer<Enum: RawRepresentable & CaseIterable>: Mixer, @unchecked Sendable where Enum.RawValue == Int {
+public class EnumMixer<Enum: RawRepresentable & CaseIterable>: Mixer, @unchecked Sendable where Enum.RawValue == Int {
 
-	init(format: StreamFormat) {
+	public init(format: StreamFormat) {
 		super.init(format: format, busCount: Enum.allCases.count)
 	}
 
@@ -208,7 +208,7 @@ class EnumMixer<Enum: RawRepresentable & CaseIterable>: Mixer, @unchecked Sendab
 	}
 
 
-	final subscript (_ index: Enum) -> Bus {
+	public final subscript (_ index: Enum) -> Bus {
 		buses[index.rawValue]
 	}
 }

@@ -9,17 +9,17 @@ import Foundation
 import Accelerate
 
 
-struct Waveform: Sendable {
+public struct Waveform: Sendable {
 
-	typealias Level = Int8 // -127..0 dB
+	public typealias Level = Int8 // -127..0 dB
 	static let Range: ClosedRange<Float> = -127...0
 
-	let ticks: [Level]
-	let lower: Level? // can be nil if ticks are empty or if it's all silence
-	let upper: Level?
+	public let ticks: [Level]
+	public let lower: Level? // can be nil if ticks are empty or if it's all silence
+	public let upper: Level?
 
 
-	init(ticks: [Level]) {
+	public init(ticks: [Level]) {
 		self.ticks = ticks
 		var lower, upper: Level?
 		for tick in ticks {
@@ -32,7 +32,7 @@ struct Waveform: Sendable {
 	}
 
 
-	var range: ClosedRange<Float>? {
+	public var range: ClosedRange<Float>? {
 		guard let lower, let upper, lower <= upper else {
 			return nil
 		}
@@ -40,14 +40,14 @@ struct Waveform: Sendable {
 	}
 
 
-	func downsampled(by divisor: Int) -> Waveform {
+	public func downsampled(by divisor: Int) -> Waveform {
 		.init(ticks: ticks
 			.components(maxLength: divisor)
 			.map { Level($0.map(Int.init).reduce(0, +) / $0.count) })
 	}
 
 
-	static func fromSource(_ source: StaticDataSource, ticksPerSec: Int) -> Self? {
+	public static func fromSource(_ source: StaticDataSource, ticksPerSec: Int) -> Self? {
 		let format = source.format
 		let samplesPerTick = Int(format.sampleRate) / ticksPerSec
 		let bufferList = SafeAudioBufferList(isStereo: format.isStereo, capacity: Int(format.sampleRate)) // 1s <- should be in multiples of seconds for simplicity
@@ -81,14 +81,14 @@ struct Waveform: Sendable {
 	}
 
 
-	func toHexString() -> String {
+	public func toHexString() -> String {
 		ticks
 			.map { String(format: "%02hhx", $0) }
 			.joined()
 	}
 
 
-	static func fromHexString(_ s: String) -> Self {
+	public static func fromHexString(_ s: String) -> Self {
 		.init(ticks: s.components(maxLength: 2)
 			.compactMap { Int($0, radix: 16) }
 			.map { Int8(truncatingIfNeeded: $0) })

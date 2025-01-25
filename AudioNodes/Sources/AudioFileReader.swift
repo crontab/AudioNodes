@@ -7,6 +7,7 @@
 
 import Foundation
 import AudioToolbox
+import CoreAudio
 
 
 @globalActor
@@ -15,18 +16,18 @@ actor AudioFileActor {
 }
 
 
-class AudioFileReader: StaticDataSource {
+public class AudioFileReader: StaticDataSource {
 
-	final let url: URL
-	final let format: StreamFormat
-	final let lengthFactor: Double
-	final let estimatedTotalFrames: Int
-	final var estimatedDuration: TimeInterval { Double(estimatedTotalFrames) / format.sampleRate }
+	public final let url: URL
+	public final let format: StreamFormat
+	public final let lengthFactor: Double
+	public final let estimatedTotalFrames: Int
+	public final var estimatedDuration: TimeInterval { Double(estimatedTotalFrames) / format.sampleRate }
 
 	fileprivate final let fileRef: ExtAudioFileRef
 
 
-	init?(url: URL, format: StreamFormat) {
+	public init?(url: URL, format: StreamFormat) {
 		self.url = url
 		self.format = format
 
@@ -87,12 +88,12 @@ class AudioFileReader: StaticDataSource {
 	}
 
 
-	func resetRead() {
+	public func resetRead() {
 		ExtAudioFileSeek(fileRef, 0)
 	}
 
 
-	final func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
+	public final func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
 		for i in 0..<buffers.count {
 			buffers[i].sampleCount = frameCount
 		}

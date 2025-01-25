@@ -6,9 +6,10 @@
 //
 
 import Foundation
+import CoreAudio
 
 
-protocol StaticDataSource {
+public protocol StaticDataSource {
 	var format: StreamFormat { get }
 	var estimatedDuration: TimeInterval { get }
 	func resetRead()
@@ -16,7 +17,7 @@ protocol StaticDataSource {
 }
 
 
-protocol StaticDataSink {
+public protocol StaticDataSink {
 	var format: StreamFormat { get }
 	func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus
 }
@@ -27,17 +28,18 @@ protocol StaticDataSink {
 private let MaxDuration = 60
 
 /// Up to 60s of in-memory audio data object that can be read or written to. The object can be used with MemoryPlayer and MemoryRecorder nodes. Thread-safe; can be used in both nodes simultanously.
-final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
+public final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 
-	var capacity: Int { chunks.count }
-	var duration: TimeInterval { withWriteLock { Double(framesWritten) / format.sampleRate } }
-	var time: TimeInterval { withReadLock { Double(framesRead) / format.sampleRate } }
-	var isAtEnd: Bool { withWriteLock { withReadLock { framesRead == framesWritten } } }
-	var isFull: Bool { withWriteLock { framesWritten == frameCapacity } }
-	let format: StreamFormat
-	var estimatedDuration: TimeInterval { duration }
+	public var capacity: Int { chunks.count }
+	public var duration: TimeInterval { withWriteLock { Double(framesWritten) / format.sampleRate } }
+	public var time: TimeInterval { withReadLock { Double(framesRead) / format.sampleRate } }
+	public var isAtEnd: Bool { withWriteLock { withReadLock { framesRead == framesWritten } } }
+	public var isFull: Bool { withWriteLock { framesWritten == frameCapacity } }
+	public let format: StreamFormat
+	public var estimatedDuration: TimeInterval { duration }
 
-	init(durationSeconds: Int, format: StreamFormat) {
+
+	public init(durationSeconds: Int, format: StreamFormat) {
 		Assert(durationSeconds > 0 && durationSeconds <= MaxDuration, 51070)
 		self.format = format
 		let chunkCapacity = Int(ceil(format.sampleRate)) // 1s
@@ -48,7 +50,7 @@ final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 	}
 
 
-	init?(url: URL, format: StreamFormat) {
+	public init?(url: URL, format: StreamFormat) {
 		guard let file = AudioFileReader(url: url, format: format) else {
 			return nil
 		}
@@ -73,7 +75,7 @@ final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 	}
 
 
-	func write(frameCount: Int, buffers: AudioBufferListPtr) -> Int {
+	public func write(frameCount: Int, buffers: AudioBufferListPtr) -> Int {
 		withWriteLock {
 			var framesCopied = 0
 			while framesCopied < frameCount, framesWritten < frameCapacity {
@@ -87,7 +89,7 @@ final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 	}
 
 
-	func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
+	public func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
 		let framesWritten = withWriteLock { self.framesWritten }
 		return withReadLock {
 			let frameCount = min(frameCount, framesWritten - framesRead)
@@ -103,7 +105,7 @@ final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 	}
 
 
-	func resetRead() {
+	public func resetRead() {
 		withReadLock {
 			framesRead = 0
 		}
@@ -111,7 +113,7 @@ final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 
 
 	// StaticDataSource protocol
-	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
+	public func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
 		numRead = read(frameCount: frameCount, buffers: buffers, offset: 0)
 		if numRead < frameCount {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: Int(numRead))
@@ -121,13 +123,13 @@ final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 
 
 	// StaticDataSink protocol
-	func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus {
+	public func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus {
 		numWritten = write(frameCount: frameCount, buffers: buffers)
 		return noErr
 	}
 
 
-	func clear() {
+	public func clear() {
 		withWriteLock {
 			resetRead()
 			framesWritten = 0
@@ -135,7 +137,7 @@ final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 	}
 
 
-	func writeToFile(url: URL, fileSampleRate: Double) -> Bool {
+	public func writeToFile(url: URL, fileSampleRate: Double) -> Bool {
 		guard duration > 0 else { return false }
 		guard let file = AudioFileWriter(url: url, format: format, fileSampleRate: fileSampleRate, compressed: true, async: false) else {
 			return false

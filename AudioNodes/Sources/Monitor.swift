@@ -11,16 +11,16 @@ import Foundation
 // MARK: - Monitor
 
 /// A simpler abstract passive node that can be attached to any audio node using `connectMonitor()`.
-class Monitor: Node, @unchecked Sendable {
+public class Monitor: Node, @unchecked Sendable {
 
 	/// Indicates whether monitoring should be skipped. If disabled, none of the connected monitors receive data anymore.
-	var isEnabled: Bool {
+	public var isEnabled: Bool {
 		get { withAudioLock { config$.enabled } }
 		set { withAudioLock { config$.enabled = newValue } }
 	}
 
 	/// Indicates whether this monitor should skip its own `_monitor()` call. Connected monitors will still receive data.
-	var isBypassing: Bool {
+	public var isBypassing: Bool {
 		get { withAudioLock { config$.bypass } }
 		set { withAudioLock { config$.bypass = newValue } }
 	}
@@ -31,21 +31,21 @@ class Monitor: Node, @unchecked Sendable {
 	}
 
 	/// Connects a monitor object to the given monitor..
-	func connectMonitor(_ monitor: Monitor) {
+	public func connectMonitor(_ monitor: Monitor) {
 		withAudioLock {
 			config$.monitor = monitor
 		}
 	}
 
 	/// Disconnects the monitor.
-	func disconnectMonitor() {
+	public func disconnectMonitor() {
 		withAudioLock {
 			config$.monitor = nil
 		}
 	}
 
 
-	init(isEnabled: Bool = true) {
+	public init(isEnabled: Bool = true) {
 		_config = .init(enabled: isEnabled)
 		config$ = .init(enabled: isEnabled)
 	}

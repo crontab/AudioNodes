@@ -8,12 +8,12 @@
 import Foundation
 
 
-struct StreamFormat: Equatable {
-	let sampleRate: Double
-	let isStereo: Bool
+public struct StreamFormat: Equatable {
+	public let sampleRate: Double
+	public let isStereo: Bool
 
-	static var `default`: Self { .init(sampleRate: 48000, isStereo: true) }
-	static var defaultMono: Self { .init(sampleRate: 48000, isStereo: false) }
+	public static var `default`: Self { .init(sampleRate: 48000, isStereo: true) }
+	public static var defaultMono: Self { .init(sampleRate: 48000, isStereo: false) }
 }
 
 
@@ -22,10 +22,10 @@ struct StreamFormat: Equatable {
 // NB: names that start with an underscore are executed or accessed on the system audio thread. Names that end with $ should be called only within a semaphore lock, i.e. withAudioLock { }
 
 
-class Node: @unchecked Sendable {
+public class Node: @unchecked Sendable {
 
 	@inlinable
-	func withAudioLock<T>(execute: () -> T) -> T {
+	public func withAudioLock<T>(execute: () -> T) -> T {
 		audioSem.wait()
 		defer {
 			audioSem.signal()
@@ -40,14 +40,14 @@ class Node: @unchecked Sendable {
 		DLOG("deinit \(debugName)")
 	}
 
-	private let audioSem: DispatchSemaphore = .init(value: 1)
+	public let audioSem: DispatchSemaphore = .init(value: 1)
 }
 
 
 // MARK: - Source
 
 /// Generic abstract audio node; all other generator and filter types are subclasses of `Node`. All public methods are thread-safe.
-class Source: Node, @unchecked Sendable {
+public class Source: Node, @unchecked Sendable {
 
 	init(isEnabled: Bool = true) {
 		_prevEnabled = isEnabled
@@ -56,20 +56,20 @@ class Source: Node, @unchecked Sendable {
 	}
 
 	/// Indicates whether rendering should be skipped; if the node is disabled, buffers are filled with silence and the input renderer is not called. The last cycle after disabling the node is spent on gracefully ramping down the audio data; similarly the first cycle after enabling gracefully ramps up the data
-	var isEnabled: Bool {
+	public var isEnabled: Bool {
 		get { withAudioLock { config$.enabled } }
 		set { withAudioLock { config$.enabled = newValue } }
 	}
 
 	/// Indicates whether custom rendering routine should be called or not; useful for filters or effect type nodes; note that no ramping takes place when changing this property
-	var isBypassing: Bool {
+	public var isBypassing: Bool {
 		get { withAudioLock { config$.bypass } }
 		set { withAudioLock { config$.bypass = newValue } }
 	}
 
 	/// Connects a node that should provide source data. Each node should be connected to only one other node at a time. This is a fast synchronous version for connecting nodes that aren't yet rendering, i.e. no need to smoothen the edge.
 	@discardableResult
-	func connectSource<S: Source>(_ source: S) -> S {
+	public func connectSource<S: Source>(_ source: S) -> S {
 		withAudioLock {
 			config$.source = source
 		}
@@ -77,14 +77,14 @@ class Source: Node, @unchecked Sendable {
 	}
 
 	/// Disconnects input. See also `smoothDisconnect()`.
-	func disconnectSource() {
+	public func disconnectSource() {
 		withAudioLock {
 			config$.source = nil
 		}
 	}
 
 	/// Disconnects input smoothly, i.e. ensuring no clicks happen.
-	func smoothDisconnect() async {
+	public func smoothDisconnect() async {
 		let wasEnabled = isEnabled
 		isEnabled = false
 		await Sleep(0.02) // this is not precise, what to do?
@@ -94,7 +94,7 @@ class Source: Node, @unchecked Sendable {
 
 	/// Connects a node that serves as an observer of audio data, i.e. a node whose `monitor(frameCount:buffers:)` method will be called with each cycle.
 	@discardableResult
-	func connectMonitor<M: Monitor>(_ monitor: M) -> M {
+	public func connectMonitor<M: Monitor>(_ monitor: M) -> M {
 		withAudioLock {
 			config$.monitor = monitor
 		}
@@ -102,7 +102,7 @@ class Source: Node, @unchecked Sendable {
 	}
 
 	/// Disconnects the monitor.
-	func disconnectMonitor() {
+	public func disconnectMonitor() {
 		withAudioLock {
 			config$.monitor = nil
 		}

@@ -10,7 +10,7 @@ import Foundation
 
 /// Player feedback delegate; used with both `FilePlayer` and `QueuePlayer`.
 @MainActor
-protocol PlayerDelegate: AnyObject, Sendable {
+public protocol PlayerDelegate: AnyObject, Sendable {
 
 	/// Called by a player node approximately every 10ms. In GUI apps, make sure you reduce the frequency of UI updates since updating them at 100fps may lead to interruptions in audio playback and other undesirable effects. The method is executed on `MainActor`. This method is also called at the end of a playback just before a call to `playerDidEndPlaying()`.
 	func player(_ player: Player, isAt time: TimeInterval)
@@ -23,14 +23,14 @@ protocol PlayerDelegate: AnyObject, Sendable {
 // MARK: - Abstract Player
 
 /// Abstract node that defines the most basic player interface. Passed as an argument in `PlayerDelegate` methods; also FilePlayer, QueuePlayer and AudioData conform to this protocol.
-class Player: Source, @unchecked Sendable {
-	var time: TimeInterval { 0 }
-	var duration: TimeInterval { 0 }
-	var isAtEnd: Bool { true }
+public class Player: Source, @unchecked Sendable {
+	public var time: TimeInterval { 0 }
+	public var duration: TimeInterval { 0 }
+	public var isAtEnd: Bool { true }
 
-	func reset() { }
+	public func reset() { }
 
-	init(isEnabled: Bool, delegate: PlayerDelegate?) {
+	public init(isEnabled: Bool, delegate: PlayerDelegate?) {
 		self.delegate = delegate
 		super.init(isEnabled: isEnabled)
 	}
@@ -60,27 +60,27 @@ class Player: Source, @unchecked Sendable {
 /// You normally use the `isEnable` property to start and stop the playback. When disabled, this node returns silence to the upstream nodes.
 /// Once end of file is reached, `isEnable` flips to `false` automatically. You can restart the playback by setting `time` to `0` and enabling the node again.
 /// You can pass a delegate to the constructor of `FilePlayer`; your delegate should conform to Sendable and the overridden methods should assume being executed on `MainActor`.
-class FilePlayer: Player, @unchecked Sendable {
+public class FilePlayer: Player, @unchecked Sendable {
 
 	/// Get or set the current time within the file. The granularity is approximately 10ms.
-	override var time: TimeInterval {
+	public override var time: TimeInterval {
 		get { Double(lastKnownPlayhead$) / file.format.sampleRate }
 		set { playhead$ = Int(newValue * file.format.sampleRate).clamped(to: 0...file.estimatedTotalFrames) }
 	}
 
 	/// Returns the total duration of the audio file. If the system sampling rate is the same as the file's own then the value is highly accurate; however if it's not then this value may be slightly off due to floating point arithmetic quirks. Most of the time the inaccuracy may be ignored in your code.
-	override var duration: TimeInterval { file.estimatedDuration } // no need for a lock
+	public override var duration: TimeInterval { file.estimatedDuration } // no need for a lock
 
 	/// Indicates whether end of file was reached while playing the file.
-	override var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
+	public override var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
 
-	override func reset() { time = 0 }
+	public override func reset() { time = 0 }
 
-	func setAtEnd() { withAudioLock { playhead$ = file.estimatedTotalFrames } }
+	public func setAtEnd() { withAudioLock { playhead$ = file.estimatedTotalFrames } }
 
 	/// Creates a file player node for a given local audio file; note that remote URL's aren't supported. If any kind of error occurs while attempting to open the file, the constructor returns nil.
 	/// The `format` argument should be the same as the current system output's format which you can obtain from one of the  `System` objects.
-	init?(url: URL, format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
+	public init?(url: URL, format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		guard let file = AsyncAudioFileReader(url: url, format: format) else {
 			return nil
 		}
@@ -302,17 +302,17 @@ class QueuePlayer: Player, @unchecked Sendable {
 
 // MARK: - MemoryPlayer
 
-class MemoryPlayer: Player, @unchecked Sendable {
+public class MemoryPlayer: Player, @unchecked Sendable {
 
-	let data: AudioData
+	public let data: AudioData
 
-	override var time: TimeInterval { data.time }
-	override var duration: TimeInterval { data.duration }
-	override var isAtEnd: Bool { data.isAtEnd }
-	override func reset() { data.resetRead() }
+	public override var time: TimeInterval { data.time }
+	public override var duration: TimeInterval { data.duration }
+	public override var isAtEnd: Bool { data.isAtEnd }
+	public override func reset() { data.resetRead() }
 
 
-	init(data: AudioData, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
+	public init(data: AudioData, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		self.data = data
 		super.init(isEnabled: isEnabled, delegate: delegate)
 	}

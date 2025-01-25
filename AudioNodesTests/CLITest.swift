@@ -287,13 +287,13 @@ struct CLI {
 		system.start()
 //		await system.testSine()
 //		await system.testMixer()
-//		await system.testFile()
-//		await system.testQueuePlayer()
-//		await system.testMemoryPlayer()
+		await system.testFile()
+		await system.testQueuePlayer()
+		await system.testMemoryPlayer()
 //		await system.testNR()
 //		rmsTests()
 //		try await system.testSyncPlayer()
-		try await system.levelAnalysis()
+//		try await system.levelAnalysis()
 	}
 
 

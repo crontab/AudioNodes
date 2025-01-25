@@ -10,13 +10,13 @@ import AudioToolbox
 
 
 @MainActor
-protocol RecorderDelegate: AnyObject, Sendable {
+public protocol RecorderDelegate: AnyObject, Sendable {
 	func recorder(_ recorder: Recorder, isAt time: TimeInterval)
 	func recorderDidEndRecording(_ recorder: Recorder)
 }
 
 
-class Recorder: Monitor, @unchecked Sendable {
+public class Recorder: Monitor, @unchecked Sendable {
 	var capacity: TimeInterval { 0 }
 	var duration: TimeInterval { 0 }
 	var isFull: Bool { true }
@@ -101,16 +101,16 @@ class FileRecorder: Recorder, @unchecked Sendable {
 
 // MARK: - MemoryRecorder
 
-class MemoryRecorder: Recorder, @unchecked Sendable {
+public class MemoryRecorder: Recorder, @unchecked Sendable {
 
-	let data: AudioData
+	public let data: AudioData
 
-	override var capacity: TimeInterval { TimeInterval(data.capacity) }
-	override var duration: TimeInterval { data.duration }
-	override var isFull: Bool { data.isFull }
+	public override var capacity: TimeInterval { TimeInterval(data.capacity) }
+	public override var duration: TimeInterval { data.duration }
+	public override var isFull: Bool { data.isFull }
 
 
-	init(data: AudioData, isEnabled: Bool = false, delegate: RecorderDelegate? = nil) {
+	public init(data: AudioData, isEnabled: Bool = false, delegate: RecorderDelegate? = nil) {
 		self.data = data
 		super.init(isEnabled: isEnabled, delegate: delegate)
 	}

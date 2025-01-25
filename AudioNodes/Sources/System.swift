@@ -13,9 +13,9 @@ import AudioToolbox
 // MARK: - Stereo
 
 /// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using the `monoInput` node.
-final class Stereo: System, @unchecked Sendable {
+public final class Stereo: System, @unchecked Sendable {
 
-	override init(isStereo: Bool = true, sampleRate: Double = 0) {
+	public override init(isStereo: Bool = true, sampleRate: Double = 0) {
 		super.init(isStereo: isStereo, sampleRate: sampleRate)
 	}
 
@@ -30,15 +30,15 @@ final class Stereo: System, @unchecked Sendable {
 // MARK: - Voice
 
 /// Lower quality mono I/O with voice processing (echo cancellation and possibly automatic gain control; see `mode`).
-final class Voice: System, @unchecked Sendable {
+public final class Voice: System, @unchecked Sendable {
 
-	enum Mode {
+	public enum Mode {
 		case normal
 		case voice
 		case voiceAGC
 	}
 
-	var mode: Mode = .voice {
+	public var mode: Mode = .voice {
 		didSet {
 			// Bypass
 			var flag: UInt32 = mode == .normal ? 1 : 0
@@ -50,7 +50,7 @@ final class Voice: System, @unchecked Sendable {
 		}
 	}
 
-	init(sampleRate: Double = 0) {
+	public init(sampleRate: Double = 0) {
 		super.init(isStereo: false, sampleRate: sampleRate)
 	}
 
@@ -60,17 +60,17 @@ final class Voice: System, @unchecked Sendable {
 
 // MARK: - System
 
-class System: Source, @unchecked Sendable {
+public class System: Source, @unchecked Sendable {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
-	private(set) var monoInput: MonoInput?
+	public private(set) var monoInput: MonoInput?
 
 	/// System stream format.
-	final let outputFormat: StreamFormat
-	final let monoInputFormat: StreamFormat
+	public final let outputFormat: StreamFormat
+	public final let monoInputFormat: StreamFormat
 
 	/// Indicates whether the audio system is enabled and is rendering data.
-	var isRunning: Bool {
+	public var isRunning: Bool {
 		var flag: UInt32 = 0, flagSize = SizeOf(flag)
 		NotError(AudioUnitGetProperty(unit, kAudioOutputUnitProperty_IsRunning, kAudioUnitScope_Global, 0, &flag, &flagSize), 51028)
 		return flag != 0
@@ -78,7 +78,7 @@ class System: Source, @unchecked Sendable {
 
 
 	/// Starts the audio system.
-	func start() {
+	public func start() {
 		if !isRunning {
 			NotError(AudioUnitInitialize(unit), 51007)
 			NotError(AudioOutputUnitStart(unit), 51009)
@@ -88,7 +88,7 @@ class System: Source, @unchecked Sendable {
 
 
 	/// Stops the audio system. To avoid clicks, disconnect the input using `smoothDisconnect() async` prior to calling `stop()`.
-	func stop() {
+	public func stop() {
 		AudioOutputUnitStop(unit)
 		AudioUnitUninitialize(unit)
 		DLOG("\(debugName).stop()")
@@ -96,7 +96,7 @@ class System: Source, @unchecked Sendable {
 
 
 	/// Requests authorization for audio input on platforms where it's required, and initializes the `monoInput` property.
-	func requestInputAuthorization() async -> Bool {
+	public func requestInputAuthorization() async -> Bool {
 		guard monoInput == nil else { return true }
 
 		switch AVCaptureDevice.authorizationStatus(for: .audio) {
@@ -124,7 +124,7 @@ class System: Source, @unchecked Sendable {
 
 
 	/// Returns current audio input authorization as Bool
-	static var inputAuthorized: Bool { AVCaptureDevice.authorizationStatus(for: .audio) == .authorized }
+	public static var inputAuthorized: Bool { AVCaptureDevice.authorizationStatus(for: .audio) == .authorized }
 
 
 	/// Creates a system I/O node.
@@ -182,7 +182,7 @@ class System: Source, @unchecked Sendable {
 	}
 
 
-	static var version: String? { Bundle(for: System.self).infoDictionary?["CFBundleShortVersionString"] as? String }
+	public static var version: String? { Bundle(for: System.self).infoDictionary?["CFBundleShortVersionString"] as? String }
 
 
 	// MARK: - Internal
@@ -216,7 +216,7 @@ class System: Source, @unchecked Sendable {
 
 	// MARK: - MonoInput
 
-	final class MonoInput: Monitor, @unchecked Sendable {
+	public final class MonoInput: Monitor, @unchecked Sendable {
 
 		// MonoInput is a special node that's not a real source; it can only be monitored by connecting a Monitor object, possibly chained
 
@@ -261,7 +261,7 @@ class System: Source, @unchecked Sendable {
 		}
 
 
-		override var isEnabled: Bool {
+		public override var isEnabled: Bool {
 			didSet {
 				guard oldValue != isEnabled else {
 					return

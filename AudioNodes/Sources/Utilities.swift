@@ -10,9 +10,9 @@ import Accelerate
 import CoreAudio
 
 
-@usableFromInline typealias Sample = Float32
-@usableFromInline typealias AudioBufferListPtr = UnsafeMutableAudioBufferListPointer
-@usableFromInline let SizeOfSample = MemoryLayout<Sample>.size
+public typealias Sample = Float32
+public typealias AudioBufferListPtr = UnsafeMutableAudioBufferListPointer
+public let SizeOfSample = MemoryLayout<Sample>.size
 
 
 let MIN_LEVEL_DB: Sample = -90
