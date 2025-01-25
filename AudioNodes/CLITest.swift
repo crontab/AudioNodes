@@ -164,10 +164,10 @@ extension System {
 		do {
 			print("--- processing")
 			original.resetRead()
-			let processor = OfflineProcessor(source: original, sink: processed)
+			let processor = OfflineProcessor(source: original)
 			let noiseGate = NoiseGate(format: original.format)
 			noiseGate.connectSource(processor)
-			let result = processor.run(entry: noiseGate)
+			let result = processor.run(entry: noiseGate, sink: processed)
 			if result != noErr {
 				processed.clear()
 			}
@@ -214,8 +214,8 @@ func rmsTests() {
 		let fmt: StreamFormat = .defaultMono
 		let sine = SineGenerator(freq: 440, volume: volume, format: fmt)
 		let data = AudioData(durationSeconds: 1, format: fmt)
-		_ = OfflineProcessor(source: sine, sink: data)
-			.run()
+		_ = OfflineProcessor(source: sine)
+			.run(sink: data)
 		let waveform = Waveform.fromSource(data, ticksPerSec: 4)
 		print("Vol=\(volume), level=\(waveform?.ticks.max() ?? 0)")
 	}
@@ -262,7 +262,7 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, nr: Bo
 	let postNRNode = VolumeControl(format: format, initialVolume: 1 + postNRGain / 40)
 
 	// 4. Create a processor and connect the chain
-	let processor = OfflineProcessor(source: source, sink: sink, divisor: 25)
+	let processor = OfflineProcessor(source: source, divisor: 25)
 	postNRNode
 		.connectSource(nrNode)
 		.connectSource(preNRNode)
@@ -270,7 +270,7 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, nr: Bo
 
 	// 5. Run the processing chain
 	source.resetRead()
-	let result = processor.run(entry: postNRNode)
+	let result = processor.run(entry: postNRNode, sink: sink)
 	if result != noErr {
 		return nil
 	}

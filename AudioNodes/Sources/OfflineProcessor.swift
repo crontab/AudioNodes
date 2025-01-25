@@ -12,16 +12,15 @@ import Foundation
 class OfflineProcessor: Source, @unchecked Sendable {
 
 	/// Create an offline processor object with a static source and sink pair. The `divisor` argument is the number of cycles per second; should be in multiples of 25 if you have a Meter or Ducker component in the chain.
-	init(source: StaticDataSource, sink: StaticDataSink, divisor: Int = 25) {
-		precondition(source.format == sink.format)
+	init(source: StaticDataSource, divisor: Int = 25) {
 		self.source = source
-		self.sink = sink
 		let capacity = Int(ceil(source.format.sampleRate)) / divisor
 		self.scratch = SafeAudioBufferList(isStereo: source.format.isStereo, capacity: capacity)
 	}
 
 
-	func run(entry: Source? = nil) -> OSStatus {
+	func run(entry: Source? = nil, sink: StaticDataSink) -> OSStatus {
+		precondition(source.format == sink.format)
 		let frameCount = scratch.capacity
 		while true {
 			numRead = 0 // our _render() below should be called as a result of the chain processing
@@ -54,7 +53,6 @@ class OfflineProcessor: Source, @unchecked Sendable {
 	// Private
 
 	private let source: StaticDataSource
-	private let sink: StaticDataSink
 	private let scratch: SafeAudioBufferList
 	var numRead: Int = 0
 }
