@@ -198,7 +198,7 @@ extension System {
 				return
 			}
 			let data = AudioData(durationSeconds: Int(ceil(file.estimatedDuration)), format: file.format)
-			_ = adjustVoiceRecording(source: file, sink: data, nr: true, diagName: name)
+			_ = adjustVoiceRecording(source: file, sink: data, diagName: name)
 			data.resetRead()
 			try await MemoryPlayer.playAsync(data, driver: self)
 		}
@@ -226,7 +226,7 @@ func rmsTests() {
 }
 
 
-func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, nr: Bool, diagName: String) -> Waveform? {
+func adjustVoiceRecordingNR(source: StaticDataSource, sink: StaticDataSink, nr: Bool, diagName: String) -> Waveform? {
 
 	let format = source.format
 
@@ -279,21 +279,60 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, nr: Bo
 }
 
 
+func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, diagName: String) -> Waveform? {
+
+	let format = source.format
+
+	// Calculate the min and max dB levels within 1/48 chunks
+	source.resetRead()
+	guard let waveform = Waveform.fromSource(source, ticksPerSec: 48) else {
+		return nil
+	}
+	guard let range = waveform.range else {
+		return nil
+	}
+
+	// See how much gain should be applied based on how far the loudest part is from our standard -12dB level
+	let deltaGain = (STD_NORMAL_PEAK - range.upperBound)
+		.clamped(to: -12...24)
+
+	DLOG("\(diagName): range = \(range), delta = \(deltaGain)")
+
+	// 1. Gain adjustment:
+	// We divide the gain by 40 because each 4dB gain roughly translates to 0.1 volume:
+	let adjustmentNode = VolumeControl(format: format, initialVolume: 1 + deltaGain / 40)
+
+	// 2. Create a processor and connect the chain
+	let processor = OfflineProcessor(source: source, divisor: 25)
+	adjustmentNode
+		.connectSource(processor)
+
+	// 3. Run the processing chain
+	source.resetRead()
+	let result = processor.run(entry: adjustmentNode, sink: sink)
+	if result != noErr {
+		return nil
+	}
+
+	return waveform
+}
+
+
 @main
 struct CLI {
 
 	static func runTests() async throws {
 		let system = Stereo()
 		system.start()
-		await system.testSine()
-		await system.testMixer()
-		await system.testFile()
-		await system.testQueuePlayer()
-		await system.testMemoryPlayer()
+//		await system.testSine()
+//		await system.testMixer()
+//		await system.testFile()
+//		await system.testQueuePlayer()
+//		await system.testMemoryPlayer()
 //		await system.testNR()
 //		rmsTests()
 //		try await system.testSyncPlayer()
-//		try await system.levelAnalysis()
+		try await system.levelAnalysis()
 	}
 
 
