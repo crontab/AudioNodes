@@ -9,14 +9,14 @@ import Foundation
 import AudioToolbox
 
 
-final class AudioFileWriter: StaticDataSink {
+public final class AudioFileWriter: StaticDataSink {
 
-	final let url: URL
-	final let format: StreamFormat
-	final let fileRef: ExtAudioFileRef
+	public final let url: URL
+	public final let format: StreamFormat
+	public final let fileRef: ExtAudioFileRef
 
 
-	init?(url: URL, format: StreamFormat, fileSampleRate: Double, compressed: Bool, async: Bool) {
+	public init?(url: URL, format: StreamFormat, fileSampleRate: Double, compressed: Bool, async: Bool) {
 		self.url = url
 		self.format = format
 
@@ -53,12 +53,12 @@ final class AudioFileWriter: StaticDataSink {
 	}
 
 
-	func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus {
+	public func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus {
 		write(async: false, frameCount: frameCount, buffers: buffers, numWritten: &numWritten)
 	}
 
 
-	func writeAsync(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	public func writeAsync(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		var numWritten: Int = 0
 		return write(async: true, frameCount: frameCount, buffers: buffers, numWritten: &numWritten)
 	}

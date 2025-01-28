@@ -8,13 +8,13 @@
 import Foundation
 
 
-final class SineGenerator: Source, StaticDataSource, @unchecked Sendable {
+public final class SineGenerator: Source, StaticDataSource, @unchecked Sendable {
 
-	let format: StreamFormat
-	var estimatedDuration: TimeInterval { .infinity }
+	public let format: StreamFormat
+	public var estimatedDuration: TimeInterval { .infinity }
 
 
-	init(freq: Float32, volume: Float = 1, format: StreamFormat, isEnabled: Bool = false) {
+	public init(freq: Float32, volume: Float = 1, format: StreamFormat, isEnabled: Bool = false) {
 		self.format = format
 		self.freq$ = freq
 		self.factor = FactorFromGain(volume)
@@ -24,7 +24,7 @@ final class SineGenerator: Source, StaticDataSource, @unchecked Sendable {
 	}
 
 
-	var frequency: Float32 {
+	public var frequency: Float32 {
 		get { withAudioLock { freq$ } }
 		set { withAudioLock { freq$ = newValue } }
 	}
@@ -54,14 +54,14 @@ final class SineGenerator: Source, StaticDataSource, @unchecked Sendable {
 
 
 	// Static source protocol
-	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
+	public func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
 		numRead = frameCount
 		_willRender$()
 		return _render(frameCount: frameCount, buffers: buffers)
 	}
 
 
-	func resetRead() { }
+	public func resetRead() { }
 
 
 	private let thetaInc: Double

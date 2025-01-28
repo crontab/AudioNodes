@@ -8,7 +8,7 @@
 import Foundation
 
 
-public struct StreamFormat: Equatable {
+@frozen public struct StreamFormat: Equatable {
 	public let sampleRate: Double
 	public let isStereo: Bool
 

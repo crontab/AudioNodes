@@ -55,7 +55,6 @@
 		363BEC992D45446A004C4BAE /* NoiseGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoiseGate.swift; sourceTree = "<group>"; };
 		363BEC9A2D45446A004C4BAE /* OfflineProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineProcessor.swift; sourceTree = "<group>"; };
 		363BEC9B2D45446A004C4BAE /* System.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = System.swift; sourceTree = "<group>"; };
-		364643C22C6CFE4F0038F237 /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
 		36FF52C42C661FD7006428FE /* AudioNodesTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AudioNodesTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		36FF52C72C661FD7006428FE /* CLITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLITest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -98,7 +97,6 @@
 		36FF52BB2C661FD7006428FE = {
 			isa = PBXGroup;
 			children = (
-				364643C22C6CFE4F0038F237 /* TODO.md */,
 				36FF52C62C661FD7006428FE /* AudioNodesTests */,
 				36FF52C52C661FD7006428FE /* Products */,
 			);

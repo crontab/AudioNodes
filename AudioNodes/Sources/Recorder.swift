@@ -21,7 +21,7 @@ public class Recorder: Monitor, @unchecked Sendable {
 	var duration: TimeInterval { 0 }
 	var isFull: Bool { true }
 
-	init(isEnabled: Bool, delegate: RecorderDelegate?) {
+	public init(isEnabled: Bool, delegate: RecorderDelegate?) {
 		self.delegate = delegate
 		super.init(isEnabled: isEnabled)
 	}
@@ -47,16 +47,16 @@ public class Recorder: Monitor, @unchecked Sendable {
 
 // MARK: - FileRecorder
 
-class FileRecorder: Recorder, @unchecked Sendable {
+public class FileRecorder: Recorder, @unchecked Sendable {
 
-	override var capacity: TimeInterval { .greatestFiniteMagnitude } // TODO: available disk space?
+	public override var capacity: TimeInterval { .greatestFiniteMagnitude } // TODO: available disk space?
 
-	override var duration: TimeInterval { withAudioLock { Double(lastKnownPlayhead$) / file.format.sampleRate } }
+	public override var duration: TimeInterval { withAudioLock { Double(lastKnownPlayhead$) / file.format.sampleRate } }
 
-	override var isFull: Bool { withAudioLock { lastKnownPlayhead$ >= frameCapacity } }
+	public override var isFull: Bool { withAudioLock { lastKnownPlayhead$ >= frameCapacity } }
 
 
-	init?(url: URL, format: StreamFormat, fileSampleRate: Double, compressed: Bool = true, capacity: TimeInterval, delegate: RecorderDelegate? = nil, isEnabled: Bool = false) {
+	public init?(url: URL, format: StreamFormat, fileSampleRate: Double, compressed: Bool = true, capacity: TimeInterval, delegate: RecorderDelegate? = nil, isEnabled: Bool = false) {
 		guard let file = AudioFileWriter(url: url, format: format, fileSampleRate: fileSampleRate, compressed: compressed, async: true) else {
 			return nil
 		}
@@ -66,7 +66,7 @@ class FileRecorder: Recorder, @unchecked Sendable {
 	}
 
 
-	func stop() {
+	public func stop() {
 		isEnabled = false
 	}
 

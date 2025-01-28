@@ -9,13 +9,13 @@ import Foundation
 import Accelerate
 
 
-let STD_NOISE_GATE: Float = -40
-let STD_NORMAL_PEAK: Float = -12 // for approx. 10-40ms chunks
+public let STD_NOISE_GATE: Float = -40
+public let STD_NORMAL_PEAK: Float = -12 // for approx. 10-40ms chunks
 
 
-class NoiseGate: Source, @unchecked Sendable {
+public class NoiseGate: Source, @unchecked Sendable {
 
-	init(format: StreamFormat, thresholdDb: Float = STD_NOISE_GATE) {
+	public init(format: StreamFormat, thresholdDb: Float = STD_NOISE_GATE) {
 		self.format = format
 		self.thresholdDb = thresholdDb
 	}

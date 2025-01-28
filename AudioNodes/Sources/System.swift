@@ -29,7 +29,7 @@ public final class Stereo: System, @unchecked Sendable {
 
 // MARK: - Voice
 
-/// Lower quality mono I/O with voice processing (echo cancellation and possibly automatic gain control; see `mode`).
+/// Lower quality mono I/O with voice processing (echo cancellation and automatic gain control; see `mode`).
 public final class Voice: System, @unchecked Sendable {
 
 	public enum Mode {

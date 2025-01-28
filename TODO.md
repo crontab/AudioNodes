@@ -1,7 +1,5 @@
 
-- Noise reduction
-- AGC
 - EQ
-- Fourier (maybe)
+- Fourier
 
-- Equavalent of mixer but for recording, e.g. multiplexer?
+- Noise reduction (didn't work)

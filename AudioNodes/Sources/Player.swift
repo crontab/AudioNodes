@@ -174,24 +174,24 @@ public class FilePlayer: Player, @unchecked Sendable {
 // MARK: - QueuePlayer
 
 /// Meta-player that provides gapless playback of multiple files. This node treats a series of files as a whole, it supports time positioning and `duration` within the whole. Think of Pink Floyd's *Wish You Were Here*, you absolutely *should* provide gapless playback for the entire album. Questions?
-class QueuePlayer: Player, @unchecked Sendable {
+public class QueuePlayer: Player, @unchecked Sendable {
 
 	/// Gets and sets the time position within the entire series of audio files.
-	override var time: TimeInterval {
+	public override var time: TimeInterval {
 		get { withAudioLock { time$ } }
 		set { withAudioLock { time$ = newValue } }
 	}
 
 	/// Returns the total duration of the entire series of audio files.
-	override var duration: TimeInterval { items$.map { $0.duration }.reduce(0, +) } // no need for a lock
+	public override var duration: TimeInterval { items$.map { $0.duration }.reduce(0, +) } // no need for a lock
 
 	/// Indicates whether the player has reached the end of the series of files.
-	override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
+	public override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
 
-	override func reset() { time = 0 }
+	public override func reset() { time = 0 }
 
 	/// Adds a file player to the queue. Can be done at any time during playback or not. Queue player creates FilePlayer objects internally, meaning that `url` can only point to a local file. Returns `false` if there was an error opening the audio file.
-	func addFile(url: URL) -> Bool {
+	public func addFile(url: URL) -> Bool {
 		guard let player = FilePlayer(url: url, format: format, isEnabled: true) else {
 			return false
 		}
@@ -203,7 +203,7 @@ class QueuePlayer: Player, @unchecked Sendable {
 
 
 	/// Creates a queue player node. The `format argument should be the same as the current system output's format which you can obtain from one of the  `System` objects.
-	init(format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
+	public init(format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		self.format = format
 		super.init(isEnabled: isEnabled, delegate: delegate)
 	}
@@ -351,7 +351,7 @@ private class Coordinator: PlayerDelegate {
 extension FilePlayer {
 
 	@MainActor
-	static func playAsync(_ url: URL, format: StreamFormat, driver: Source) async throws {
+	public static func playAsync(_ url: URL, format: StreamFormat, driver: Source) async throws {
 		let coordinator = Coordinator()
 		return try await withCheckedThrowingContinuation { continuation in
 			coordinator.continuation = continuation
@@ -368,7 +368,7 @@ extension FilePlayer {
 extension MemoryPlayer {
 
 	@MainActor
-	static func playAsync(_ data: AudioData, driver: Source) async throws {
+	public static func playAsync(_ data: AudioData, driver: Source) async throws {
 		let coordinator = Coordinator()
 		return try await withCheckedThrowingContinuation { continuation in
 			coordinator.continuation = continuation
