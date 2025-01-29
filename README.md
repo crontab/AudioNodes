@@ -7,6 +7,8 @@ _Work in progress_
 
 - [Node](AudioNodes/Sources/Source.swift)
   - [Source](AudioNodes/Sources/Source.swift): Node
+    - [EQFilter](AudioNodes/Sources/EQFilter.swift): Source
+    - [EQMultiFilter](AudioNodes/Sources/EQFilter.swift): Source
     - [NoiseGate](AudioNodes/Sources/NoiseGate.swift): Source
     - [VolumeControl](AudioNodes/Sources/Mixer.swift): Source
     - [Mixer](AudioNodes/Sources/Mixer.swift): Source

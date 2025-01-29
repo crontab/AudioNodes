@@ -24,6 +24,7 @@
 		363BECCE2D45449B004C4BAE /* Mixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB42D45449B004C4BAE /* Mixer.swift */; };
 		363BECCF2D45449B004C4BAE /* NoiseGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BECB62D45449B004C4BAE /* NoiseGate.swift */; };
 		363BECD02D45449B004C4BAE /* AudioNodes.h in Headers */ = {isa = PBXBuildFile; fileRef = 363BECB12D45449B004C4BAE /* AudioNodes.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3676C72C2D4AA14E0046F890 /* EQFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3676C72B2D4AA1430046F890 /* EQFilter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +46,7 @@
 		363BECBD2D45449B004C4BAE /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		363BECBE2D45449B004C4BAE /* Waveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Waveform.swift; sourceTree = "<group>"; };
 		3675DCB02D453CEE002C96BE /* AudioNodes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AudioNodes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3676C72B2D4AA1430046F890 /* EQFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EQFilter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +67,7 @@
 				363BECAF2D45449B004C4BAE /* AudioFileReader.swift */,
 				363BECB02D45449B004C4BAE /* AudioFileWriter.swift */,
 				363BECB22D45449B004C4BAE /* Ducker.swift */,
+				3676C72B2D4AA1430046F890 /* EQFilter.swift */,
 				363BECB32D45449B004C4BAE /* Meter.swift */,
 				363BECB42D45449B004C4BAE /* Mixer.swift */,
 				363BECB52D45449B004C4BAE /* Monitor.swift */,
@@ -191,6 +194,7 @@
 				363BECC82D45449B004C4BAE /* SineGenerator.swift in Sources */,
 				363BECC92D45449B004C4BAE /* AudioFileReader.swift in Sources */,
 				363BECCA2D45449B004C4BAE /* Source.swift in Sources */,
+				3676C72C2D4AA14E0046F890 /* EQFilter.swift in Sources */,
 				363BECCB2D45449B004C4BAE /* AudioFileWriter.swift in Sources */,
 				363BECCC2D45449B004C4BAE /* Monitor.swift in Sources */,
 				363BECCD2D45449B004C4BAE /* System.swift in Sources */,

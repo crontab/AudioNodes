@@ -184,6 +184,7 @@ public class Mixer: Source, @unchecked Sendable {
 		return status
 	}
 
+	// NB: _willRender$() and _reset() are not implemented since we use _internalPull() on each bus in the render routine, which takes care of all that.
 
 	// Private
 

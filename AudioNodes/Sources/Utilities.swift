@@ -104,6 +104,11 @@ extension Comparable {
 }
 
 
+extension ClosedRange where Bound: FloatingPoint {
+	var width: Bound { upperBound - lowerBound }
+}
+
+
 
 // MARK: - Audio Utilities
 

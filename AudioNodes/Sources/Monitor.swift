@@ -10,7 +10,7 @@ import Foundation
 
 // MARK: - Monitor
 
-/// A simpler abstract passive node that can be attached to any audio node using `connectMonitor()`.
+/// A simpler abstract passive node that can be attached to any audio node using `connectMonitor()`. Monitors do not modify audio data.
 public class Monitor: Node, @unchecked Sendable {
 
 	/// Indicates whether monitoring should be skipped. If disabled, none of the connected monitors receive data anymore.
@@ -30,7 +30,7 @@ public class Monitor: Node, @unchecked Sendable {
 		Abstract()
 	}
 
-	/// Connects a monitor object to the given monitor..
+	/// Connects another monitor object to the given monitor..
 	public func connectMonitor(_ monitor: Monitor) {
 		withAudioLock {
 			config$.monitor = monitor
