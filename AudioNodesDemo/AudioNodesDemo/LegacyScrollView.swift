@@ -9,6 +9,9 @@ import SwiftUI
 
 // iOS 17 still can't report scroller position, hence our wrapper
 
+// Unused
+
+@available(*, deprecated)
 struct LegacyScrollView<Content: View>: UIViewRepresentable {
 	typealias OnScrollAction = (_ offset: Double, _ dragging: Bool) -> Void
 
@@ -128,6 +131,7 @@ struct LegacyScrollView<Content: View>: UIViewRepresentable {
 }
 
 
+/*
 #Preview {
 	LegacyScrollView(action: .constant(.idle)) {
 		let colors = (0..<30).map { _ in Color(red: .random(in: 0.2...1), green:  .random(in: 0.2...1), blue:  .random(in: 0.2...1)) }
@@ -140,8 +144,9 @@ struct LegacyScrollView<Content: View>: UIViewRepresentable {
 			}
 		}
 	}
-	.onScroll { offset, didEnd in
-		print(offset, didEnd)
+	.onScroll { offset, dragging in
+		print(offset, dragging)
 	}
 	.background(.tertiary)
 }
+*/
