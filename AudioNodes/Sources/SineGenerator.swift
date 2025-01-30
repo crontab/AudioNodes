@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreAudio
 
 
 public final class SineGenerator: Source, StaticDataSource, @unchecked Sendable {
