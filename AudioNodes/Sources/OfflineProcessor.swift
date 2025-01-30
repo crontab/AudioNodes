@@ -8,51 +8,42 @@
 import Foundation
 
 
-/// Processes audio data offline using a given source, sink and a chain of Node objects. The offile processor should be connected as a source at the end of the chain; you then call `run(entry:)` with the first node in the chain as an argument. The `entry` node can even be the processor itself if there are no other nodes in the chain.
-public class OfflineProcessor: Source, @unchecked Sendable {
+public extension Source {
 
-	/// Create an offline processor object with a static source and sink pair. The `divisor` argument is the number of cycles per second; should be in multiples of 25 if you have a Meter or Ducker component in the chain.
-	public init(source: StaticDataSource, divisor: Int = 25) {
-		self.source = source
-		let capacity = Int(ceil(source.format.sampleRate)) / divisor
-		self.scratch = SafeAudioBufferList(isStereo: source.format.isStereo, capacity: capacity)
-	}
-
-
-	public func run(entry: Source? = nil, sink: StaticDataSink) -> OSStatus {
+	/// Processes audio data offline using a given static source, static sink and potentially a chain of Node objects attached to this node. Both source and sink should heva the same format.
+	/// The `divisor` argument is the number of cycles per second; should be in multiples of 25 if you have a Meter or Ducker component in the chain. Also beware of the EQ node, it allocates a scratch buffer for 4096 samples.
+	/// This is a blocking call and therefore it's recommended to run it on a background thread.
+	func runOffline(source: StaticDataSource, sink: StaticDataSink, divisor: Int = 25) throws {
 		precondition(source.format == sink.format)
-		let frameCount = scratch.capacity
+		let frameCount = Int(ceil(source.format.sampleRate)) / divisor
+		let scratch = SafeAudioBufferList(isStereo: source.format.isStereo, capacity: frameCount)
+
 		while true {
-			numRead = 0 // our _render() below should be called as a result of the chain processing
-			var result = (entry ?? self)._internalPull(frameCount: frameCount, buffers: scratch.buffers)
-			if result != noErr {
-				return result
+			// 1. Render source
+			var numRead = 0
+			var result = source.readSync(frameCount: frameCount, buffers: scratch.buffers, numRead: &numRead)
+			if numRead < frameCount {
+				FillSilence(frameCount: frameCount, buffers: scratch.buffers, offset: numRead)
 			}
+
+			// 2. Now pass the data to the chain of nodes connected to this node
+			result = _internalPull(frameCount: frameCount, buffers: scratch.buffers)
+			if result != noErr {
+				throw AudioError.coreAudio(code: result)
+			}
+
+			// 3. Write to the sink
 			var numWritten = 0
 			result = sink.writeSync(frameCount: numRead, buffers: scratch.buffers, numWritten: &numWritten)
 			if result != noErr {
-				return result
+				throw AudioError.coreAudio(code: result)
 			}
+
+			// 4. Check the end of data condition on both source and sink
 			if numRead < frameCount || numWritten < numRead {
 				// End of source or end of sink reached
-				return noErr
+				return
 			}
 		}
 	}
-
-
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		let result = source.readSync(frameCount: frameCount, buffers: buffers, numRead: &numRead)
-		if numRead < frameCount {
-			FillSilence(frameCount: frameCount, buffers: buffers, offset: numRead)
-		}
-		return result
-	}
-
-
-	// Private
-
-	private let source: StaticDataSource
-	private let scratch: SafeAudioBufferList
-	var numRead: Int = 0
 }

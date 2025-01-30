@@ -13,7 +13,6 @@ _Work in progress_
     - [VolumeControl](AudioNodes/Sources/Mixer.swift): Source
     - [Mixer](AudioNodes/Sources/Mixer.swift): Source
       - [EnumMixer](AudioNodes/Sources/Mixer.swift): Mixer
-    - [OfflineProcessor](AudioNodes/Sources/OfflineProcessor.swift): Source
     - [Player](AudioNodes/Sources/Player.swift): Source
       - [FilePlayer](AudioNodes/Sources/Player.swift): Player
       - [MemoryPlayer](AudioNodes/Sources/Player.swift): Player

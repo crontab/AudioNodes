@@ -164,13 +164,8 @@ extension System {
 		do {
 			print("--- processing")
 			original.resetRead()
-			let processor = OfflineProcessor(source: original)
-			let noiseGate = NoiseGate(format: original.format)
-			noiseGate.connectSource(processor)
-			let result = processor.run(entry: noiseGate, sink: processed)
-			if result != noErr {
-				processed.clear()
-			}
+			try NoiseGate(format: original.format)
+				.runOffline(source: original, sink: processed)
 		}
 
 		// Play processed
@@ -200,7 +195,7 @@ extension System {
 				throw AudioError.fileOpen
 			}
 			let data = AudioData(durationSeconds: Int(ceil(file.estimatedDuration)), format: file.format)
-			_ = adjustVoiceRecording(source: file, sink: data, diagName: name)
+			_ = try adjustVoiceRecording(source: file, sink: data, diagName: name)
 			data.resetRead()
 			try await MemoryPlayer.playAsync(data, driver: self)
 		}
@@ -217,39 +212,39 @@ extension System {
 		try await MemoryPlayer.playAsync(origData, driver: self)
 
 		origData.resetRead()
-		let proc = OfflineProcessor(source: origData, divisor: 25)
 		let eq = EQFilter(format: outputFormat, params: EQParameters(type: .highPass, freq: 3000, bw: 1, gain: 0))
-		eq.connectSource(proc)
 		let sink = AudioData(durationSeconds: Int(ceil(origData.estimatedDuration)), format: origData.format)
-		_ = proc.run(entry: eq, sink: sink)
+		try eq.runOffline(source: origData, sink: sink)
 
 		sink.resetRead()
 		try await MemoryPlayer.playAsync(sink, driver: self)
 	}
+
+
+	func rmsTests() async throws {
+
+		// Result: for every 0.1 volume the RMS changes by 4dB
+
+		func testVol(_ volume: Float) async throws {
+			let fmt: StreamFormat = .defaultMono
+			let sine = SineGenerator(freq: 440, format: fmt)
+			let sink = AudioData(durationSeconds: 1, format: fmt)
+			try VolumeControl(format: fmt, initialVolume: volume)
+				.runOffline(source: sine, sink: sink)
+//			sink.resetRead()
+//			try await MemoryPlayer.playAsync(sink, driver: self)
+			let waveform = Waveform.fromSource(sink, ticksPerSec: 4)
+			print("Vol=\(volume), level=\(waveform?.ticks.max() ?? 0)")
+		}
+
+		for i in 0..<10 {
+			try await testVol(1 - Float(i) / 10)
+		}
+	}
 }
 
 
-func rmsTests() {
-
-	// Result: for every 0.1 volume the RMS changes by 4dB
-
-	func testVol(_ volume: Float) {
-		let fmt: StreamFormat = .defaultMono
-		let sine = SineGenerator(freq: 440, volume: volume, format: fmt)
-		let data = AudioData(durationSeconds: 1, format: fmt)
-		_ = OfflineProcessor(source: sine)
-			.run(sink: data)
-		let waveform = Waveform.fromSource(data, ticksPerSec: 4)
-		print("Vol=\(volume), level=\(waveform?.ticks.max() ?? 0)")
-	}
-
-	for i in 0..<10 {
-		testVol(1 - Float(i) / 10)
-	}
-}
-
-
-func adjustVoiceRecordingNR(source: StaticDataSource, sink: StaticDataSink, nr: Bool, diagName: String) -> Waveform? {
+func adjustVoiceRecordingNR(source: StaticDataSource, sink: StaticDataSink, nr: Bool, diagName: String) throws -> Waveform? {
 
 	let format = source.format
 
@@ -285,24 +280,19 @@ func adjustVoiceRecordingNR(source: StaticDataSource, sink: StaticDataSink, nr: 
 	let postNRNode = VolumeControl(format: format, initialVolume: 1 + postNRGain / 40)
 
 	// 4. Create a processor and connect the chain
-	let processor = OfflineProcessor(source: source, divisor: 25)
 	postNRNode
 		.connectSource(nrNode)
 		.connectSource(preNRNode)
-		.connectSource(processor)
 
 	// 5. Run the processing chain
 	source.resetRead()
-	let result = processor.run(entry: postNRNode, sink: sink)
-	if result != noErr {
-		return nil
-	}
+	try postNRNode.runOffline(source: source, sink: sink)
 
 	return waveform
 }
 
 
-func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, diagName: String) -> Waveform? {
+func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, diagName: String) throws -> Waveform? {
 
 	let format = source.format
 
@@ -321,21 +311,11 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, diagNa
 
 	DLOG("\(diagName): range = \(range), delta = \(deltaGain)")
 
-	// 1. Gain adjustment:
+	// Gain adjustment:
 	// We divide the gain by 40 because each 4dB gain roughly translates to 0.1 volume:
-	let adjustmentNode = VolumeControl(format: format, initialVolume: 1 + deltaGain / 40)
-
-	// 2. Create a processor and connect the chain
-	let processor = OfflineProcessor(source: source, divisor: 25)
-	adjustmentNode
-		.connectSource(processor)
-
-	// 3. Run the processing chain
 	source.resetRead()
-	let result = processor.run(entry: adjustmentNode, sink: sink)
-	if result != noErr {
-		return nil
-	}
+	try VolumeControl(format: format, initialVolume: 1 + deltaGain / 40)
+		.runOffline(source: source, sink: sink)
 
 	return waveform
 }
@@ -353,10 +333,10 @@ struct CLI {
 //		await system.testQueuePlayer()
 //		await system.testMemoryPlayer()
 //		try await system.testNR()
-//		rmsTests()
+		try await system.rmsTests()
 //		try await system.testSyncPlayer()
 //		try await system.levelAnalysis()
-		try await system.eqTest()
+//		try await system.eqTest()
 	}
 
 
