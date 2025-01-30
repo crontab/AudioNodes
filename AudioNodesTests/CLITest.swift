@@ -140,12 +140,12 @@ extension System {
 	}
 
 
-	func testNR() async {
+	func testNR() async throws {
 		print("---", #function)
 		let url = tempRecUrl("ios.m4a")
 		guard let original = AudioData(url: url, format: monoInputFormat) else {
 			print("ERROR: couldn't load file", url.path(percentEncoded: false))
-			return
+			throw AudioError.fileOpen
 		}
 
 		let progress = PlayerProgress()
@@ -194,14 +194,37 @@ extension System {
 
 	func levelAnalysis() async throws {
 		for name in ["ios", "ios2", "ios3", "mac"] {
-			guard let file = AudioFileReader(url: tempRecUrl(name + ".m4a"), format: outputFormat) else {
-				return
+			let url = tempRecUrl(name + ".m4a")
+			guard let file = AudioData(url: url, format: outputFormat) else {
+				print("ERROR: couldn't load file", url.path(percentEncoded: false))
+				throw AudioError.fileOpen
 			}
 			let data = AudioData(durationSeconds: Int(ceil(file.estimatedDuration)), format: file.format)
 			_ = adjustVoiceRecording(source: file, sink: data, diagName: name)
 			data.resetRead()
 			try await MemoryPlayer.playAsync(data, driver: self)
 		}
+	}
+
+
+	func eqTest() async throws {
+		let name = "ios"
+		let url = tempRecUrl(name + ".m4a")
+		guard let origData = AudioData(url: url, format: outputFormat) else {
+			print("ERROR: couldn't load file", url.path(percentEncoded: false))
+			throw AudioError.fileOpen
+		}
+		try await MemoryPlayer.playAsync(origData, driver: self)
+
+		origData.resetRead()
+		let proc = OfflineProcessor(source: origData, divisor: 25)
+		let eq = EQFilter(format: outputFormat, params: EQParameters(type: .highPass, freq: 3000, bw: 1, gain: 0))
+		eq.connectSource(proc)
+		let sink = AudioData(durationSeconds: Int(ceil(origData.estimatedDuration)), format: origData.format)
+		_ = proc.run(entry: eq, sink: sink)
+
+		sink.resetRead()
+		try await MemoryPlayer.playAsync(sink, driver: self)
 	}
 }
 
@@ -329,10 +352,11 @@ struct CLI {
 //		await system.testFile()
 //		await system.testQueuePlayer()
 //		await system.testMemoryPlayer()
-//		await system.testNR()
+//		try await system.testNR()
 //		rmsTests()
 //		try await system.testSyncPlayer()
-		try await system.levelAnalysis()
+//		try await system.levelAnalysis()
+		try await system.eqTest()
 	}
 
 
