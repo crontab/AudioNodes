@@ -23,19 +23,21 @@ public enum EQType {
 }
 
 
+public let FreqRange: ClosedRange<Float> = 20...20000
+public let LogFreqRange: ClosedRange<Float> = log10(FreqRange.lowerBound) ... log10(FreqRange.upperBound)
+public let LogFreqWidth = LogFreqRange.width
+
+public let BWRange: ClosedRange<Float> = 0.05...5
+public let GainRange: ClosedRange<Float> = -96...24
+public let QRange: ClosedRange<Float> = 0.18...28.8
+
+
 public struct EQParameters: Equatable {
-	static let freqRange: ClosedRange<Float> = 20...20000
-	static let logFreqRange: ClosedRange<Float> = log10(freqRange.lowerBound) ... log10(freqRange.upperBound)
-	static let logFreqWidth = logFreqRange.width
 
-	static let bwRange: ClosedRange<Float> = 0.05...5 // unused because bw is computed
-	static let gainRange: ClosedRange<Float> = -96...24
-	static let qRange: ClosedRange<Float> = 0.18...28.8
-
-	public init(type: EQType, freq: Float, bw: Float, gain: Float) {
+	public init(type: EQType, freq: Float, bw: Float, gain: Float = 0) {
 		self.type = type
 		self.freq = freq
-		self.q = Self.qRange.lowerBound
+		self.q = QRange.lowerBound
 		self.gain = gain
 		self.bw = bw
 	}
@@ -43,20 +45,20 @@ public struct EQParameters: Equatable {
 	public var type: EQType
 
 	public var freq: Float { // Hz, 20 -> 20,000
-		didSet { freq = freq.clamped(to: Self.freqRange) }
+		didSet { freq = freq.clamped(to: FreqRange) }
 	}
 
 	public var logFreq: Float { // 0..1, computed logarithmic frequency (for use with UI sliders)
-		get { (log10(freq) - Self.logFreqRange.lowerBound) / Self.logFreqWidth }
-		set { freq = pow(10, newValue * Self.logFreqWidth + Self.logFreqRange.lowerBound) }
+		get { (log10(freq) - LogFreqRange.lowerBound) / LogFreqWidth }
+		set { freq = pow(10, newValue * LogFreqWidth + LogFreqRange.lowerBound) }
 	}
 
 	public var q: Float { // 28.8 -> 0.18
-		didSet { q = q.clamped(to: Self.qRange) }
+		didSet { q = q.clamped(to: QRange) }
 	}
 
 	public var gain: Float { // dB, -96 -> 24
-		didSet { gain = gain.clamped(to: Self.gainRange) }
+		didSet { gain = gain.clamped(to: GainRange) }
 	}
 
 	public var bw: Float {	// octaves, 0.05 -> 5.0
@@ -307,19 +309,5 @@ private struct EQProcessor {
 		k1 = 0
 		k2 = 0
 		k3 = 0
-	}
-}
-
-
-private extension EQType {
-	var debugName: String {
-		switch self {
-			case .peaking: "peak"
-			case .lowShelf: "loshelf"
-			case .highShelf: "hishelf"
-			case .lowPass: "lpf"
-			case .highPass: "hpf"
-			case .bandPass: "band"
-		}
 	}
 }

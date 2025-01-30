@@ -211,7 +211,7 @@ extension System {
 		try await MemoryPlayer.playAsync(origData, driver: self)
 
 		origData.resetRead()
-		let eq = EQFilter(format: outputFormat, params: EQParameters(type: .highPass, freq: 3000, bw: 1, gain: 0))
+		let eq = EQFilter(format: outputFormat, params: EQParameters(type: .highPass, freq: 3000, bw: 1))
 		let sink = AudioData(durationSeconds: Int(ceil(origData.estimatedDuration)), format: origData.format)
 		try eq.runOffline(source: origData, sink: sink)
 
