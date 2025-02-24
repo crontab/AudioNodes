@@ -1,5 +1,2 @@
-
-- EQ
-- Fourier
-
-- Noise reduction (didn't work)
+- Fast Fourier Transform
+- Noise reduction (didn't work very well, need to look for good algorithms)
