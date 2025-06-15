@@ -13,11 +13,12 @@ public extension Source {
 	/// Processes audio data offline using a given static source, static sink and potentially a chain of Node objects attached to this node. Both source and sink should heva the same format.
 	/// The `divisor` argument is the number of cycles per second; should be in multiples of 25 if you have a Meter or Ducker component in the chain. Also beware of the EQ node, it allocates a scratch buffer for 4096 samples.
 	/// This is a blocking call and therefore it's recommended to run it on a background thread.
-	func runOffline(source: StaticDataSource, sink: StaticDataSink, divisor: Int = 25) throws {
+	func runOffline(source: StaticDataSource, sink: StaticDataSink, divisor: Int = 25, callback: ((TimeInterval) -> Void)? = nil) throws {
 		precondition(source.format == sink.format)
 		let frameCount = Int(ceil(source.format.sampleRate)) / divisor
 		let scratch = SafeAudioBufferList(isStereo: source.format.isStereo, capacity: frameCount)
 
+		var totalRead = 0
 		while true {
 			// 1. Render source
 			var numRead = 0
@@ -32,6 +33,11 @@ public extension Source {
 				throw AudioError.coreAudio(code: result)
 			}
 
+			// 2a. Callback
+			if let callback {
+				callback(Double(totalRead) / source.format.sampleRate)
+			}
+
 			// 3. Write to the sink
 			var numWritten = 0
 			result = sink.writeSync(frameCount: numRead, buffers: scratch.buffers, numWritten: &numWritten)
@@ -44,6 +50,8 @@ public extension Source {
 				// End of source or end of sink reached
 				return
 			}
+
+			totalRead += numRead
 		}
 	}
 }
