@@ -10,7 +10,7 @@ import Foundation
 
 /// Player feedback delegate; used with both `FilePlayer` and `QueuePlayer`.
 @MainActor
-public protocol PlayerDelegate: AnyObject, Sendable {
+public protocol PlayerDelegate: AnyObject {
 
 	/// Called by a player node approximately every 10ms. In GUI apps, make sure you reduce the frequency of UI updates since updating them at 100fps may lead to interruptions in audio playback and other undesirable effects. The method is executed on `MainActor`. This method is also called at the end of a playback just before a call to `playerDidEndPlaying()`.
 	func player(_ player: Player, isAt time: TimeInterval)
@@ -73,7 +73,7 @@ public class Player: Source, @unchecked Sendable {
 /// Loads and plays an audio file; backed by the ExtAudioFile\* system interface. For each file that you want to play you create a separate FilePlayer node. This component uses a fixed amount of memory regarless of the file size; it employs smart look-ahead buffering.
 /// You normally use the `isEnable` property to start and stop the playback. When disabled, this node returns silence to the upstream nodes.
 /// Once end of file is reached, `isEnable` flips to `false` automatically. You can restart the playback by setting `time` to `0` and enabling the node again.
-/// You can pass a delegate to the constructor of `FilePlayer`; your delegate should conform to Sendable and the overridden methods should assume being executed on `MainActor`.
+/// You can pass a delegate to the constructor of `FilePlayer`; your delegate's overridden methods should assume being executed on `MainActor`.
 public class FilePlayer: Player, @unchecked Sendable {
 
 	/// Get or set the current time within the file. The granularity is approximately 10ms.

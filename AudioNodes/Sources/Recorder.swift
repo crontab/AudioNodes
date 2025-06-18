@@ -9,7 +9,7 @@ import Foundation
 
 
 @MainActor
-public protocol RecorderDelegate: AnyObject, Sendable {
+public protocol RecorderDelegate: AnyObject {
 	func recorder(_ recorder: Recorder, isAt time: TimeInterval)
 	func recorderDidEndRecording(_ recorder: Recorder)
 }

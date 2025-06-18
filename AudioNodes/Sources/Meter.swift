@@ -11,7 +11,7 @@ import Accelerate
 
 /// Audio meter feedback delegate.
 @MainActor
-public protocol MeterDelegate: AnyObject, Sendable {
+public protocol MeterDelegate: AnyObject {
 	/// Delivers RMS level measurements. The range is -90 to 0 dB; the update frequency is roughly 25 times per second. Executed on `MainActor`.
 	func meterDidUpdateGains(_ meter: Meter, left: Float, right: Float)
 }
