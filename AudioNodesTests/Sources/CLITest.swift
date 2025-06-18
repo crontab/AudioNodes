@@ -85,6 +85,8 @@ extension System {
 		["deux.m4a", "trois.m4a"].forEach {
 			precondition(player.addFile(url: resUrl($0)))
 		}
+		let mem = MemoryPlayer(data: AudioData(url: resUrl("deux.m4a"), format: outputFormat)!)
+		player.addPlayer(mem)
 		connectSource(player)
 		player.isEnabled = true
 		await Sleep(2)

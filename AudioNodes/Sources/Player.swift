@@ -24,11 +24,13 @@ public protocol PlayerDelegate: AnyObject {
 
 /// Abstract node that defines the most basic player interface. Passed as an argument in `PlayerDelegate` methods; also FilePlayer, QueuePlayer and AudioData conform to this protocol.
 public class Player: Source, @unchecked Sendable {
-	public var time: TimeInterval { 0 }
+	public var time: TimeInterval {
+		get { 0 }
+		set { Abstract() }
+	}
 	public var duration: TimeInterval { 0 }
 	public var isAtEnd: Bool { true }
-
-	public func reset() { }
+	public func reset() { time = 0 }
 
 	public init(isEnabled: Bool, delegate: PlayerDelegate?) {
 		self.delegate = delegate
@@ -71,7 +73,7 @@ public class Player: Source, @unchecked Sendable {
 // MARK: - FilePlayer
 
 /// Loads and plays an audio file; backed by the ExtAudioFile\* system interface. For each file that you want to play you create a separate FilePlayer node. This component uses a fixed amount of memory regarless of the file size; it employs smart look-ahead buffering.
-/// You normally use the `isEnable` property to start and stop the playback. When disabled, this node returns silence to the upstream nodes.
+/// You normally use the `isEnabled` property to start and stop the playback. When disabled, this node returns silence to the upstream nodes.
 /// Once end of file is reached, `isEnable` flips to `false` automatically. You can restart the playback by setting `time` to `0` and enabling the node again.
 /// You can pass a delegate to the constructor of `FilePlayer`; your delegate's overridden methods should assume being executed on `MainActor`.
 public class FilePlayer: Player, @unchecked Sendable {
@@ -87,8 +89,6 @@ public class FilePlayer: Player, @unchecked Sendable {
 
 	/// Indicates whether end of file was reached while playing the file.
 	public override var isAtEnd: Bool { withAudioLock { lastKnownPlayhead$ == file.estimatedTotalFrames } }
-
-	public override func reset() { time = 0 }
 
 	public func setAtEnd() { withAudioLock { playhead$ = file.estimatedTotalFrames } }
 
@@ -179,7 +179,7 @@ public class FilePlayer: Player, @unchecked Sendable {
 
 // MARK: - QueuePlayer
 
-/// Meta-player that provides gapless playback of multiple files. This node treats a series of files as a whole, it supports time positioning and `duration` within the whole. Think of Pink Floyd's *Wish You Were Here*, you absolutely *should* provide gapless playback for the entire album. Questions?
+/// Meta-player that provides gapless playback of multiple player objects, including file players. This node treats a series of playable objects as a whole, it supports time positioning and `duration` within the whole. Think of Pink Floyd's *Wish You Were Here*, you absolutely *should* provide gapless playback for the entire album. Questions?
 public class QueuePlayer: Player, @unchecked Sendable {
 
 	/// Gets and sets the time position within the entire series of audio files.
@@ -194,9 +194,7 @@ public class QueuePlayer: Player, @unchecked Sendable {
 	/// Indicates whether the player has reached the end of the series of files.
 	public override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
 
-	public override func reset() { time = 0 }
-
-	/// Adds a file player to the queue. Can be done at any time during playback or not. Queue player creates FilePlayer objects internally, meaning that `url` can only point to a local file. Returns `false` if there was an error opening the audio file.
+	/// Adds a file player to the queue. Can be done at any time during playback or not. `url` can only point to a local file. Returns `false` if there was an error opening the audio file.
 	public func addFile(url: URL) -> Bool {
 		guard let player = FilePlayer(url: url, format: format, isEnabled: true) else {
 			return false
@@ -205,6 +203,15 @@ public class QueuePlayer: Player, @unchecked Sendable {
 			items$.append(player)
 		}
 		return true
+	}
+
+
+	/// Adds a player to the queue. Can be done at any time during playback or not. The playhead of the player is reset to the start.
+	public func addPlayer(_ player: Player) {
+		player.reset()
+		withAudioLock {
+			items$.append(player)
+		}
 	}
 
 
@@ -226,7 +233,7 @@ public class QueuePlayer: Player, @unchecked Sendable {
 				break
 			}
 			let player = _items[_currentIndex]
-			// Note that we bypass the usual rendering call _internalPull(). This is a bit dangerous in case changes are made in Node or FilePlayer. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
+			// Note that we bypass the usual rendering call _internalPull(). This is a bit dangerous in case changes are made in Node or Player or any of its  descendants. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
 			player.withAudioLock {
 				player._willRender$()
 			}
@@ -296,8 +303,8 @@ public class QueuePlayer: Player, @unchecked Sendable {
 
 	private let format: StreamFormat
 
-	private var items$: [FilePlayer] = []
-	private var _items: [FilePlayer] = []
+	private var items$: [Player] = []
+	private var _items: [Player] = []
 	private var lastKnownIndex$: Int = 0
 	private var currentIndex$: Int?
 	private var _currentIndex: Int = 0
@@ -309,8 +316,10 @@ public class QueuePlayer: Player, @unchecked Sendable {
 public class MemoryPlayer: Player, @unchecked Sendable {
 
 	public let data: AudioData
-
-	public override var time: TimeInterval { data.time }
+	public override var time: TimeInterval {
+		get { data.time }
+		set { data.time = newValue }
+	}
 	public override var duration: TimeInterval { data.duration }
 	public override var isAtEnd: Bool { data.isAtEnd }
 	public override func reset() { data.resetRead() }

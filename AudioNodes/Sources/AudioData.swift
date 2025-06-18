@@ -32,7 +32,10 @@ public final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataS
 
 	public var capacity: Int { chunks.count }
 	public var duration: TimeInterval { withWriteLock { Double(framesWritten) / format.sampleRate } }
-	public var time: TimeInterval { withReadLock { Double(framesRead) / format.sampleRate } }
+	public var time: TimeInterval {
+		get { withReadLock { Double(framesRead) / format.sampleRate } }
+		set { withWriteLock { withReadLock { framesRead = Int(newValue * format.sampleRate).clamped(to: 0...framesWritten) } } }
+	}
 	public var isAtEnd: Bool { withWriteLock { withReadLock { framesRead == framesWritten } } }
 	public var isFull: Bool { withWriteLock { framesWritten == frameCapacity } }
 	public let format: StreamFormat
