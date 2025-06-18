@@ -52,7 +52,7 @@ public class Meter: Monitor, @unchecked Sendable {
 
 	func _didUpdatePeaks(left: Sample, right: Sample) {
 		guard let delegate else { return }
-		Task.detached { @Sendable @MainActor in
+		Task.detached { @MainActor in
 			delegate.meterDidUpdateGains(self, left: left, right: right)
 		}
 	}
