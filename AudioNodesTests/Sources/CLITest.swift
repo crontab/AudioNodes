@@ -324,18 +324,23 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, diagNa
 struct CLI {
 
 	static func runTests() async throws {
+		// Should be /Users/hovik/Projects/Other/AudioNodes
+		print("cwd", FileManager.default.currentDirectoryPath)
+
 		let system = Stereo()
 		system.start()
 //		await system.testSine()
 //		await system.testMixer()
 //		await system.testFile()
-//		await system.testQueuePlayer()
+		await system.testQueuePlayer()
 //		await system.testMemoryPlayer()
 //		try await system.testNR()
-		try await system.rmsTests()
+//		try await system.rmsTests()
 //		try await system.testSyncPlayer()
 //		try await system.levelAnalysis()
 //		try await system.eqTest()
+
+		await Sleep(0.1) // before disconnecting, to avoid clicks
 	}
 
 

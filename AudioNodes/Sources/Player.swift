@@ -50,6 +50,20 @@ public class Player: Source, @unchecked Sendable {
 		}
 	}
 
+
+	// Internal
+
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+		_read(frameCount: frameCount, buffers: buffers, offset: 0)
+		return noErr
+	}
+
+	@discardableResult
+	func _read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
+		// This method is called directly from QueuePlayer, i.e. bypassing the usual rendering chain; it's because QueuePlayer needs an extra argument `offset`.
+		Abstract()
+	}
+
 	private weak var delegate: PlayerDelegate?
 }
 
@@ -92,15 +106,7 @@ public class FilePlayer: Player, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		read(frameCount: frameCount, buffers: buffers, offset: 0)
-		return noErr
-	}
-
-
-	// This method is also called directly from QueuePlayer, i.e. bypassing the usual rendering chain; it's because QueuePlayer needs an extra argument `offset`.
-	@discardableResult
-	fileprivate final func read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
+	override func _read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
 		var framesCopied = offset
 		var reachedEnd = false
 
@@ -211,8 +217,8 @@ public class QueuePlayer: Player, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		var framesWritten = 0
+	override func _read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
+		var framesWritten = offset
 
 		while true {
 			if !_items.indices.contains(_currentIndex) {
@@ -224,7 +230,7 @@ public class QueuePlayer: Player, @unchecked Sendable {
 			player.withAudioLock {
 				player._willRender$()
 			}
-			framesWritten += player.read(frameCount: frameCount, buffers: buffers, offset: framesWritten)
+			framesWritten += player._read(frameCount: frameCount, buffers: buffers, offset: framesWritten)
 			if framesWritten >= frameCount {
 				break
 			}
@@ -245,7 +251,7 @@ public class QueuePlayer: Player, @unchecked Sendable {
 			didPlaySomeAsync()
 		}
 
-		return noErr
+		return framesWritten - offset
 	}
 
 
@@ -309,15 +315,13 @@ public class MemoryPlayer: Player, @unchecked Sendable {
 	public override var isAtEnd: Bool { data.isAtEnd }
 	public override func reset() { data.resetRead() }
 
-
 	public init(data: AudioData, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
 		self.data = data
 		super.init(isEnabled: isEnabled, delegate: delegate)
 	}
 
-
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		let result = data.read(frameCount: frameCount, buffers: buffers, offset: 0)
+	override func _read(frameCount: Int, buffers: AudioBufferListPtr, offset: Int) -> Int {
+		let result = data.read(frameCount: frameCount, buffers: buffers, offset: offset)
 		if result < frameCount {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: result)
 			if _isEnabled {
@@ -328,7 +332,7 @@ public class MemoryPlayer: Player, @unchecked Sendable {
 		else {
 			didPlaySomeAsync()
 		}
-		return noErr
+		return result
 	}
 }
 
