@@ -1,32 +1,32 @@
 # AudioNodes
-#### A framework based on CoreAudio writen in modern Swift (6.0)
+#### A framework based on CoreAudio writen in Swift 6
 
-_Work in progress_
+_Work in progress, no documentation is available at the moment_
 
 ## Class hierarchy:
 
 - [Node](AudioNodes/Sources/Source.swift)
-  - [Source](AudioNodes/Sources/Source.swift): Node
-    - [EQFilter](AudioNodes/Sources/EQFilter.swift): Source
-    - [EQMultiFilter](AudioNodes/Sources/EQFilter.swift): Source
-    - [NoiseGate](AudioNodes/Sources/NoiseGate.swift): Source
-    - [VolumeControl](AudioNodes/Sources/Mixer.swift): Source
-    - [Mixer](AudioNodes/Sources/Mixer.swift): Source
-      - [EnumMixer](AudioNodes/Sources/Mixer.swift): Mixer
-    - [Player](AudioNodes/Sources/Player.swift): Source
-      - [FilePlayer](AudioNodes/Sources/Player.swift): Player
-      - [MemoryPlayer](AudioNodes/Sources/Player.swift): Player
-      - [QueuePlayer](AudioNodes/Sources/Player.swift): Player
-    - [SineGenerator](AudioNodes/Sources/SineGenerator.swift): Source
-    - [System](AudioNodes/Sources/System.swift): Source
-      - [Stereo](AudioNodes/Sources/System.swift): System
-      - [Voice](AudioNodes/Sources/System.swift): System
-  - [Monitor](AudioNodes/Sources/Monitor.swift): Node
-    - [Meter](AudioNodes/Sources/Meter.swift): Monitor
-      - [Ducker](AudioNodes/Sources/Ducker.swift): Meter
-    - [Recorder](AudioNodes/Sources/Recorder.swift): Monitor
-      - [FileRecorder](AudioNodes/Sources/Recorder.swift): Recorder
-      - [MemoryRecorder](AudioNodes/Sources/Recorder.swift): Recorder
+  - [Source](AudioNodes/Sources/Source.swift)
+    - [EQFilter](AudioNodes/Sources/EQFilter.swift)
+    - [EQMultiFilter](AudioNodes/Sources/EQFilter.swift)
+    - [NoiseGate](AudioNodes/Sources/NoiseGate.swift)
+    - [VolumeControl](AudioNodes/Sources/Mixer.swift)
+    - [Mixer](AudioNodes/Sources/Mixer.swift)
+      - [EnumMixer](AudioNodes/Sources/Mixer.swift)
+    - [Player](AudioNodes/Sources/Player.swift)
+      - [FilePlayer](AudioNodes/Sources/Player.swift)
+      - [MemoryPlayer](AudioNodes/Sources/Player.swift)
+      - [QueuePlayer](AudioNodes/Sources/Player.swift)
+    - [SineGenerator](AudioNodes/Sources/SineGenerator.swift)
+    - [System](AudioNodes/Sources/System.swift)
+      - [Stereo](AudioNodes/Sources/System.swift)
+      - [Voice](AudioNodes/Sources/System.swift)
+  - [Monitor](AudioNodes/Sources/Monitor.swift)
+    - [Meter](AudioNodes/Sources/Meter.swift)
+      - [Ducker](AudioNodes/Sources/Ducker.swift)
+    - [Recorder](AudioNodes/Sources/Recorder.swift)
+      - [FileRecorder](AudioNodes/Sources/Recorder.swift)
+      - [MemoryRecorder](AudioNodes/Sources/Recorder.swift)
 
 - [AudioData](AudioNodes/Sources/AudioData.swift): StaticDataSource, StaticDataSink
 - [AudioFileReader](AudioNodes/Sources/AudioFileReader.swift): StaticDataSource
