@@ -31,7 +31,10 @@ private let MaxDuration = 60
 public final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataSink {
 
 	public var capacity: Int { chunks.count }
-	public var duration: TimeInterval { withWriteLock { Double(framesWritten) / format.sampleRate } }
+	public var duration: TimeInterval {
+		get { withWriteLock { Double(framesWritten) / format.sampleRate } }
+		set { withWriteLock { framesWritten = Int(newValue * format.sampleRate).clamped(to: 0...frameCapacity) } }
+	}
 	public var time: TimeInterval {
 		get { withReadLock { Double(framesRead) / format.sampleRate } }
 		set { withWriteLock { withReadLock { framesRead = Int(newValue * format.sampleRate).clamped(to: 0...framesWritten) } } }

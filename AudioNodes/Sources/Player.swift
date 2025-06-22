@@ -320,7 +320,10 @@ public class MemoryPlayer: Player, @unchecked Sendable {
 		get { data.time }
 		set { data.time = newValue }
 	}
-	public override var duration: TimeInterval { data.duration }
+	public override var duration: TimeInterval {
+		get { data.duration }
+		set { data.duration = newValue }
+	}
 	public override var isAtEnd: Bool { data.isAtEnd }
 	public override func reset() { data.resetRead() }
 

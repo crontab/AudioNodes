@@ -22,7 +22,7 @@ class PlayerProgress: PlayerDelegate {
 	}
 
 	func playerDidEndPlaying(_ player: Player) {
-		print("Player:", "ended")
+		print("Player:", "ended", String(format: "%.2f", player.time))
 	}
 
 	private var prevTime: TimeInterval = 0
@@ -101,7 +101,7 @@ extension System {
 	func testMemoryPlayer() async {
 		print("---", #function)
 
-		let data = AudioData(durationSeconds: 2, format: outputFormat)
+		let data = AudioData(durationSeconds: 5, format: outputFormat)
 		let file = AudioFileReader(url: resUrl("eyes-demo.m4a"), format: outputFormat)!
 		let safeBuffer = SafeAudioBufferList(isStereo: outputFormat.isStereo, capacity: 8192)
 		let buffers = safeBuffer.buffers
@@ -128,6 +128,7 @@ extension System {
 		}.value
 
 		player.reset()
+		player.duration = 2.5
 		player.isEnabled = true
 		await Sleep(3)
 		await smoothDisconnect()
@@ -334,8 +335,8 @@ struct CLI {
 //		await system.testSine()
 //		await system.testMixer()
 //		await system.testFile()
-		await system.testQueuePlayer()
-//		await system.testMemoryPlayer()
+//		await system.testQueuePlayer()
+		await system.testMemoryPlayer()
 //		try await system.testNR()
 //		try await system.rmsTests()
 //		try await system.testSyncPlayer()

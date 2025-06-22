@@ -130,7 +130,7 @@ public class Source: Node, @unchecked Sendable {
 			if _prevEnabled {
 				_prevEnabled = false
 				_reset()
-				let status = _internalRender2(ramping: true, frameCount: frameCount, buffers: buffers)
+				let status = _internalRender2(frameCount: frameCount, buffers: buffers)
 				if status == noErr {
 					Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 				}
@@ -142,7 +142,7 @@ public class Source: Node, @unchecked Sendable {
 		// 3. Enabled: ramp in if needed
 		if !_prevEnabled {
 			_prevEnabled = true
-			let status = _internalRender2(ramping: true, frameCount: frameCount, buffers: buffers)
+			let status = _internalRender2(frameCount: frameCount, buffers: buffers)
 			if status == noErr {
 				Smooth(out: false, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 			}
@@ -150,11 +150,11 @@ public class Source: Node, @unchecked Sendable {
 		}
 
 		// 4. No ramps, fully enabled: pass on to the rendering method
-		return _internalRender2(ramping: false, frameCount: frameCount, buffers: buffers)
+		return _internalRender2(frameCount: frameCount, buffers: buffers)
 	}
 
 
-	private func _internalRender2(ramping: Bool, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	private func _internalRender2(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
 		var status: OSStatus = noErr
 
 		// 5. Pull input data
