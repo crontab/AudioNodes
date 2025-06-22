@@ -240,7 +240,7 @@ public class System: Source, @unchecked Sendable {
 
 			// Set the "soft" format for audio input to make sure the sample rate is the same as for audio output
 			descr = .canonical(with: system.monoInputFormat)
-			NotError(AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, &descrSize), 51022)
+			NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51022)
 
 			// Render buffer: the input AU will allocate the data buffers, we just supply the buffer headers
 			renderBuffer = AudioBufferList.allocate(maximumBuffers: Int(descr.mChannelsPerFrame))
