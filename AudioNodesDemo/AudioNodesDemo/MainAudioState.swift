@@ -15,7 +15,7 @@ private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "
 
 
 @MainActor
-final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, RecorderDelegate {
+final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFTMeterDelegate, RecorderDelegate {
 
 	@Published var isRunning: Bool = false {
 		didSet {
@@ -137,7 +137,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, Rec
 	@Published var outputGainLeft: Float = 0
 	@Published var outputGainRight: Float = 0
 
-	@Published var inputGain: Float = 0
+	@Published var inputLevels: [Float] = []
 
 	@Published var trackWaveform: Waveform?
 	@Published var voiceWaveform: Waveform?
@@ -224,11 +224,8 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, Rec
 
 	private let declineAmount: Float = 0.05
 	private var prevOutLeft: Float = 0, prevOutRight: Float = 0
-	private var prevInLeft: Float = 0
 
 	func meterDidUpdateGains(_ meter: Meter, left: Float, right: Float) {
-		func normalizeDB(_ db: Float) -> Float { 1 - (max(db, -50) / -50) }
-
 		let newLeft = normalizeDB(left)
 		let newRight = normalizeDB(right)
 		precondition((0...1).contains(newLeft) && (0...1).contains(newRight))
@@ -239,9 +236,16 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, Rec
 			outputGainLeft = prevOutLeft
 			outputGainRight = prevOutRight
 		}
-		else if meter === inputMeter {
-			prevInLeft = max(newLeft, prevInLeft - declineAmount)
-			inputGain = prevInLeft
+	}
+
+
+	func fftMeterDidUpdateLevels(_ fftMeter: FFTMeter, levels: [Float]) {
+		let newLevels = levels.map { normalizeDB($0, floor: -80) }
+		if inputLevels.count != newLevels.count {
+			inputLevels = Array(repeating: SILENCE_DB, count: newLevels.count)
+		}
+		for i in 0..<newLevels.count {
+			inputLevels[i] = max(0.1, newLevels[i], inputLevels[i] - declineAmount)
 		}
 	}
 
@@ -251,6 +255,12 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, Rec
 		outputGainRight = 0
 		prevOutLeft = 0
 		prevOutRight = 0
+		inputLevels = []
+	}
+
+
+	private func normalizeDB(_ db: Float, floor: Float = -50) -> Float {
+		1 - (max(db, floor) / floor)
 	}
 
 
@@ -292,7 +302,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, Rec
 	private lazy var recordingPlayer = MemoryPlayer(data: recordingData, delegate: self)
 
 	private lazy var outputMeter = Meter(format: stereo.outputFormat, delegate: self)
-	private lazy var inputMeter = Meter(format: stereo.monoInputFormat, delegate: self)
+	private lazy var inputMeter = FFTMeter(format: stereo.monoInputFormat, delegate: self)
 
 
 	private static func activateAVAudioSession() {

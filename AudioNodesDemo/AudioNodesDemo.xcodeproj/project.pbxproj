@@ -18,10 +18,10 @@
 		363BEC8A2D453F9B004C4BAE /* AudioNodes.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 363BEC882D453F9B004C4BAE /* AudioNodes.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		364310082C69C909000CF9F3 /* MainAudioState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310072C69C909000CF9F3 /* MainAudioState.swift */; };
 		364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364310112C6A09C1000CF9F3 /* SectionView.swift */; };
-		364496CF2C760B6E002669D0 /* LegacyScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364496CE2C760B6E002669D0 /* LegacyScrollView.swift */; };
 		364643C32C6D16B30038F237 /* deux.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 369CCACB2C6B52BC002F462B /* deux.m4a */; };
 		364643C42C6D16BA0038F237 /* trois.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 369CCACC2C6B52BC002F462B /* trois.m4a */; };
 		3657F73C2C752599000F99ED /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3657F73B2C752599000F99ED /* WaveformView.swift */; };
+		36AE9C7B2E09F59900D41C44 /* FFTLevelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36AE9C7A2E09F59900D41C44 /* FFTLevelsView.swift */; };
 		36CADFA72C6F46D0004E0373 /* LEDToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36CADFA62C6F46D0004E0373 /* LEDToggle.swift */; };
 /* End PBXBuildFile section */
 
@@ -52,11 +52,11 @@
 		363BEC882D453F9B004C4BAE /* AudioNodes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AudioNodes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		364310072C69C909000CF9F3 /* MainAudioState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAudioState.swift; sourceTree = "<group>"; };
 		364310112C6A09C1000CF9F3 /* SectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionView.swift; sourceTree = "<group>"; };
-		364496CE2C760B6E002669D0 /* LegacyScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyScrollView.swift; sourceTree = "<group>"; };
 		3657F73B2C752599000F99ED /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
 		36806EBA2C77995400D4566F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		369CCACB2C6B52BC002F462B /* deux.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = deux.m4a; sourceTree = "<group>"; };
 		369CCACC2C6B52BC002F462B /* trois.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = trois.m4a; sourceTree = "<group>"; };
+		36AE9C7A2E09F59900D41C44 /* FFTLevelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFTLevelsView.swift; sourceTree = "<group>"; };
 		36CADFA62C6F46D0004E0373 /* LEDToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LEDToggle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -98,8 +98,8 @@
 				3632443D2C695B4B0021C8BE /* FontEx.swift */,
 				3628CB162C70F90200FD125E /* FileDialogs.swift */,
 				36CADFA62C6F46D0004E0373 /* LEDToggle.swift */,
+				36AE9C7A2E09F59900D41C44 /* FFTLevelsView.swift */,
 				364310112C6A09C1000CF9F3 /* SectionView.swift */,
-				364496CE2C760B6E002669D0 /* LegacyScrollView.swift */,
 				3657F73B2C752599000F99ED /* WaveformView.swift */,
 				364310072C69C909000CF9F3 /* MainAudioState.swift */,
 				363478B72C692BD6004BB3B8 /* MainView.swift */,
@@ -205,11 +205,11 @@
 				364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */,
 				363478B82C692BD6004BB3B8 /* MainView.swift in Sources */,
 				364310082C69C909000CF9F3 /* MainAudioState.swift in Sources */,
-				364496CF2C760B6E002669D0 /* LegacyScrollView.swift in Sources */,
 				363244602C6961280021C8BE /* Globals.swift in Sources */,
 				363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */,
 				36CADFA72C6F46D0004E0373 /* LEDToggle.swift in Sources */,
 				3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */,
+				36AE9C7B2E09F59900D41C44 /* FFTLevelsView.swift in Sources */,
 				3628CB172C70F90200FD125E /* FileDialogs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

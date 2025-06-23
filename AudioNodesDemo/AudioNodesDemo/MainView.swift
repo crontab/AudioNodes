@@ -119,8 +119,9 @@ struct MainView: View {
 				HStack {
 					saveButton()
 				}
-				ProgressView(value: audio.inputGain)
-					.tint(.red)
+				let levels = audio.inputLevels.count > 7 ? audio.inputLevels[1...7] : audio.inputLevels[...]
+				FFTLevelsView(levels: Array(levels), height: 16)
+					.tint(.orange)
 			}
 		}
 	}

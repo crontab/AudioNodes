@@ -25,8 +25,9 @@ struct SectionView<Content: View, Title: View>: View {
 			.padding(.horizontal, 16)
 			.background {
 				RoundedRectangle(cornerRadius: 12)
+					.inset(by: 0.5)
 					.fill(.clear)
-					.stroke(.white.opacity(0.2), lineWidth: 2)
+					.stroke(LinearGradient(colors: [.white.opacity(0.3), .white.opacity(0.2)], startPoint: .top, endPoint: .bottom), lineWidth: 1)
 					.padding(.vertical, 8)
 					.mask {
 						ZStack { // inverted mask trick
@@ -47,7 +48,7 @@ struct SectionView<Content: View, Title: View>: View {
 		title()
 			.padding(.horizontal, 6)
 			.background(background)
-			.offset(x: 20)
+			.offset(x: 20, y: 0.5)
 			.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 	}
 }
@@ -60,5 +61,5 @@ struct SectionView<Content: View, Title: View>: View {
 	} content: {
 		Text("Hello, world!")
 	}
-	.background(.tertiary)
+	.frame(maxWidth: .infinity, maxHeight: .infinity)
 }
