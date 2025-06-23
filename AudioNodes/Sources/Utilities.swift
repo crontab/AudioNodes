@@ -269,3 +269,60 @@ class SafeAudioBufferList {
 		buffers.unsafeMutablePointer.deallocate()
 	}
 }
+
+
+class CircularAudioBuffer: SafeAudioBufferList {
+
+	// In its current implementation CircularAudioBuffer never reaches full capacity because it needs to leave head and tail at least one sample apart. However, adding 1 to capacity when allocating is probably not a great idea when working with audio with power-of-two buffers. So instead, if you are expecting to handle e.g. 512 buffers and need space for 512 * N, allocate 512 * (N + 1).
+
+	private var head: Int // enqueue here
+	private var tail: Int // dequeue from here
+
+	var count: Int { head == tail ? 0 : (head - tail + capacity) % capacity }
+	var isEmpty: Bool { head == tail }
+
+
+	override init(isStereo: Bool, capacity: Int) {
+		head = 0
+		tail = 0
+		super.init(isStereo: isStereo, capacity: capacity)
+	}
+
+
+	func reset() {
+		head = 0
+		tail = 0
+	}
+
+
+	func enqueue(_ from: AudioBufferListPtr, toCopy: Int) -> Bool {
+		guard toCopy + count < capacity else {
+			return false
+		}
+		let copied = Copy(from: from, to: buffers, fromOffset: 0, toOffset: head, framesMax: toCopy)
+		head += copied
+		if head == capacity {
+			head = 0
+			if copied < toCopy {
+				head = Copy(from: from, to: buffers, fromOffset: copied, toOffset: 0, framesMax: toCopy - copied)
+			}
+		}
+		return true
+	}
+
+
+	func dequeue(_ to: AudioBufferListPtr, toCopy: Int) -> Bool {
+		guard toCopy <= count else {
+			return false
+		}
+		let copied = Copy(from: buffers, to: to, fromOffset: tail, toOffset: 0, framesMax: head > tail ? head - tail : capacity - tail)
+		tail += copied
+		if tail == capacity {
+			tail = 0
+			if copied < toCopy {
+				tail = Copy(from: buffers, to: to, fromOffset: 0, toOffset: copied, framesMax: toCopy - copied)
+			}
+		}
+		return true
+	}
+}

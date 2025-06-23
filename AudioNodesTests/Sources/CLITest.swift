@@ -29,6 +29,13 @@ class PlayerProgress: PlayerDelegate {
 }
 
 
+class FFTDelegate: FFTMeterDelegate {
+	func fftMeterDidUpdateLevels(_ fftMeter: FFTMeter, levels: [Float]) {
+		print(levels.map { String(format: "%.1f", $0) })
+	}
+}
+
+
 extension System {
 
 	func testSine() async {
@@ -243,6 +250,20 @@ extension System {
 			try await testVol(1 - Float(i) / 10)
 		}
 	}
+
+
+	func fftTest() async throws {
+		let player = FilePlayer(url: resUrl("eyes-demo.m4a"), format: outputFormat)!
+		connectSource(player)
+
+		let delegate = FFTDelegate()
+		player.connectMonitor(FFTMeter(format: player.format, delegate: delegate))
+
+		player.isEnabled = true
+		await Sleep(2)
+		player.isEnabled = false
+		await smoothDisconnect()
+	}
 }
 
 
@@ -336,12 +357,13 @@ struct CLI {
 //		await system.testMixer()
 //		await system.testFile()
 //		await system.testQueuePlayer()
-		await system.testMemoryPlayer()
+//		await system.testMemoryPlayer()
 //		try await system.testNR()
 //		try await system.rmsTests()
 //		try await system.testSyncPlayer()
 //		try await system.levelAnalysis()
 //		try await system.eqTest()
+		try await system.fftTest()
 
 		await Sleep(0.1) // before disconnecting, to avoid clicks
 	}
