@@ -15,7 +15,7 @@ import AudioUnit
 public let SILENCE_DB: Float = -127
 
 let FFT_LOG_2N = 11
-let FFT_FRAMES = 1 << FFT_LOG_2N // 1024, i.e. 48Hz is the frequency of delegate calls
+let FFT_FRAMES = 1 << FFT_LOG_2N // 2048, i.e. ~24Hz is the frequency of delegate calls
 let FFT_NUM_BANDS = FFT_LOG_2N - 1
 let SAFE_ZERO_AMPLITUDE: Float = 1.5849e-13 // Don't ask, I don't know. Taken from the Magnetola project.
 

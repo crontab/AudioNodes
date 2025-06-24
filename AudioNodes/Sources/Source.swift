@@ -34,7 +34,7 @@ public class Node: @unchecked Sendable {
 	}
 
 	/// Name of the node for debug printing
-	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
+	var debugName: String { String(describing: type(of: self)) }
 
 	deinit {
 		DLOG("deinit \(debugName)")

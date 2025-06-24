@@ -19,7 +19,8 @@ struct FFTLevelsView: View {
 
 	var body: some View {
 		HStack(alignment: .bottom, spacing: 3) {
-			ForEach(levels, id: \.self) { level in
+			ForEach(levels.indices, id: \.self) { index in
+				let level = levels[index]
 				Bar()
 					.stroke(.tint, style: .init(lineWidth: barWidth, lineCap: .round))
 					.frame(width: barWidth, height: height * Double(level.clamped(to: 0...1)))
