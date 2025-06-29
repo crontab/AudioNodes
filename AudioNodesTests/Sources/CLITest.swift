@@ -230,6 +230,31 @@ extension System {
 	}
 
 
+	func eqTest2() async throws {
+		print("---", #function)
+		let url = tempRecUrl("456" + ".m4a") // resUrl("eyes-demo.m4a")
+		guard let player = FilePlayer(url: url, format: outputFormat) else {
+			throw AudioError.fileOpen
+		}
+		let eq = MultiEQFilter(format: outputFormat, params: [
+			.init(type: .highPass, freq: 135, bw: 2.5),
+			.init(type: .lowPass, freq: 7000, bw: 3),
+			.init(type: .peaking, freq: 830, bw: 1, gain: -12),
+//			.init(type: .peaking, freq: 2450, bw: 1, gain: 2),
+		], isEnabled: true)
+		eq.connectSource(player)
+		connectSource(eq)
+		player.isEnabled = true
+		await Sleep(3)
+		player.time = 0
+		player.isEnabled = true
+		print("---", #function, "bypassing")
+		eq.isBypassing = true
+		await Sleep(3)
+		await smoothDisconnect()
+	}
+
+
 	func rmsTests() async throws {
 
 		// Result: for every 0.1 volume the RMS changes by 4dB
@@ -363,7 +388,8 @@ struct CLI {
 //		try await system.testSyncPlayer()
 //		try await system.levelAnalysis()
 //		try await system.eqTest()
-		try await system.fftTest()
+		try await system.eqTest2()
+//		try await system.fftTest()
 
 		await Sleep(0.1) // before disconnecting, to avoid clicks
 	}
