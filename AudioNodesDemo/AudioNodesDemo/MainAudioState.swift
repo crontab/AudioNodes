@@ -276,17 +276,17 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 
 
 	private lazy var stereo = Stereo() // with default hardware sampling rate
-	private var input: System.MonoInput? { stereo.monoInput }
+	private var input: System.Input? { stereo.input }
 
 	private lazy var mixer: EnumMixer<InChannel> = .init(format: stereo.outputFormat)
 	private var filePlayer: FilePlayer?
 
-	private lazy var recordingData = AudioData(durationSeconds: 30, format: stereo.monoInputFormat)
+	private lazy var recordingData = AudioData(durationSeconds: 30, format: stereo.inputFormat)
 	private lazy var recorder = MemoryRecorder(data: recordingData, delegate: self)
 	private lazy var recordingPlayer = MemoryPlayer(data: recordingData, delegate: self)
 
 	private lazy var outputMeter = Meter(format: stereo.outputFormat, delegate: self)
-	private lazy var inputMeter = FFTMeter(format: stereo.monoInputFormat, delegate: self)
+	private lazy var inputMeter = FFTMeter(format: stereo.inputFormat, delegate: self)
 
 
 	private static func activateAVAudioSession() {
