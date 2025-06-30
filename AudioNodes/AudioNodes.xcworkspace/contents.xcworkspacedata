@@ -8,10 +8,10 @@
       location = "group:../TODO.md">
    </FileRef>
    <FileRef
-      location = "group:../AudioNodes/AudioNodes.xcodeproj">
+      location = "group:../AudioNodesDemo/AudioNodesDemo.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../AudioNodesDemo/AudioNodesDemo.xcodeproj">
+      location = "group:../AudioNodes/AudioNodes.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:../AudioNodesTests/AudioNodesTests.xcodeproj">
