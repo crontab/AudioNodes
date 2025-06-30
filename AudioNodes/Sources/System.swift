@@ -27,37 +27,6 @@ public final class Stereo: System, @unchecked Sendable {
 }
 
 
-// MARK: - Voice
-
-/// Lower quality mono I/O with voice processing (echo cancellation and automatic gain control; see `mode`).
-public final class Voice: System, @unchecked Sendable {
-
-	public enum Mode {
-		case normal
-		case voice
-		case voiceAGC
-	}
-
-	public var mode: Mode = .voice {
-		didSet {
-			// Bypass
-			var flag: UInt32 = mode == .normal ? 1 : 0
-			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51025)
-
-			// AGC
-			flag = mode == .voiceAGC ? 1 : 0
-			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51026)
-		}
-	}
-
-	public init(sampleRate: Double = 0) {
-		super.init(isStereo: false, sampleRate: sampleRate)
-	}
-
-	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_VoiceProcessingIO }
-}
-
-
 // MARK: - System
 
 public class System: Source, @unchecked Sendable {

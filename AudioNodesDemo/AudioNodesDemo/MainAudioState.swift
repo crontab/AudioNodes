@@ -50,7 +50,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			guard isInputEnabled != oldValue else { return }
 			if isInputEnabled {
 				Task {
-					if await (isVoiceEnabled ? voice : stereo).requestInputAuthorization(), let input {
+					if await stereo.requestInputAuthorization(), let input {
 						initializeInputGraph()
 						input.connectMonitor(inputMeter)
 						input.isEnabled = true
@@ -62,21 +62,6 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			}
 			else {
 				input?.isEnabled = false
-			}
-		}
-	}
-
-
-	@Published var isVoiceEnabled: Bool = false {
-		willSet {
-			isRecording = false
-			isInputEnabled = false
-			voice.stop()
-		}
-		didSet {
-			isInputEnabled = true
-			if isVoiceEnabled {
-				voice.start()
 			}
 		}
 	}
@@ -291,8 +276,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 
 
 	private lazy var stereo = Stereo() // with default hardware sampling rate
-	private lazy var voice = Voice(sampleRate: stereo.outputFormat.sampleRate) // request same rate as the high-quality output
-	private var input: System.MonoInput? { isVoiceEnabled ? voice.monoInput : stereo.monoInput }
+	private var input: System.MonoInput? { stereo.monoInput }
 
 	private lazy var mixer: EnumMixer<InChannel> = .init(format: stereo.outputFormat)
 	private var filePlayer: FilePlayer?
