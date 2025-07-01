@@ -275,7 +275,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	}
 
 
-	private lazy var stereo = Stereo() // with default hardware sampling rate
+	private lazy var stereo = Stereo(sampleRate: 48000)
 	private var input: System.Input? { stereo.input }
 
 	private lazy var mixer: EnumMixer<InChannel> = .init(format: stereo.outputFormat)

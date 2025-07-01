@@ -15,8 +15,8 @@ import AudioToolbox
 /// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using the `input` node.
 public final class Stereo: System, @unchecked Sendable {
 
-	public override init(isStereo: Bool = true, sampleRate: Double = 0) {
-		super.init(isStereo: isStereo, sampleRate: sampleRate)
+	public init(sampleRate: Double = 0) {
+		super.init(isStereo: true, sampleRate: sampleRate)
 	}
 
 #if os(iOS)
@@ -303,5 +303,5 @@ private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags:
 	NotError(AudioUnitRender(obj.unit, actionFlags, timeStamp, busNumber, frameCount, renderBuffer.unsafeMutablePointer), 51024)
 
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
-	return obj._internalMonitor(frameCount: Int(frameCount), buffers: obj.renderBuffer)
+	return obj._internalMonitor(frameCount: Int(frameCount), buffers: renderBuffer)
 }
