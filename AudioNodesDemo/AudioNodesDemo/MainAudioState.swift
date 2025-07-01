@@ -288,8 +288,9 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 
 
 	private static func activateAVAudioSession() {
+		guard !Globals.isPreview else { return }
 		try! AVAudioSession.sharedInstance().setActive(false)
-		try! AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP, .mixWithOthers])
+		try! AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowAirPlay, .allowBluetooth])
 		try! AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
 	}
 }
