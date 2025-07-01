@@ -9,7 +9,7 @@ import AudioNodes
 
 let WaveformPadding = 30.0 // gradient area, for scrollable only
 let WaveformBarWidth = 2.0
-let WaveformBarSpacing = 2.0
+let WaveformBarSpacing = 3.0
 
 
 struct WaveformView: View {

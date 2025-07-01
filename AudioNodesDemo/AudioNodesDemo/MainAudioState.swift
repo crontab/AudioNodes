@@ -50,7 +50,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			guard isInputEnabled != oldValue else { return }
 			if isInputEnabled {
 				Task {
-					if await (isVoiceEnabled ? voice : stereo).requestInputAuthorization(), let input {
+					if await stereo.requestInputAuthorization(), let input {
 						initializeInputGraph()
 						input.connectMonitor(inputMeter)
 						input.isEnabled = true
@@ -62,21 +62,6 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			}
 			else {
 				input?.isEnabled = false
-			}
-		}
-	}
-
-
-	@Published var isVoiceEnabled: Bool = false {
-		willSet {
-			isRecording = false
-			isInputEnabled = false
-			voice.stop()
-		}
-		didSet {
-			isInputEnabled = true
-			if isVoiceEnabled {
-				voice.start()
 			}
 		}
 	}
@@ -140,7 +125,6 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	@Published var inputLevels: [Float] = []
 
 	@Published var trackWaveform: Waveform?
-	@Published var voiceWaveform: Waveform?
 
 
 	func saveRecording(to url: URL) -> Bool {
@@ -175,7 +159,6 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 		Self.activateAVAudioSession()
 		if System.inputAuthorized {
 			isInputEnabled = true
-//			isVoiceEnabled = true // also enables input
 		}
 		Task {
 			await loadFile(url: fileUrl)
@@ -290,19 +273,18 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	}
 
 
-	private lazy var stereo = Stereo() // with default hardware sampling rate
-	private lazy var voice = Voice(sampleRate: stereo.outputFormat.sampleRate) // request same rate as the high-quality output
-	private var input: System.MonoInput? { isVoiceEnabled ? voice.monoInput : stereo.monoInput }
+	private lazy var stereo = Stereo(sampleRate: 48000)
+	private var input: System.Input? { stereo.input }
 
 	private lazy var mixer: EnumMixer<InChannel> = .init(format: stereo.outputFormat)
 	private var filePlayer: FilePlayer?
 
-	private lazy var recordingData = AudioData(durationSeconds: 30, format: stereo.monoInputFormat)
+	private lazy var recordingData = AudioData(durationSeconds: 30, format: stereo.inputFormat)
 	private lazy var recorder = MemoryRecorder(data: recordingData, delegate: self)
 	private lazy var recordingPlayer = MemoryPlayer(data: recordingData, delegate: self)
 
 	private lazy var outputMeter = Meter(format: stereo.outputFormat, delegate: self)
-	private lazy var inputMeter = FFTMeter(format: stereo.monoInputFormat, delegate: self)
+	private lazy var inputMeter = FFTMeter(format: stereo.inputFormat, delegate: self)
 
 
 	private static func activateAVAudioSession() {

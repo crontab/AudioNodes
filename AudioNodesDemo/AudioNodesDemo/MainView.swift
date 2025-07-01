@@ -69,22 +69,8 @@ struct MainView: View {
 			outputSection()
 				.frame(maxWidth: 152)
 			Spacer()
-			VStack {
-				inputSection()
-				voiceSection()
-			}
-			.frame(maxWidth: 152)
-		}
-	}
-
-
-	private func voiceSection() -> some View {
-		SectionView {
-			VStack(alignment: .trailing) {
-				toggle(isOn: $audio.isVoiceEnabled, left: "Voice mode", enabled: audio.isRunning && audio.isInputEnabled)
-					.padding(.bottom, 8)
-				ProgressView(value: 0)
-			}
+			inputSection()
+				.frame(maxWidth: 152)
 		}
 	}
 

@@ -12,11 +12,11 @@ import AudioToolbox
 
 // MARK: - Stereo
 
-/// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using the `monoInput` node.
+/// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using the `input` node.
 public final class Stereo: System, @unchecked Sendable {
 
-	public override init(isStereo: Bool = true, sampleRate: Double = 0) {
-		super.init(isStereo: isStereo, sampleRate: sampleRate)
+	public init(sampleRate: Double = 0) {
+		super.init(isStereo: true, sampleRate: sampleRate)
 	}
 
 #if os(iOS)
@@ -27,47 +27,16 @@ public final class Stereo: System, @unchecked Sendable {
 }
 
 
-// MARK: - Voice
-
-/// Lower quality mono I/O with voice processing (echo cancellation and automatic gain control; see `mode`).
-public final class Voice: System, @unchecked Sendable {
-
-	public enum Mode {
-		case normal
-		case voice
-		case voiceAGC
-	}
-
-	public var mode: Mode = .voice {
-		didSet {
-			// Bypass
-			var flag: UInt32 = mode == .normal ? 1 : 0
-			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51025)
-
-			// AGC
-			flag = mode == .voiceAGC ? 1 : 0
-			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 1, &flag, SizeOf(flag)), 51026)
-		}
-	}
-
-	public init(sampleRate: Double = 0) {
-		super.init(isStereo: false, sampleRate: sampleRate)
-	}
-
-	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_VoiceProcessingIO }
-}
-
-
 // MARK: - System
 
 public class System: Source, @unchecked Sendable {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
-	public private(set) var monoInput: MonoInput?
+	public private(set) var input: Input?
 
 	/// System stream format.
 	public final let outputFormat: StreamFormat
-	public final let monoInputFormat: StreamFormat
+	public final let inputFormat: StreamFormat
 
 	/// Indicates whether the audio system is enabled and is rendering data.
 	public var isRunning: Bool {
@@ -95,19 +64,19 @@ public class System: Source, @unchecked Sendable {
 	}
 
 
-	/// Requests authorization for audio input on platforms where it's required, and initializes the `monoInput` property.
+	/// Requests authorization for audio input on platforms where it's required, and initializes the `input` property.
 	public func requestInputAuthorization() async -> Bool {
-		guard monoInput == nil else { return true }
+		guard input == nil else { return true }
 
 		switch AVCaptureDevice.authorizationStatus(for: .audio) {
 			case .authorized: // The user has previously granted access
-				monoInput = MonoInput(system: self)
+				input = Input(system: self)
 				return true
 
 			case .notDetermined: // The user has not yet been asked for access
 				let granted = await AVCaptureDevice.requestAccess(for: .audio)
-				if granted, monoInput == nil {
-					monoInput = MonoInput(system: self)
+				if granted, input == nil {
+					input = Input(system: self)
 				}
 				return granted
 
@@ -153,14 +122,14 @@ public class System: Source, @unchecked Sendable {
 		if status != noErr || inDescr.mChannelsPerFrame == 0 {
 			print("AudioNodes: audio is not available on this system")
 			outputFormat = .default
-			monoInputFormat = .defaultMono
+			inputFormat = .default
 			super.init()
 			isEnabled = false
 			return
 		}
 
 		outputFormat = .init(sampleRate: setSampleRate, isStereo: isStereo)
-		monoInputFormat = .init(sampleRate: setSampleRate, isStereo: false)
+		inputFormat = .init(sampleRate: setSampleRate, isStereo: isStereo)
 
 		super.init()
 
@@ -214,15 +183,15 @@ public class System: Source, @unchecked Sendable {
 	}
 
 
-	// MARK: - MonoInput
+	// MARK: - Input
 
-	public final class MonoInput: Monitor, @unchecked Sendable {
+	public final class Input: Monitor, @unchecked Sendable {
 
-		// MonoInput is a special node that's not a real source; it can only be monitored by connecting a Monitor object, possibly chained
+		// Input is a special node that's not a real source; it can only be monitored by connecting a Monitor object, possibly chained
 
 		fileprivate final var renderBuffer: AudioBufferListPtr
 
-		// The AudioUnit reference is passed via the initializer; note that in this module it's shared across input and output nodes for the same IO type, i.e. there's one unit instance for MonoInput and Output.
+		// The AudioUnit reference is passed via the initializer; note that in this module it's shared across input and output nodes for the same IO type, i.e. there's one unit instance for Input and Output.
 		fileprivate final var unit: AudioUnit
 		private weak var system: System?
 
@@ -239,7 +208,7 @@ public class System: Source, @unchecked Sendable {
 			}
 
 			// Set the "soft" format for audio input to make sure the sample rate is the same as for audio output
-			descr = .canonical(with: system.monoInputFormat)
+			descr = .canonical(with: system.inputFormat)
 			NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51022)
 
 			// Render buffer: the input AU will allocate the data buffers, we just supply the buffer headers
@@ -319,7 +288,7 @@ private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags
 
 private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, timeStamp: UnsafePointer<AudioTimeStamp>, busNumber: UInt32, frameCount: UInt32, buffers unused: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
 
-	let obj: System.MonoInput = Bridge(ptr: userData)
+	let obj: System.Input = Bridge(ptr: userData)
 
 	guard obj.isEnabled else {
 		return noErr
@@ -333,6 +302,12 @@ private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags:
 
 	NotError(AudioUnitRender(obj.unit, actionFlags, timeStamp, busNumber, frameCount, renderBuffer.unsafeMutablePointer), 51024)
 
+	// Check the first two samples in the right channel to see if it's silence; duplicate the left channel if so.
+	// Apparently this happens on iPhones but not on the Mac or even the iPhone simulator.
+	if renderBuffer.count == 2, renderBuffer[1].samples[0] == 0, renderBuffer[1].samples[1] == 0 {
+		memcpy(renderBuffer[1].mData, renderBuffer[0].mData, Int(renderBuffer[0].mDataByteSize))
+	}
+
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
-	return obj._internalMonitor(frameCount: Int(frameCount), buffers: obj.renderBuffer)
+	return obj._internalMonitor(frameCount: Int(frameCount), buffers: renderBuffer)
 }

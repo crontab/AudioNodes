@@ -152,7 +152,7 @@ extension System {
 	func testNR() async throws {
 		print("---", #function)
 		let url = tempRecUrl("ios.m4a")
-		guard let original = AudioData(url: url, format: monoInputFormat) else {
+		guard let original = AudioData(url: url, format: inputFormat) else {
 			print("ERROR: couldn't load file", url.path(percentEncoded: false))
 			throw AudioError.fileOpen
 		}

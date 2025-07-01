@@ -20,7 +20,7 @@ _Work in progress, no documentation is available at the moment_
     - [SineGenerator](AudioNodes/Sources/SineGenerator.swift)
     - [System](AudioNodes/Sources/System.swift)
       - [Stereo](AudioNodes/Sources/System.swift)
-      - [Voice](AudioNodes/Sources/System.swift)
+      - [Stereo.Input](AudioNodes/Sources/System.swift)
   - [Monitor](AudioNodes/Sources/Monitor.swift)
     - [Meter](AudioNodes/Sources/Meter.swift)
       - [Ducker](AudioNodes/Sources/Ducker.swift)
