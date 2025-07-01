@@ -302,6 +302,12 @@ private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags:
 
 	NotError(AudioUnitRender(obj.unit, actionFlags, timeStamp, busNumber, frameCount, renderBuffer.unsafeMutablePointer), 51024)
 
+	// Check the first two samples in the right channel to see if it's silence; duplicate the left channel if so.
+	// Apparently this happens on iPhones but not on the Mac or even the iPhone simulator.
+	if renderBuffer.count == 2, renderBuffer[1].samples[0] == 0, renderBuffer[1].samples[1] == 0 {
+		memcpy(renderBuffer[1].mData, renderBuffer[0].mData, Int(renderBuffer[0].mDataByteSize))
+	}
+
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
 	return obj._internalMonitor(frameCount: Int(frameCount), buffers: renderBuffer)
 }
