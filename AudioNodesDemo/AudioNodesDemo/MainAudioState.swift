@@ -125,7 +125,6 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	@Published var inputLevels: [Float] = []
 
 	@Published var trackWaveform: Waveform?
-	@Published var voiceWaveform: Waveform?
 
 
 	func saveRecording(to url: URL) -> Bool {
@@ -160,7 +159,6 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 		Self.activateAVAudioSession()
 		if System.inputAuthorized {
 			isInputEnabled = true
-//			isVoiceEnabled = true // also enables input
 		}
 		Task {
 			await loadFile(url: fileUrl)
