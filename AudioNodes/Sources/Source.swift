@@ -112,13 +112,13 @@ public class Source: Node, @unchecked Sendable {
 	// MARK: - Internal: rendering
 
 	/// Abstract overridable function that's called if this node is enabled, not bypassing and is connected to another node as `source`. Subclasses either generate or mutate the sound in this routine.
-	func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	func _render(frameCount: Int, buffers: AudioBufferListPtr) {
 		Abstract()
 	}
 
 
 	// Called from the system output callback
-	final func _internalPull(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	final func _internalPull(frameCount: Int, buffers: AudioBufferListPtr) {
 
 		// 1. Prepare the config
 		withAudioLock {
@@ -130,56 +130,45 @@ public class Source: Node, @unchecked Sendable {
 			if _prevEnabled {
 				_prevEnabled = false
 				_reset()
-				let status = _internalRender2(frameCount: frameCount, buffers: buffers)
-				if status == noErr {
-					Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
-				}
-				return status
+				_internalRender2(frameCount: frameCount, buffers: buffers)
+				Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
+				return
 			}
-			return FillSilence(frameCount: frameCount, buffers: buffers)
+			FillSilence(frameCount: frameCount, buffers: buffers)
 		}
 
 		// 3. Enabled: ramp in if needed
 		if !_prevEnabled {
 			_prevEnabled = true
-			let status = _internalRender2(frameCount: frameCount, buffers: buffers)
-			if status == noErr {
-				Smooth(out: false, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
-			}
-			return status
+			_internalRender2(frameCount: frameCount, buffers: buffers)
+			Smooth(out: false, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
+			return
 		}
 
 		// 4. No ramps, fully enabled: pass on to the rendering method
-		return _internalRender2(frameCount: frameCount, buffers: buffers)
+		_internalRender2(frameCount: frameCount, buffers: buffers)
 	}
 
 
-	private func _internalRender2(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		var status: OSStatus = noErr
-
+	private func _internalRender2(frameCount: Int, buffers: AudioBufferListPtr) {
 		// 5. Pull input data
-		if let input = _config.source {
-			status = input._internalPull(frameCount: frameCount, buffers: buffers)
+		if let source = _config.source {
+			source._internalPull(frameCount: frameCount, buffers: buffers)
 		}
 
 		// 6. Call the abstract render routine for this node
-		if status == noErr {
-			if !_config.bypass {
-				status = _render(frameCount: frameCount, buffers: buffers)
-			}
-			else if _config.source == nil {
-				// Bypassing and no source specified, fill with silence.
-				FillSilence(frameCount: frameCount, buffers: buffers)
-			}
+		if !_config.bypass {
+			_render(frameCount: frameCount, buffers: buffers)
+		}
+		else if _config.source == nil {
+			// Bypassing and no source specified, fill with silence.
+			FillSilence(frameCount: frameCount, buffers: buffers)
 		}
 
-		// 7. Notify the monitor (tap) node if there's any
-		if status == noErr, let monitor = _config.monitor {
-			// Call monitor only if there's actual data generated. This helps monitors like file writers only receive actual data, not e.g. silence that can occur due to timing issues with the microphone. This however leaves the monitor unaware of any gaps which may not be good for e.g. meter UI elements. Should find a way to handle these situations.
-			_ = monitor._internalMonitor(frameCount: frameCount, buffers: buffers)
-			return noErr
+		// 7. Notify the monitor (tap) node if connected
+		if let monitor = _config.monitor {
+			monitor._internalMonitor(frameCount: frameCount, buffers: buffers)
 		}
-		return status
 	}
 
 
@@ -196,7 +185,7 @@ public class Source: Node, @unchecked Sendable {
 
 	// MARK: - Internal: Connection management
 
-	final var _isInputConnected: Bool { _config.source != nil }
+	final var _isSourceConnected: Bool { _config.source != nil }
 	final var _isEnabled: Bool { _config.enabled }
 
 

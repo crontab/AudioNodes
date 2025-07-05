@@ -55,9 +55,8 @@ public class Player: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
 		_read(frameCount: frameCount, buffers: buffers, offset: 0)
-		return noErr
 	}
 
 	@discardableResult

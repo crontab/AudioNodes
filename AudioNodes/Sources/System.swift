@@ -156,11 +156,10 @@ public class System: Source, @unchecked Sendable {
 
 	// MARK: - Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		if !_isInputConnected {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
+		if !_isSourceConnected {
 			FillSilence(frameCount: frameCount, buffers: buffers)
 		}
-		return noErr
 	}
 
 
@@ -282,7 +281,8 @@ private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags
 
 	let obj: System = Bridge(ptr: userData)
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
-	return obj._internalPull(frameCount: Int(frameCount), buffers: AudioBufferListPtr(&buffers!.pointee))
+	obj._internalPull(frameCount: Int(frameCount), buffers: AudioBufferListPtr(&buffers!.pointee))
+	return noErr
 }
 
 
@@ -309,5 +309,6 @@ private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags:
 	}
 
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
-	return obj._internalMonitor(frameCount: Int(frameCount), buffers: renderBuffer)
+	obj._internalMonitor(frameCount: Int(frameCount), buffers: renderBuffer)
+	return noErr
 }

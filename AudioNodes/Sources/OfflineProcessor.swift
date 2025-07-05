@@ -41,10 +41,7 @@ public extension StaticDataSource {
 			}
 
 			// 2. Now pass the data to the chain of nodes connected to this node
-			let result = node?._internalPull(frameCount: frameCount, buffers: scratch.buffers) ?? noErr
-			if result != noErr {
-				throw AudioError.coreAudio(code: result)
-			}
+			node?._internalPull(frameCount: frameCount, buffers: scratch.buffers)
 
 			// 3. Write to the sink
 			let numWritten = try callback(Double(totalRead) / format.sampleRate, numRead, scratch.buffers)

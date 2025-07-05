@@ -43,7 +43,7 @@ public final class VolumeControl: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
 		var current = _previous
 
 		if current != _config.targetVolume {
@@ -89,8 +89,6 @@ public final class VolumeControl: Source, @unchecked Sendable {
 		withAudioLock {
 			lastKnownVolume$ = _previous
 		}
-
-		return noErr
 	}
 
 
@@ -155,33 +153,30 @@ public class Mixer: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
 		var first = true
 		for bus in buses {
-			let status = first ?
+			if first {
 				bus._internalPull(frameCount: frameCount, buffers: buffers)
-					: _renderAndMix(node: bus, frameCount: frameCount, buffers: buffers)
-			first = false
-			if status != noErr {
-				return status
 			}
+			else {
+				_renderAndMix(node: bus, frameCount: frameCount, buffers: buffers)
+			}
+			first = false
 		}
 		if first { // no connections on buses
-			return FillSilence(frameCount: frameCount, buffers: buffers)
+			FillSilence(frameCount: frameCount, buffers: buffers)
 		}
-		return noErr
 	}
 
 
-	private func _renderAndMix(node: Source, frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		var status: OSStatus
-		status = node._internalPull(frameCount: frameCount, buffers: _scratchBuffer.buffers)
+	private func _renderAndMix(node: Source, frameCount: Int, buffers: AudioBufferListPtr) {
+		node._internalPull(frameCount: frameCount, buffers: _scratchBuffer.buffers)
 		for i in 0..<buffers.count {
 			let src = _scratchBuffer.buffers[i]
 			let dst = buffers[i]
 			vDSP_vadd(src.samples, 1, dst.samples, 1, dst.samples, 1, UInt(frameCount))
 		}
-		return status
 	}
 
 	// NB: _willRender$() and _reset() are not implemented since we use _internalPull() on each bus in the render routine, which takes care of all that.

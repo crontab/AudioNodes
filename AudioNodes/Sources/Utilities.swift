@@ -139,15 +139,13 @@ func FactorFromGain(_ gain: Float32) -> Float32 {
 }
 
 
-@discardableResult
-func FillSilence(frameCount: Int, buffers: AudioBufferListPtr, offset: Int = 0) -> OSStatus {
+func FillSilence(frameCount: Int, buffers: AudioBufferListPtr, offset: Int = 0) {
 	precondition(offset <= frameCount)
 	if offset < frameCount {
 		for i in 0..<buffers.count {
 			vDSP_vclr(buffers[i].samples + offset, 1, UInt(frameCount - offset))
 		}
 	}
-	return noErr
 }
 
 
@@ -183,8 +181,7 @@ func Copy(from: AudioBufferListPtr, to: AudioBufferListPtr, fromOffset: Int, toO
 
 
 // Fast non-logarithmic fade in/out: used for muting/unmuting - it's why it's called Smooth() and not say Ramp()
-@discardableResult
-func Smooth(out: Bool, frameCount: Int, fadeFrameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+func Smooth(out: Bool, frameCount: Int, fadeFrameCount: Int, buffers: AudioBufferListPtr) {
 	// DLOG("SMOOTH \(out ? "out" : "in")")
 	let fadeFrameCount = min(frameCount, fadeFrameCount)
 	if fadeFrameCount > 0 {
@@ -196,7 +193,9 @@ func Smooth(out: Bool, frameCount: Int, fadeFrameCount: Int, buffers: AudioBuffe
 			}
 		}
 	}
-	return out ? FillSilence(frameCount: frameCount, buffers: buffers, offset: fadeFrameCount) : noErr
+	if out {
+		FillSilence(frameCount: frameCount, buffers: buffers, offset: fadeFrameCount)
+	}
 }
 
 

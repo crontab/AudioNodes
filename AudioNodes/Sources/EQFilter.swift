@@ -128,10 +128,8 @@ public class EQFilter: EQBase, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
-		guard let configPtr = _config?.unsafePointer() else {
-			return noErr
-		}
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
+		guard let configPtr = _config?.unsafePointer() else { return }
 		let inData = _scratchBuffer.buffers[0].samples
 		let outData = _scratchBuffer.buffers[1].samples
 		for i in 0..<buffers.count {
@@ -139,7 +137,6 @@ public class EQFilter: EQBase, @unchecked Sendable {
 			_processors[i].process(config: configPtr, frameCount: frameCount, inData: inData, outData: outData)
 			memcpy(buffers[i].samples, outData + 2, frameCount * SizeOfSample)
 		}
-		return noErr
 	}
 
 
@@ -166,7 +163,7 @@ public class MultiEQFilter: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) -> OSStatus {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
 		for i in 0..<buffers.count {
 			let audio = buffers[i]
 			// In and out buffers will be flipflopping as we progress with bands, this is for efficiency
@@ -189,7 +186,6 @@ public class MultiEQFilter: Source, @unchecked Sendable {
 				memcpy(audio.samples, (srcIsA ? dataA : dataB) + 2, frameCount * SizeOfSample)
 			}
 		}
-		return noErr
 	}
 
 	override func _willRender$() {
