@@ -19,12 +19,7 @@ public extension StaticDataSource {
 	func runOffline(sink: StaticDataSink, node: Source?, ticksPerSec: Int = 25) throws {
 		precondition(format == sink.format)
 		try runOffline(node: node, ticksPerSec: ticksPerSec) { _, frameCount, buffers in
-			var numWritten = 0
-			let result = sink.writeSync(frameCount: frameCount, buffers: buffers, numWritten: &numWritten)
-			if result != noErr {
-				throw AudioError.coreAudio(code: result)
-			}
-			return numWritten
+			try sink.writeSync(frameCount: frameCount, buffers: buffers)
 		}
 	}
 
