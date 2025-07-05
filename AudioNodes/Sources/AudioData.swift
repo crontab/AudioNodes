@@ -73,6 +73,15 @@ public final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataS
 	}
 
 
+	/// Creates an AudioData object that shares the buffers with a given object but has its own read pointer. Recommended only for reading.
+	public init(duplicate from: AudioData) {
+		format = from.format
+		chunkCapacity = from.chunkCapacity
+		chunks = from.chunks
+		framesWritten = from.framesWritten
+	}
+
+
 	public func write(frameCount: Int, buffers: AudioBufferListPtr) -> Int {
 		withWriteLock {
 			var framesCopied = 0
