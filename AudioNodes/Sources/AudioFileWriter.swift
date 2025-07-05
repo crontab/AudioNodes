@@ -17,7 +17,7 @@ public final class AudioFileWriter: StaticDataSink {
 	public final let fileRef: ExtAudioFileRef
 
 
-	public init?(url: URL, format: StreamFormat, fileSampleRate: Double, compressed: Bool, async: Bool) {
+	public init(url: URL, format: StreamFormat, fileSampleRate: Double, compressed: Bool, async: Bool) throws {
 		self.url = url
 		self.format = format
 
@@ -32,7 +32,7 @@ public final class AudioFileWriter: StaticDataSink {
 		let status = ExtAudioFileCreateWithURL(url as CFURL, compressed ? kAudioFileM4AType : kAudioFileAIFFType, &fileDescr, nil, AudioFileFlags.eraseFile.rawValue, &fileRef)
 		guard status == noErr, let fileRef else {
 			DLOG("AudioFileWriter: open failed (\(status))")
-			return nil
+			throw AudioError.fileWrite(code: status)
 		}
 
 		var clientDescr = AudioStreamBasicDescription.canonical(with: format)
@@ -54,8 +54,13 @@ public final class AudioFileWriter: StaticDataSink {
 	}
 
 
-	public func writeSync(frameCount: Int, buffers: AudioBufferListPtr, numWritten: inout Int) -> OSStatus {
-		write(async: false, frameCount: frameCount, buffers: buffers, numWritten: &numWritten)
+	public func writeSync(frameCount: Int, buffers: AudioBufferListPtr) throws -> Int {
+		var numWritten: Int = 0
+		let status = write(async: false, frameCount: frameCount, buffers: buffers, numWritten: &numWritten)
+		if status != noErr {
+			throw AudioError.fileWrite(code: status)
+		}
+		return numWritten
 	}
 
 

@@ -21,12 +21,16 @@ let MIN_LEVEL_DB: Sample = -90
 // MARK: - Errors, debugging
 
 public enum AudioError: LocalizedError {
-	case fileOpen
+	case fileOpen(code: OSStatus)
+	case fileRead(code: OSStatus)
+	case fileWrite(code: OSStatus)
 	case coreAudio(code: OSStatus)
 
 	public var errorDescription: String? {
 		switch self {
-			case .fileOpen: "Could not open file"
+			case .fileOpen(let code): "Could not open audio file (\(code))"
+			case .fileRead(let code): "Could not read audio file (\(code))"
+			case .fileWrite(let code): "Couldn't write to audio file (\(code))"
 			case .coreAudio(let code): "CoreAudio error \(code)"
 		}
 	}

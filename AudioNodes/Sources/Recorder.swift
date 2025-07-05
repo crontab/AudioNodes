@@ -55,11 +55,8 @@ public class FileRecorder: Recorder, @unchecked Sendable {
 	public override var isFull: Bool { withAudioLock { lastKnownPlayhead$ >= frameCapacity } }
 
 
-	public init?(url: URL, format: StreamFormat, fileSampleRate: Double, compressed: Bool = true, capacity: TimeInterval, delegate: RecorderDelegate? = nil, isEnabled: Bool = false) {
-		guard let file = AudioFileWriter(url: url, format: format, fileSampleRate: fileSampleRate, compressed: compressed, async: true) else {
-			return nil
-		}
-		self.file = file
+	public init(url: URL, format: StreamFormat, fileSampleRate: Double, compressed: Bool = true, capacity: TimeInterval, delegate: RecorderDelegate? = nil, isEnabled: Bool = false) throws {
+		self.file = try AudioFileWriter(url: url, format: format, fileSampleRate: fileSampleRate, compressed: compressed, async: true)
 		self.frameCapacity = Int(capacity * format.sampleRate)
 		super.init(isEnabled: isEnabled, delegate: delegate)
 	}
