@@ -173,8 +173,7 @@ extension System {
 		do {
 			print("--- processing")
 			original.resetRead()
-			try NoiseGate(format: original.format)
-				.runOffline(source: original, sink: processed)
+			try original.runOffline(sink: processed, node: NoiseGate(format: original.format))
 		}
 
 		// Play processed
@@ -223,7 +222,7 @@ extension System {
 		origData.resetRead()
 		let eq = EQFilter(format: outputFormat, params: EQParameters(type: .highPass, freq: 3000, bw: 1))
 		let sink = AudioData(durationSeconds: Int(ceil(origData.estimatedDuration)), format: origData.format)
-		try eq.runOffline(source: origData, sink: sink)
+		try origData.runOffline(sink: sink, node: eq)
 
 		sink.resetRead()
 		try await MemoryPlayer.playAsync(sink, driver: self)
@@ -263,8 +262,7 @@ extension System {
 			let fmt: StreamFormat = .defaultMono
 			let sine = SineGenerator(freq: 440, format: fmt)
 			let sink = AudioData(durationSeconds: 1, format: fmt)
-			try VolumeControl(format: fmt, initialVolume: volume)
-				.runOffline(source: sine, sink: sink)
+			try sine.runOffline(sink: sink, node: VolumeControl(format: fmt, initialVolume: volume))
 //			sink.resetRead()
 //			try await MemoryPlayer.playAsync(sink, driver: self)
 			let waveform = Waveform.fromSource(sink, ticksPerSec: 4)
@@ -334,7 +332,7 @@ func adjustVoiceRecordingNR(source: StaticDataSource, sink: StaticDataSink, nr: 
 
 	// 5. Run the processing chain
 	source.resetRead()
-	try postNRNode.runOffline(source: source, sink: sink)
+	try source.runOffline(sink: sink, node: postNRNode)
 
 	return waveform
 }
@@ -362,8 +360,7 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, diagNa
 	// Gain adjustment:
 	// We divide the gain by 40 because each 4dB gain roughly translates to 0.1 volume:
 	source.resetRead()
-	try VolumeControl(format: format, initialVolume: 1 + deltaGain / 40)
-		.runOffline(source: source, sink: sink)
+	try source.runOffline(sink: sink, node: VolumeControl(format: format, initialVolume: 1 + deltaGain / 40))
 
 	return waveform
 }
@@ -387,7 +384,7 @@ struct CLI {
 //		try await system.rmsTests()
 //		try await system.testSyncPlayer()
 //		try await system.levelAnalysis()
-//		try await system.eqTest()
+		try await system.eqTest()
 		try await system.eqTest2()
 //		try await system.fftTest()
 
