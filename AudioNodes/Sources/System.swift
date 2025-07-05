@@ -271,7 +271,7 @@ var lastFrameCount: UInt32 = 0
 
 private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, timeStamp: UnsafePointer<AudioTimeStamp>, busNumber: UInt32, frameCount: UInt32, buffers: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
 
-#if DEBUG
+#if DEBUG_off
 	if frameCount != lastFrameCount {
 		lastFrameCount = frameCount
 		Task.detached {
