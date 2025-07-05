@@ -125,50 +125,47 @@ public class Source: Node, @unchecked Sendable {
 			_willRender$()
 		}
 
-		// 2. Not enabled: ramp out or return silence
+		// 2. Render & monitor
+		_internalRender2(frameCount: frameCount, buffers: buffers)
+
+		// 3. Not enabled: ramp out or return silence
 		if !_config.enabled {
 			if _prevEnabled {
 				_prevEnabled = false
 				_reset()
-				_internalRender2(frameCount: frameCount, buffers: buffers)
 				Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
-				return
 			}
-			FillSilence(frameCount: frameCount, buffers: buffers)
-			return
+			else {
+				FillSilence(frameCount: frameCount, buffers: buffers)
+			}
 		}
 
-		// 3. Enabled: ramp in if needed
-		if !_prevEnabled {
+		// 4. Enabled: ramp in if needed
+		else if !_prevEnabled {
 			_prevEnabled = true
-			_internalRender2(frameCount: frameCount, buffers: buffers)
 			Smooth(out: false, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
-			return
 		}
 
-		// 4. No ramps, fully enabled: pass on to the rendering method
-		_internalRender2(frameCount: frameCount, buffers: buffers)
+		// 5. Notify the monitor (tap) node if connected
+		if let monitor = _config.monitor {
+			monitor._internalMonitor(frameCount: frameCount, buffers: buffers)
+		}
 	}
 
 
 	private func _internalRender2(frameCount: Int, buffers: AudioBufferListPtr) {
-		// 5. Pull input data
+		// 1. Pull input data
 		if let source = _config.source {
 			source._internalPull(frameCount: frameCount, buffers: buffers)
 		}
 
-		// 6. Call the abstract render routine for this node
+		// 2. Call the abstract render routine for this node
 		if !_config.bypass {
 			_render(frameCount: frameCount, buffers: buffers)
 		}
 		else if _config.source == nil {
 			// Bypassing and no source specified, fill with silence.
 			FillSilence(frameCount: frameCount, buffers: buffers)
-		}
-
-		// 7. Notify the monitor (tap) node if connected
-		if let monitor = _config.monitor {
-			monitor._internalMonitor(frameCount: frameCount, buffers: buffers)
 		}
 	}
 

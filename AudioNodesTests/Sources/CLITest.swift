@@ -203,6 +203,7 @@ extension System {
 
 
 	func eqTest() async throws {
+		print("---", #function)
 		let name = "ios"
 		let url = tempRecUrl(name + ".m4a")
 		let origData = try! AudioData(url: url, format: outputFormat)
@@ -242,6 +243,7 @@ extension System {
 
 
 	func rmsTests() async throws {
+		print("---", #function)
 
 		// Result: for every 0.1 volume the RMS changes by 4dB
 
@@ -263,6 +265,8 @@ extension System {
 
 
 	func fftTest() async {
+		print("---", #function)
+
 		let player = try! FilePlayer(url: resUrl("eyes-demo.m4a"), format: outputFormat)
 		connectSource(player)
 

@@ -228,7 +228,7 @@ public class QueuePlayer: Player, @unchecked Sendable {
 				break
 			}
 			let player = _items[_currentIndex]
-			// Note that we bypass the usual rendering call _internalPull(). This is a bit dangerous in case changes are made in Node or Player or any of its  descendants. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
+			// Note that we bypass the usual rendering call _internalPull(). This is a bit dangerous in case changes are made in Node or Player or any of its descendants. But in any case the player objects are fully managed by QueuePlayer so we go straight to what we need:
 			player.withAudioLock {
 				player._willRender$()
 			}
