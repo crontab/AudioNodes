@@ -135,6 +135,7 @@ public class Source: Node, @unchecked Sendable {
 				return
 			}
 			FillSilence(frameCount: frameCount, buffers: buffers)
+			return
 		}
 
 		// 3. Enabled: ramp in if needed
