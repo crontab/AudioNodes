@@ -27,14 +27,14 @@ public class AudioFileReader: StaticDataSource {
 	fileprivate final let fileRef: ExtAudioFileRef
 
 
-	public init?(url: URL, format: StreamFormat) {
+	public init(url: URL, format: StreamFormat) throws {
 		self.url = url
 		self.format = format
 
 		var tempFileRef: ExtAudioFileRef?
 		var status = ExtAudioFileOpenURL(url as CFURL, &tempFileRef)
 		guard status == noErr, tempFileRef != nil else {
-			return nil
+			throw AudioError.fileOpen(code: status)
 		}
 
 		fileRef = tempFileRef!
@@ -45,7 +45,7 @@ public class AudioFileReader: StaticDataSource {
 		if status != noErr {
 			ExtAudioFileDispose(fileRef)
 			DLOG("AsyncAudioFile: file open error")
-			return nil
+			throw AudioError.fileOpen(code: status)
 		}
 
 		var descr: AudioStreamBasicDescription = .canonical(with: format)
@@ -53,7 +53,7 @@ public class AudioFileReader: StaticDataSource {
 		if status != noErr {
 			ExtAudioFileDispose(fileRef)
 			DLOG("AsyncAudioFile: failed to get audio descriptor")
-			return nil
+			throw AudioError.fileOpen(code: status)
 		}
 
 		if descr.mChannelsPerFrame > fileDescr.mChannelsPerFrame {
@@ -71,7 +71,7 @@ public class AudioFileReader: StaticDataSource {
 		if status != noErr {
 			ExtAudioFileDispose(fileRef)
 			DLOG("AsyncAudioFile: failed to set audio descriptor")
-			return nil
+			throw AudioError.fileOpen(code: status)
 		}
 
 		// If the file reader does resampling, we need to store the resampling factor so that we can correctly seek() within the file
@@ -93,7 +93,7 @@ public class AudioFileReader: StaticDataSource {
 	}
 
 
-	public final func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
+	public final func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) throws {
 		for i in 0..<buffers.count {
 			buffers[i].sampleCount = frameCount
 		}
@@ -102,13 +102,12 @@ public class AudioFileReader: StaticDataSource {
 		if status != noErr {
 			numRead = 0
 			FillSilence(frameCount: frameCount, buffers: buffers)
-			return status
+			throw AudioError.fileRead(code: status)
 		}
 		numRead = Int(_numRead)
 		if numRead < frameCount {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: Int(numRead))
 		}
-		return noErr
 	}
 }
 
@@ -205,9 +204,9 @@ final class AsyncAudioFileReader: AudioFileReader {
 	private var cachedBlocks = Cache(capacity: 8)
 
 
-	override init?(url: URL, format: StreamFormat) {
+	override init(url: URL, format: StreamFormat) throws {
 		blockSize = Int(format.sampleRate) // 1s per block
-		super.init(url: url, format: format)
+		try super.init(url: url, format: format)
 	}
 
 

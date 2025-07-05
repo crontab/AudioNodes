@@ -47,7 +47,7 @@ public struct Waveform: Sendable {
 	}
 
 
-	public static func fromSource(_ source: StaticDataSource, ticksPerSec: Int) -> Self? {
+	public static func fromSource(_ source: StaticDataSource, ticksPerSec: Int) throws -> Self {
 		let format = source.format
 		let samplesPerTick = Int(format.sampleRate) / ticksPerSec
 		let bufferList = SafeAudioBufferList(isStereo: format.isStereo, capacity: Int(format.sampleRate)) // 1s <- should be in multiples of seconds for simplicity
@@ -58,10 +58,7 @@ public struct Waveform: Sendable {
 
 		while true {
 			var numRead = 0 // within 1s
-			let status = source.readSync(frameCount: frameCount, buffers: buffers, numRead: &numRead)
-			if status != noErr {
-				return nil
-			}
+			try source.readSync(frameCount: frameCount, buffers: buffers, numRead: &numRead)
 
 			var offset = 0
 			while offset < numRead {

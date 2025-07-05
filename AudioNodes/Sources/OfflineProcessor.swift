@@ -40,13 +40,13 @@ public extension StaticDataSource {
 		while true {
 			// 1. Render source
 			var numRead = 0
-			var result = readSync(frameCount: frameCount, buffers: scratch.buffers, numRead: &numRead)
+			try readSync(frameCount: frameCount, buffers: scratch.buffers, numRead: &numRead)
 			if numRead < frameCount {
 				FillSilence(frameCount: frameCount, buffers: scratch.buffers, offset: numRead)
 			}
 
 			// 2. Now pass the data to the chain of nodes connected to this node
-			result = node?._internalPull(frameCount: frameCount, buffers: scratch.buffers) ?? noErr
+			let result = node?._internalPull(frameCount: frameCount, buffers: scratch.buffers) ?? noErr
 			if result != noErr {
 				throw AudioError.coreAudio(code: result)
 			}

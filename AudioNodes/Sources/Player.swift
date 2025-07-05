@@ -94,13 +94,10 @@ public class FilePlayer: Player, @unchecked Sendable {
 
 	public var format: StreamFormat { file.format }
 
-	/// Creates a file player node for a given local audio file; note that remote URL's aren't supported. If any kind of error occurs while attempting to open the file, the constructor returns nil.
+	/// Creates a file player node for a given local audio file; note that remote URL's aren't supported.
 	/// The `format` argument should be the same as the current system output's format which you can obtain from one of the  `System` objects.
-	public init?(url: URL, format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) {
-		guard let file = AsyncAudioFileReader(url: url, format: format) else {
-			return nil
-		}
-		self.file = file
+	public init(url: URL, format: StreamFormat, isEnabled: Bool = false, delegate: PlayerDelegate? = nil) throws {
+		self.file = try AsyncAudioFileReader(url: url, format: format)
 		super.init(isEnabled: isEnabled, delegate: delegate)
 		prepopulateCacheAsync(position: 0)
 	}
@@ -196,15 +193,12 @@ public class QueuePlayer: Player, @unchecked Sendable {
 	/// Indicates whether the player has reached the end of the series of files.
 	public override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
 
-	/// Adds a file player to the queue. Can be done at any time during playback or not. `url` can only point to a local file. Returns `false` if there was an error opening the audio file.
-	public func addFile(url: URL) -> Bool {
-		guard let player = FilePlayer(url: url, format: format, isEnabled: true) else {
-			return false
-		}
+	/// Adds a file player to the queue. Can be done at any time during playback or not. `url` can only point to a local file. Throws an `AudioError` exception if there was an error opening the audio file.
+	public func addFile(url: URL) throws {
+		let player = try FilePlayer(url: url, format: format, isEnabled: true)
 		withAudioLock {
 			items$.append(player)
 		}
-		return true
 	}
 
 
@@ -373,11 +367,13 @@ extension FilePlayer {
 		let coordinator = Coordinator()
 		return try await withCheckedThrowingContinuation { continuation in
 			coordinator.continuation = continuation
-			guard let player = FilePlayer(url: url, format: format, isEnabled: true, delegate: coordinator) else {
-				continuation.resume(throwing: AudioError.fileOpen)
-				return
+			do {
+				let player = try FilePlayer(url: url, format: format, isEnabled: true, delegate: coordinator)
+				driver.connectSource(player)
 			}
-			driver.connectSource(player)
+			catch {
+				continuation.resume(throwing: error)
+			}
 		}
 	}
 }

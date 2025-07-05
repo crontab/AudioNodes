@@ -55,10 +55,10 @@ public final class SineGenerator: Source, StaticDataSource, @unchecked Sendable 
 
 
 	// Static source protocol
-	public func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
+	public func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) throws(Never) {
 		numRead = frameCount
 		_willRender$()
-		return _render(frameCount: frameCount, buffers: buffers)
+		_ = _render(frameCount: frameCount, buffers: buffers)
 	}
 
 

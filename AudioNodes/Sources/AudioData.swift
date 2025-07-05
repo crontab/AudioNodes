@@ -13,7 +13,7 @@ public protocol StaticDataSource {
 	var format: StreamFormat { get }
 	var estimatedDuration: TimeInterval { get }
 	func resetRead()
-	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus // expected to fill silence if numRead < buffer size
+	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) throws // expected to fill silence if numRead < buffer size
 }
 
 
@@ -56,24 +56,16 @@ public final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataS
 	}
 
 
-	public init?(url: URL, format: StreamFormat) {
-		guard let file = AudioFileReader(url: url, format: format) else {
-			return nil
-		}
-		let duration = Int(ceil(file.estimatedDuration))
-		guard duration <= MaxDuration else {
-			return nil
-		}
+	public init(url: URL, format: StreamFormat) throws {
+		let file = try AudioFileReader(url: url, format: format)
+		let duration = min(Int(ceil(file.estimatedDuration)), MaxDuration)
 		self.format = format
 		self.chunkCapacity = Int(ceil(format.sampleRate))
 		var chunks: [SafeAudioBufferList] = []
 		for _ in 0..<duration {
 			let chunk = SafeAudioBufferList(isStereo: format.isStereo, capacity: chunkCapacity)
 			var numRead = 0
-			let result = file.readSync(frameCount: chunk.capacity, buffers: chunk.buffers, numRead: &numRead)
-			if result != noErr {
-				return nil
-			}
+			try file.readSync(frameCount: chunk.capacity, buffers: chunk.buffers, numRead: &numRead)
 			chunks.append(chunk)
 			framesWritten += numRead
 		}
@@ -119,12 +111,11 @@ public final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataS
 
 
 	// StaticDataSource protocol
-	public func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) -> OSStatus {
+	public func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) throws(Never) {
 		numRead = read(frameCount: frameCount, buffers: buffers, offset: 0)
 		if numRead < frameCount {
 			FillSilence(frameCount: frameCount, buffers: buffers, offset: Int(numRead))
 		}
-		return noErr
 	}
 
 

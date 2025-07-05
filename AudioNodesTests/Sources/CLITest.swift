@@ -77,7 +77,7 @@ extension System {
 	func testFile() async {
 		print("---", #function)
 		let progress = PlayerProgress()
-		let player = FilePlayer(url: resUrl("eyes-demo.m4a"), format: outputFormat, delegate: progress)!
+		let player = try! FilePlayer(url: resUrl("eyes-demo.m4a"), format: outputFormat, delegate: progress)
 		connectSource(player)
 		player.isEnabled = true
 		await Sleep(5)
@@ -90,16 +90,16 @@ extension System {
 		let progress = PlayerProgress()
 		let player = QueuePlayer(format: outputFormat, delegate: progress)
 		["deux.m4a", "trois.m4a"].forEach {
-			precondition(player.addFile(url: resUrl($0)))
+			try! player.addFile(url: resUrl($0))
 		}
-		let mem = MemoryPlayer(data: AudioData(url: resUrl("deux.m4a"), format: outputFormat)!)
+		let mem = MemoryPlayer(data: try! AudioData(url: resUrl("deux.m4a"), format: outputFormat))
 		player.addPlayer(mem)
 		connectSource(player)
 		player.isEnabled = true
 		await Sleep(2)
 		player.time = 0.15
 		player.isEnabled = true
-		_ = player.addFile(url: resUrl("eyes-demo.m4a"))
+		try! player.addFile(url: resUrl("eyes-demo.m4a"))
 		await Sleep(3)
 		await smoothDisconnect()
 	}
@@ -109,15 +109,15 @@ extension System {
 		print("---", #function)
 
 		let data = AudioData(durationSeconds: 5, format: outputFormat)
-		let file = AudioFileReader(url: resUrl("eyes-demo.m4a"), format: outputFormat)!
+		let file = try! AudioFileReader(url: resUrl("eyes-demo.m4a"), format: outputFormat)
 		let safeBuffer = SafeAudioBufferList(isStereo: outputFormat.isStereo, capacity: 8192)
 		let buffers = safeBuffer.buffers
 		let frameCount = buffers[0].sampleCount
 
 		while true {
 			var numRead = 0
-			let status = file.readSync(frameCount: frameCount, buffers: buffers, numRead: &numRead)
-			if status != noErr || numRead == 0 {
+			try! file.readSync(frameCount: frameCount, buffers: buffers, numRead: &numRead)
+			if numRead == 0 {
 				break
 			}
 			let result = data.write(frameCount: Int(numRead), buffers: buffers)
@@ -130,8 +130,8 @@ extension System {
 		let player = MemoryPlayer(data: data, delegate: progress)
 		connectSource(player)
 
-		let waveform = await Task.detached {
-			Waveform.fromSource(data, ticksPerSec: 4)
+		let waveform = try! await Task.detached {
+			try Waveform.fromSource(data, ticksPerSec: 4)
 		}.value
 
 		player.reset()
@@ -140,22 +140,17 @@ extension System {
 		await Sleep(3)
 		await smoothDisconnect()
 
-		if let waveform {
-			let s = waveform.toHexString()
-			print(s)
-			let w = Waveform.fromHexString(s)
-			assert(w.ticks == waveform.ticks)
-		}
+		let s = waveform.toHexString()
+		print(s)
+		let w = Waveform.fromHexString(s)
+		assert(w.ticks == waveform.ticks)
 	}
 
 
 	func testNR() async throws {
 		print("---", #function)
 		let url = tempRecUrl("ios.m4a")
-		guard let original = AudioData(url: url, format: inputFormat) else {
-			print("ERROR: couldn't load file", url.path(percentEncoded: false))
-			throw AudioError.fileOpen
-		}
+		let original = try! AudioData(url: url, format: inputFormat)
 
 		let progress = PlayerProgress()
 
@@ -198,10 +193,7 @@ extension System {
 	func levelAnalysis() async throws {
 		for name in ["ios", "ios2", "ios3", "mac"] {
 			let url = tempRecUrl(name + ".m4a")
-			guard let file = AudioData(url: url, format: outputFormat) else {
-				print("ERROR: couldn't load file", url.path(percentEncoded: false))
-				throw AudioError.fileOpen
-			}
+			let file = try! AudioData(url: url, format: outputFormat)
 			let data = AudioData(durationSeconds: Int(ceil(file.estimatedDuration)), format: file.format)
 			_ = try adjustVoiceRecording(source: file, sink: data, diagName: name)
 			data.resetRead()
@@ -213,10 +205,7 @@ extension System {
 	func eqTest() async throws {
 		let name = "ios"
 		let url = tempRecUrl(name + ".m4a")
-		guard let origData = AudioData(url: url, format: outputFormat) else {
-			print("ERROR: couldn't load file", url.path(percentEncoded: false))
-			throw AudioError.fileOpen
-		}
+		let origData = try! AudioData(url: url, format: outputFormat)
 		try await MemoryPlayer.playAsync(origData, driver: self)
 
 		origData.resetRead()
@@ -232,9 +221,7 @@ extension System {
 	func eqTest2() async throws {
 		print("---", #function)
 		let url = tempRecUrl("456" + ".m4a") // resUrl("eyes-demo.m4a")
-		guard let player = FilePlayer(url: url, format: outputFormat) else {
-			throw AudioError.fileOpen
-		}
+		let player = try! FilePlayer(url: url, format: outputFormat)
 		let eq = MultiEQFilter(format: outputFormat, params: [
 			.init(type: .highPass, freq: 135, bw: 2.5),
 			.init(type: .lowPass, freq: 7000, bw: 3),
@@ -265,8 +252,8 @@ extension System {
 			try sine.runOffline(sink: sink, node: VolumeControl(format: fmt, initialVolume: volume))
 //			sink.resetRead()
 //			try await MemoryPlayer.playAsync(sink, driver: self)
-			let waveform = Waveform.fromSource(sink, ticksPerSec: 4)
-			print("Vol=\(volume), level=\(waveform?.ticks.max() ?? 0)")
+			let waveform = try Waveform.fromSource(sink, ticksPerSec: 4)
+			print("Vol=\(volume), level=\(waveform.ticks.max() ?? 0)")
 		}
 
 		for i in 0..<10 {
@@ -275,8 +262,8 @@ extension System {
 	}
 
 
-	func fftTest() async throws {
-		let player = FilePlayer(url: resUrl("eyes-demo.m4a"), format: outputFormat)!
+	func fftTest() async {
+		let player = try! FilePlayer(url: resUrl("eyes-demo.m4a"), format: outputFormat)
 		connectSource(player)
 
 		let delegate = FFTDelegate()
@@ -296,9 +283,7 @@ func adjustVoiceRecordingNR(source: StaticDataSource, sink: StaticDataSink, nr: 
 
 	// Calculate the min and max dB levels within 1/48 chunks
 	source.resetRead()
-	guard let waveform = Waveform.fromSource(source, ticksPerSec: 48) else {
-		return nil
-	}
+	let waveform = try Waveform.fromSource(source, ticksPerSec: 48)
 	guard let range = waveform.range else {
 		return nil
 	}
@@ -344,9 +329,7 @@ func adjustVoiceRecording(source: StaticDataSource, sink: StaticDataSink, diagNa
 
 	// Calculate the min and max dB levels within 1/48 chunks
 	source.resetRead()
-	guard let waveform = Waveform.fromSource(source, ticksPerSec: 48) else {
-		return nil
-	}
+	let waveform = try Waveform.fromSource(source, ticksPerSec: 48)
 	guard let range = waveform.range else {
 		return nil
 	}
@@ -386,7 +369,7 @@ struct CLI {
 //		try await system.levelAnalysis()
 		try await system.eqTest()
 		try await system.eqTest2()
-//		try await system.fftTest()
+		await system.fftTest()
 
 		await Sleep(0.1) // before disconnecting, to avoid clicks
 	}
