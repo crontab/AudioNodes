@@ -34,8 +34,7 @@ public extension StaticDataSource {
 		var totalRead = 0
 		while true {
 			// 1. Render source
-			var numRead = 0
-			try readSync(frameCount: frameCount, buffers: scratch.buffers, numRead: &numRead)
+			let numRead = try readSync(frameCount: frameCount, buffers: scratch.buffers)
 			if numRead < frameCount {
 				FillSilence(frameCount: frameCount, buffers: scratch.buffers, offset: numRead)
 			}

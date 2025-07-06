@@ -93,21 +93,16 @@ public class AudioFileReader: StaticDataSource {
 	}
 
 
-	public final func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) throws {
+	public final func readSync(frameCount: Int, buffers: AudioBufferListPtr) throws -> Int {
 		for i in 0..<buffers.count {
 			buffers[i].sampleCount = frameCount
 		}
-		var _numRead: UInt32 = UInt32(frameCount)
-		let status = ExtAudioFileRead(fileRef, &_numRead, buffers.unsafeMutablePointer)
+		var numRead: UInt32 = UInt32(frameCount)
+		let status = ExtAudioFileRead(fileRef, &numRead, buffers.unsafeMutablePointer)
 		if status != noErr {
-			numRead = 0
-			FillSilence(frameCount: frameCount, buffers: buffers)
 			throw AudioError.fileRead(code: status)
 		}
-		numRead = Int(_numRead)
-		if numRead < frameCount {
-			FillSilence(frameCount: frameCount, buffers: buffers, offset: Int(numRead))
-		}
+		return Int(numRead)
 	}
 }
 

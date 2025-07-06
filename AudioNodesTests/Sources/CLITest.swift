@@ -118,12 +118,11 @@ extension System {
 		let frameCount = buffers[0].sampleCount
 
 		while true {
-			var numRead = 0
-			try! file.readSync(frameCount: frameCount, buffers: buffers, numRead: &numRead)
+			let numRead = try! file.readSync(frameCount: frameCount, buffers: buffers)
 			if numRead == 0 {
 				break
 			}
-			let result = data.write(frameCount: Int(numRead), buffers: buffers)
+			let result = data.write(frameCount: numRead, buffers: buffers)
 			if result < numRead {
 				break
 			}

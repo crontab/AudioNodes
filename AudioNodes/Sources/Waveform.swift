@@ -57,8 +57,7 @@ public struct Waveform: Sendable {
 		var ticks: [Level] = []
 
 		while true {
-			var numRead = 0 // within 1s
-			try source.readSync(frameCount: frameCount, buffers: buffers, numRead: &numRead)
+			let numRead = try source.readSync(frameCount: frameCount, buffers: buffers)
 
 			var offset = 0
 			while offset < numRead {

@@ -54,10 +54,10 @@ public final class SineGenerator: Source, StaticDataSource, @unchecked Sendable 
 
 
 	// Static source protocol
-	public func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) throws(Never) {
-		numRead = frameCount
+	public func readSync(frameCount: Int, buffers: AudioBufferListPtr) throws(Never) -> Int {
 		_willRender$()
 		_render(frameCount: frameCount, buffers: buffers)
+		return frameCount
 	}
 
 

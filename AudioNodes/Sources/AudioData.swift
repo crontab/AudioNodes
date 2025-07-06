@@ -13,7 +13,7 @@ public protocol StaticDataSource {
 	var format: StreamFormat { get }
 	var estimatedDuration: TimeInterval { get }
 	func resetRead()
-	func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) throws // expected to fill silence if numRead < buffer size
+	func readSync(frameCount: Int, buffers: AudioBufferListPtr) throws -> Int // returns samples read
 }
 
 
@@ -60,12 +60,11 @@ public final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataS
 		let file = try AudioFileReader(url: url, format: format)
 		let duration = min(Int(ceil(file.estimatedDuration)), MaxDuration)
 		self.format = format
-		self.chunkCapacity = Int(ceil(format.sampleRate))
+		self.chunkCapacity = Int(ceil(format.sampleRate)) // 1s
 		var chunks: [SafeAudioBufferList] = []
 		for _ in 0..<duration {
 			let chunk = SafeAudioBufferList(isStereo: format.isStereo, capacity: chunkCapacity)
-			var numRead = 0
-			try file.readSync(frameCount: chunk.capacity, buffers: chunk.buffers, numRead: &numRead)
+			let numRead = try file.readSync(frameCount: chunk.capacity, buffers: chunk.buffers)
 			chunks.append(chunk)
 			framesWritten += numRead
 		}
@@ -120,11 +119,8 @@ public final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataS
 
 
 	// StaticDataSource protocol
-	public func readSync(frameCount: Int, buffers: AudioBufferListPtr, numRead: inout Int) throws(Never) {
-		numRead = read(frameCount: frameCount, buffers: buffers, offset: 0)
-		if numRead < frameCount {
-			FillSilence(frameCount: frameCount, buffers: buffers, offset: Int(numRead))
-		}
+	public func readSync(frameCount: Int, buffers: AudioBufferListPtr) throws(Never) -> Int {
+		return read(frameCount: frameCount, buffers: buffers, offset: 0)
 	}
 
 
