@@ -154,18 +154,17 @@ public class Source: Node, @unchecked Sendable {
 
 
 	private func _internalRender2(frameCount: Int, buffers: AudioBufferListPtr) {
-		// 1. Pull input data
+		// 1. Pull input data if source is connected, or fill silence
 		if let source = _config.source {
 			source._internalPull(frameCount: frameCount, buffers: buffers)
+		}
+		else if _isFilter {
+			FillSilence(frameCount: frameCount, buffers: buffers)
 		}
 
 		// 2. Call the abstract render routine for this node
 		if !_config.bypass {
 			_render(frameCount: frameCount, buffers: buffers)
-		}
-		else if _config.source == nil {
-			// Bypassing and no source specified, fill with silence.
-			FillSilence(frameCount: frameCount, buffers: buffers)
 		}
 	}
 
@@ -183,7 +182,6 @@ public class Source: Node, @unchecked Sendable {
 
 	// MARK: - Internal: Connection management
 
-	final var _isSourceConnected: Bool { _config.source != nil }
 	final var _isEnabled: Bool { _config.enabled }
 
 
@@ -199,4 +197,13 @@ public class Source: Node, @unchecked Sendable {
 	private var config$: Config // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
 	private var _config: Config // config used during the rendering cycle
 	private var _prevEnabled: Bool
+
+	fileprivate var _isFilter: Bool { false }
+}
+
+
+// MARK: - Filter
+
+public class Filter: Source, @unchecked Sendable {
+	fileprivate override var _isFilter: Bool { true }
 }

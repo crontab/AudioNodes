@@ -12,7 +12,7 @@ import Accelerate
 // MARK: - VolumeControl
 
 /// Audio node/filter that can control the gain. Supports timed transitions. It's a standalone component that's also used internally by the Mixer node.
-public final class VolumeControl: Source, @unchecked Sendable {
+public final class VolumeControl: Filter, @unchecked Sendable {
 
 	public let busNumber: Int? // for debug diagnostics only
 	public let format: StreamFormat
@@ -126,6 +126,7 @@ public final class VolumeControl: Source, @unchecked Sendable {
 
 /// Mixer node with a predetermined number of buses; each bus is a VolumeControl object.
 public class Mixer: Source, @unchecked Sendable {
+	// Mixer is not derived from Filter since it manages its own sources and knows when to generate silence
 
 	public typealias Bus = VolumeControl
 

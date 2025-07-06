@@ -29,7 +29,7 @@ public final class Stereo: System, @unchecked Sendable {
 
 // MARK: - System
 
-public class System: Source, @unchecked Sendable {
+public class System: Filter, @unchecked Sendable {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
 	public private(set) var input: Input?
@@ -157,9 +157,7 @@ public class System: Source, @unchecked Sendable {
 	// MARK: - Internal
 
 	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
-		if !_isSourceConnected {
-			FillSilence(frameCount: frameCount, buffers: buffers)
-		}
+		// Will generate silence if no source is connected since System is a Filter
 	}
 
 
