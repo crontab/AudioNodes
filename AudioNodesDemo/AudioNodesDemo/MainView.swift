@@ -147,9 +147,7 @@ struct MainView: View {
 			Task {
 				let url = Globals.tempFileURL(ext: "m4a")
 				print("Saving file to: \(url)")
-				if audio.saveRecording(to: url) {
-					showShare = url
-				}
+				try audio.saveRecording(to: url)
 				saving = false
 			}
 		} label: {

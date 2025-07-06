@@ -28,7 +28,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			}
 			else {
 				Task {
-					await stereo.smoothDisconnect()
+					await stereo.disconnectSource()
 					stereo.stop()
 				}
 			}
@@ -127,29 +127,25 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	@Published var trackWaveform: Waveform?
 
 
-	func saveRecording(to url: URL) -> Bool {
-		recordingData.writeToFile(url: url, fileSampleRate: FileSampleRate)
+	func saveRecording(to url: URL) throws {
+		try recordingData.writeToFile(url: url, fileSampleRate: FileSampleRate)
 	}
 
 
-	func loadFile(url: URL) async {
+	func loadFile(url: URL) async throws {
 		if let filePlayer {
 			filePlayer.isEnabled = false
-			await mixer[.filePlayer].smoothDisconnect()
+			await mixer[.filePlayer].disconnectSource()
 		}
-		guard let newPlayer = FilePlayer(url: url, format: stereo.outputFormat, delegate: self) else {
-			return
-		}
+		let newPlayer = try FilePlayer(url: url, format: stereo.outputFormat, delegate: self)
 		filePlayer = newPlayer
 		mixer[.filePlayer].connectSource(newPlayer)
 		playerTimePosition = 0
 		resetInputGain()
 
 		Task {
-			guard let file = AudioFileReader(url: url, format: stereo.outputFormat) else {
-				return
-			}
-			trackWaveform = Waveform.fromSource(file, ticksPerSec: 4)
+			let file = try AudioFileReader(url: url, format: stereo.outputFormat)
+			trackWaveform = try Waveform.fromSource(file, ticksPerSec: 4)
 		}
 	}
 
@@ -161,7 +157,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			isInputEnabled = true
 		}
 		Task {
-			await loadFile(url: fileUrl)
+			try await loadFile(url: fileUrl)
 		}
 	}
 
