@@ -40,7 +40,8 @@ public extension StaticDataSource {
 			}
 
 			// 2. Now pass the data to the chain of nodes connected to this node
-			node?._internalPull(frameCount: frameCount, buffers: scratch.buffers)
+			var filled: Bool = true
+			node?._internalPull(frameCount: frameCount, buffers: scratch.buffers, filled: &filled)
 
 			// 3. Write to the sink
 			let numWritten = try callback(Double(totalRead) / format.sampleRate, numRead, scratch.buffers)

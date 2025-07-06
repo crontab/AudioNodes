@@ -71,7 +71,7 @@ public struct EQParameters: Equatable {
 // MARK: - EQ Filters
 
 /// Internal base class for the single-band EQFilter, and also for internal per-band filters in MultiEQFilter. It doesn't allocate the scratch buffer since we only need one buffer for both single- and multiband EQ nodes.
-public class EQBase: Filter, @unchecked Sendable {
+public class EQBase: Source, @unchecked Sendable {
 
 	fileprivate init(format: StreamFormat, params: EQParameters?, isEnabled: Bool = true) {
 		self.sampleRate = format.sampleRate
@@ -128,7 +128,7 @@ public class EQFilter: EQBase, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		guard let configPtr = _config?.unsafePointer() else { return }
 		let inData = _scratchBuffer.buffers[0].samples
 		let outData = _scratchBuffer.buffers[1].samples
@@ -145,7 +145,7 @@ public class EQFilter: EQBase, @unchecked Sendable {
 
 
 /// Multiband EQ filter with fixed number of bands.
-public class MultiEQFilter: Filter, @unchecked Sendable {
+public class MultiEQFilter: Source, @unchecked Sendable {
 
 	public init(format: StreamFormat, params: [EQParameters?], isEnabled: Bool = true) {
 		// This should be allocated as stereo because we use the two-buffer swapping trick when calculating the EQ's per each channel (see _render() below)
@@ -163,7 +163,7 @@ public class MultiEQFilter: Filter, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		for i in 0..<buffers.count {
 			let audio = buffers[i]
 			// In and out buffers will be flipflopping as we progress with bands, this is for efficiency

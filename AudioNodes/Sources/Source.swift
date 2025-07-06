@@ -117,13 +117,13 @@ public class Source: Node, @unchecked Sendable {
 	// MARK: - Internal: rendering
 
 	/// Abstract overridable function that's called if this node is enabled, not bypassing and is connected to another node as `source`. Subclasses either generate or mutate the sound in this routine.
-	func _render(frameCount: Int, buffers: AudioBufferListPtr) {
+	func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		Abstract()
 	}
 
 
 	// Called from the system output callback
-	final func _internalPull(frameCount: Int, buffers: AudioBufferListPtr) {
+	final func _internalPull(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 
 		// 1. Prepare the config
 		withAudioLock {
@@ -134,11 +134,12 @@ public class Source: Node, @unchecked Sendable {
 		if !_config.enabled {
 			if _prevEnabled {
 				_reset()
-				_internalRender2(frameCount: frameCount, buffers: buffers)
+				_internalRender2(frameCount: frameCount, buffers: buffers, filled: &filled)
 				Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 			}
 			else {
 				FillSilence(frameCount: frameCount, buffers: buffers)
+				filled = true
 				if let callback = _config.disconnectSource {
 					withAudioLock {
 						_config.source = nil
@@ -154,13 +155,13 @@ public class Source: Node, @unchecked Sendable {
 		// 3. Enabled: ramp in if needed
 		else if !_prevEnabled {
 			_prevEnabled = true
-			_internalRender2(frameCount: frameCount, buffers: buffers)
+			_internalRender2(frameCount: frameCount, buffers: buffers, filled: &filled)
 			Smooth(out: false, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 		}
 
 		// 4. Simply render
 		else {
-			_internalRender2(frameCount: frameCount, buffers: buffers)
+			_internalRender2(frameCount: frameCount, buffers: buffers, filled: &filled)
 		}
 
 		// 5. Notify the monitor (tap) node if connected
@@ -170,18 +171,19 @@ public class Source: Node, @unchecked Sendable {
 	}
 
 
-	private func _internalRender2(frameCount: Int, buffers: AudioBufferListPtr) {
+	private func _internalRender2(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		// 1. Pull input data if source is connected, or fill silence
 		if let source = _config.source {
-			source._internalPull(frameCount: frameCount, buffers: buffers)
+			source._internalPull(frameCount: frameCount, buffers: buffers, filled: &filled)
 		}
-		else if _isFilter {
+		else if !filled {
 			FillSilence(frameCount: frameCount, buffers: buffers)
+			filled = true
 		}
 
 		// 2. Call the abstract render routine for this node
 		if !_config.bypass {
-			_render(frameCount: frameCount, buffers: buffers)
+			_render(frameCount: frameCount, buffers: buffers, filled: &filled)
 		}
 	}
 
@@ -215,13 +217,4 @@ public class Source: Node, @unchecked Sendable {
 	private var config$: Config // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock
 	private var _config: Config // config used during the rendering cycle
 	private var _prevEnabled: Bool
-
-	fileprivate var _isFilter: Bool { false }
-}
-
-
-// MARK: - Filter
-
-public class Filter: Source, @unchecked Sendable {
-	fileprivate override var _isFilter: Bool { true }
 }

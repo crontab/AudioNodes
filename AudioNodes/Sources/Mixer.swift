@@ -12,7 +12,7 @@ import Accelerate
 // MARK: - VolumeControl
 
 /// Audio node/filter that can control the gain. Supports timed transitions. It's a standalone component that's also used internally by the Mixer node.
-public final class VolumeControl: Filter, @unchecked Sendable {
+public final class VolumeControl: Source, @unchecked Sendable {
 
 	public let busNumber: Int? // for debug diagnostics only
 	public let format: StreamFormat
@@ -43,7 +43,7 @@ public final class VolumeControl: Filter, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		var current = _previous
 
 		if current != _config.targetVolume {
@@ -154,11 +154,16 @@ public class Mixer: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		var first = true
 		for bus in buses {
 			if first {
-				bus._internalPull(frameCount: frameCount, buffers: buffers)
+				bus._internalPull(frameCount: frameCount, buffers: buffers, filled: &filled)
+				if !filled {
+					// Generate silence so that we can mix other buses that have actual data
+					FillSilence(frameCount: frameCount, buffers: buffers)
+					filled = true
+				}
 			}
 			else {
 				_renderAndMix(node: bus, frameCount: frameCount, buffers: buffers)
@@ -172,7 +177,12 @@ public class Mixer: Source, @unchecked Sendable {
 
 
 	private func _renderAndMix(node: Source, frameCount: Int, buffers: AudioBufferListPtr) {
-		node._internalPull(frameCount: frameCount, buffers: _scratchBuffer.buffers)
+
+		// Secondary buses skip rendering if no data is generated, this is instead of generating silence
+		var filled: Bool = false
+		node._internalPull(frameCount: frameCount, buffers: _scratchBuffer.buffers, filled: &filled)
+		guard filled else { return }
+
 		for i in 0..<buffers.count {
 			let src = _scratchBuffer.buffers[i]
 			let dst = buffers[i]

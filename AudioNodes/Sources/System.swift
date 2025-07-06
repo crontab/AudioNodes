@@ -29,7 +29,7 @@ public final class Stereo: System, @unchecked Sendable {
 
 // MARK: - System
 
-public class System: Filter, @unchecked Sendable {
+public class System: Source, @unchecked Sendable {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
 	public private(set) var input: Input?
@@ -156,8 +156,7 @@ public class System: Filter, @unchecked Sendable {
 
 	// MARK: - Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
-		// Will generate silence if no source is connected since System is a Filter
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 	}
 
 
@@ -279,7 +278,9 @@ private func outputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags
 
 	let obj: System = Bridge(ptr: userData)
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
-	obj._internalPull(frameCount: Int(frameCount), buffers: AudioBufferListPtr(&buffers!.pointee))
+	var filled: Bool = false
+	obj._internalPull(frameCount: Int(frameCount), buffers: AudioBufferListPtr(&buffers!.pointee), filled: &filled)
+	Assert(filled, 51001)
 	return noErr
 }
 

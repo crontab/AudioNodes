@@ -13,7 +13,7 @@ public let STD_NOISE_GATE: Float = -40
 public let STD_NORMAL_PEAK: Float = -12 // for approx. 10-40ms chunks
 
 
-public class NoiseGate: Filter, @unchecked Sendable {
+public class NoiseGate: Source, @unchecked Sendable {
 
 	public init(format: StreamFormat, thresholdDb: Float = STD_NOISE_GATE) {
 		self.format = format
@@ -21,7 +21,7 @@ public class NoiseGate: Filter, @unchecked Sendable {
 	}
 
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		// Max level on all channels
 		let level: Sample = buffers
 			.map { $0.rmsDb() }

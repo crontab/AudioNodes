@@ -37,7 +37,7 @@ public final class SineGenerator: Source, StaticDataSource, @unchecked Sendable 
 	}
 
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr) {
+	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		let samples = buffers[0].samples
 		let increment = thetaInc * Double(_freq)
 		for frame in 0..<frameCount {
@@ -50,13 +50,15 @@ public final class SineGenerator: Source, StaticDataSource, @unchecked Sendable 
 		for i in 1..<buffers.count {
 			Copy(from: buffers[0], to: buffers[i], frameCount: frameCount)
 		}
+		filled = true
 	}
 
 
 	// Static source protocol
 	public func readSync(frameCount: Int, buffers: AudioBufferListPtr) throws(Never) -> Int {
 		_willRender$()
-		_render(frameCount: frameCount, buffers: buffers)
+		var filled: Bool = false
+		_render(frameCount: frameCount, buffers: buffers, filled: &filled)
 		return frameCount
 	}
 
