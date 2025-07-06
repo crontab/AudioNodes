@@ -130,13 +130,11 @@ public class Source: Node, @unchecked Sendable {
 			_willRender$()
 		}
 
-		// 2. Render & monitor
-		_internalRender2(frameCount: frameCount, buffers: buffers)
-
-		// 3. Not enabled: ramp out or return silence
+		// 2. Not enabled: ramp out or return silence
 		if !_config.enabled {
 			if _prevEnabled {
 				_reset()
+				_internalRender2(frameCount: frameCount, buffers: buffers)
 				Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 			}
 			else {
@@ -153,10 +151,16 @@ public class Source: Node, @unchecked Sendable {
 			}
 		}
 
-		// 4. Enabled: ramp in if needed
+		// 3. Enabled: ramp in if needed
 		else if !_prevEnabled {
 			_prevEnabled = true
+			_internalRender2(frameCount: frameCount, buffers: buffers)
 			Smooth(out: false, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
+		}
+
+		// 4. Simply render
+		else {
+			_internalRender2(frameCount: frameCount, buffers: buffers)
 		}
 
 		// 5. Notify the monitor (tap) node if connected
