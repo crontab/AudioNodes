@@ -364,7 +364,7 @@ extension FilePlayer {
 	@MainActor
 	public static func playAsync(_ url: URL, format: StreamFormat, driver: Source) async throws {
 		let coordinator = Coordinator()
-		return try await withCheckedThrowingContinuation { continuation in
+		try await withCheckedThrowingContinuation { continuation in
 			coordinator.continuation = continuation
 			do {
 				let player = try FilePlayer(url: url, format: format, isEnabled: true, delegate: coordinator)
@@ -374,6 +374,7 @@ extension FilePlayer {
 				continuation.resume(throwing: error)
 			}
 		}
+		await driver.disconnectSource()
 	}
 }
 
@@ -383,10 +384,11 @@ extension MemoryPlayer {
 	@MainActor
 	public static func playAsync(_ data: AudioData, driver: Source) async throws {
 		let coordinator = Coordinator()
-		return try await withCheckedThrowingContinuation { continuation in
+		try await withCheckedThrowingContinuation { continuation in
 			coordinator.continuation = continuation
 			let player = MemoryPlayer(data: data, isEnabled: true, delegate: coordinator)
 			driver.connectSource(player)
 		}
+		await driver.disconnectSource()
 	}
 }

@@ -76,19 +76,24 @@ public class Source: Node, @unchecked Sendable {
 		return source
 	}
 
-	/// Disconnects input. See also `smoothDisconnect()`.
-	public func disconnectSource() {
-		withAudioLock {
-			config$.source = nil
-		}
-	}
+	/// Disconnects input smoothly, i.e. ensuring no clicks happen. This function requires the node to be connected to an active rendering chain, i.e. either System or OfflineProcessor.
+	/// NOTE: this is an async function and is not reentrant, meaning for the duration of disconnection nothing else should be done on this node.
+	public func disconnectSource() async {
+		// 1. Check if source is connected
+		guard withAudioLock(execute: { config$.source != nil }) else { return }
 
-	/// Disconnects input smoothly, i.e. ensuring no clicks happen.
-	public func smoothDisconnect() async {
+		// 2. Remember the enabled flag and reset it
 		let wasEnabled = isEnabled
 		isEnabled = false
-		await Sleep(0.02) // this is not precise, what to do?
-		disconnectSource()
+
+		// 3. Post a callback and wait until completed
+		await withCheckedContinuation { cont in
+			withAudioLock {
+				config$.disconnectSource = {
+					cont.resume()
+				}
+			}
+		}
 		isEnabled = wasEnabled
 	}
 
@@ -131,12 +136,20 @@ public class Source: Node, @unchecked Sendable {
 		// 3. Not enabled: ramp out or return silence
 		if !_config.enabled {
 			if _prevEnabled {
-				_prevEnabled = false
 				_reset()
 				Smooth(out: true, frameCount: frameCount, fadeFrameCount: transitionFrames(frameCount), buffers: buffers)
 			}
 			else {
 				FillSilence(frameCount: frameCount, buffers: buffers)
+				if let callback = _config.disconnectSource {
+					withAudioLock {
+						_config.source = nil
+						_config.disconnectSource = nil
+						config$.source = nil
+						config$.disconnectSource = nil
+					}
+					callback()
+				}
 			}
 		}
 
@@ -192,6 +205,7 @@ public class Source: Node, @unchecked Sendable {
 		var source: Source?
 		var enabled: Bool
 		var bypass: Bool = false
+		var disconnectSource: (() -> Void)? // for internal smooth disconnection
 	}
 
 	private var config$: Config // user updates this config, to be copied before the next rendering cycle; can only be accessed within audio lock

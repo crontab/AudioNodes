@@ -48,8 +48,7 @@ extension System {
 		sine.frequency = 480
 		sine.isEnabled = true
 		await Sleep(1)
-		await smoothDisconnect()
-		await Sleep(1)
+		await disconnectSource()
 	}
 
 
@@ -69,8 +68,12 @@ extension System {
 		await Sleep(1)
 		mixer[.one].setVolume(1, duration: 0)
 		mixer[.two].setVolume(0.5, duration: 1)
-		await Sleep(2)
-		await smoothDisconnect()
+		await Sleep(1)
+		await mixer[.two].disconnectSource()
+		await Sleep(1)
+		await mixer[.one].disconnectSource()
+		await Sleep(1)
+		await disconnectSource()
 	}
 
 
@@ -81,7 +84,7 @@ extension System {
 		connectSource(player)
 		player.isEnabled = true
 		await Sleep(5)
-		await smoothDisconnect()
+		await disconnectSource()
 	}
 
 
@@ -101,7 +104,7 @@ extension System {
 		player.isEnabled = true
 		try! player.addFile(url: resUrl("eyes-demo.m4a"))
 		await Sleep(3)
-		await smoothDisconnect()
+		await disconnectSource()
 	}
 
 
@@ -138,7 +141,7 @@ extension System {
 		player.duration = 2.5
 		player.isEnabled = true
 		await Sleep(3)
-		await smoothDisconnect()
+		await disconnectSource()
 
 		let s = waveform.toHexString()
 		print(s)
@@ -178,8 +181,9 @@ extension System {
 			connectSource(player)
 			player.isEnabled = true
 			await Sleep(player.duration)
-			await smoothDisconnect()
 		}
+
+		await disconnectSource()
 	}
 
 
@@ -191,6 +195,7 @@ extension System {
 
 
 	func levelAnalysis() async throws {
+		print("---", #function)
 		for name in ["ios", "ios2", "ios3", "mac"] {
 			let url = tempRecUrl(name + ".m4a")
 			let file = try! AudioData(url: url, format: outputFormat)
@@ -238,7 +243,7 @@ extension System {
 		print("---", #function, "bypassing")
 		eq.isBypassing = true
 		await Sleep(3)
-		await smoothDisconnect()
+		await disconnectSource()
 	}
 
 
@@ -276,7 +281,7 @@ extension System {
 		player.isEnabled = true
 		await Sleep(2)
 		player.isEnabled = false
-		await smoothDisconnect()
+		await disconnectSource()
 	}
 }
 
@@ -374,6 +379,8 @@ struct CLI {
 		try await system.eqTest()
 		try await system.eqTest2()
 		await system.fftTest()
+
+		print("---", "END") // at this point all nodes except System should be disposed from memory
 
 		await Sleep(0.1) // before disconnecting, to avoid clicks
 	}
