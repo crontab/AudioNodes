@@ -193,12 +193,14 @@ public class QueuePlayer: Player, @unchecked Sendable {
 	/// Indicates whether the player has reached the end of the series of files.
 	public override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
 
-	/// Adds a file player to the queue. Can be done at any time during playback or not. `url` can only point to a local file. Throws an `AudioError` exception if there was an error opening the audio file.
-	public func addFile(url: URL) throws {
+	/// Adds a file player to the queue. Can be done at any time during playback or not. `url` can only point to a local file. Throws an `AudioError` exception if there was an error opening the audio file. Returns the duration of the file on success.
+	@discardableResult
+	public func addFile(url: URL) throws -> TimeInterval {
 		let player = try FilePlayer(url: url, format: format, isEnabled: true)
 		withAudioLock {
 			items$.append(player)
 		}
+		return player.duration
 	}
 
 
