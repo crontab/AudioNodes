@@ -154,7 +154,7 @@ public final class AudioData: @unchecked Sendable, StaticDataSource, StaticDataS
 	}
 
 
-	var debugName: String { String(describing: self).components(separatedBy: ".").last! }
+	var debugName: String { String(describing: type(of: self)) }
 
 
 	deinit {
