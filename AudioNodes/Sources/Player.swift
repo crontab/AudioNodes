@@ -23,7 +23,7 @@ public protocol PlayerDelegate: AnyObject {
 // MARK: - Abstract Player
 
 /// Abstract node that defines the most basic player interface. Passed as an argument in `PlayerDelegate` methods; also FilePlayer, QueuePlayer and AudioData conform to this protocol.
-public class Player: Source, @unchecked Sendable {
+open class Player: Source, @unchecked Sendable {
 	public var time: TimeInterval {
 		get { 0 }
 		set { Abstract() }
@@ -76,7 +76,7 @@ public class Player: Source, @unchecked Sendable {
 /// You normally use the `isEnabled` property to start and stop the playback. When disabled, this node returns silence to the upstream nodes.
 /// Once end of file is reached, `isEnable` flips to `false` automatically. You can restart the playback by setting `time` to `0` and enabling the node again.
 /// You can pass a delegate to the constructor of `FilePlayer`; your delegate's overridden methods should assume being executed on `MainActor`.
-public class FilePlayer: Player, @unchecked Sendable {
+open class FilePlayer: Player, @unchecked Sendable {
 
 	/// Get or set the current time within the file. The granularity is approximately 10ms.
 	public override var time: TimeInterval {
@@ -179,7 +179,7 @@ public class FilePlayer: Player, @unchecked Sendable {
 // MARK: - QueuePlayer
 
 /// Meta-player that provides gapless playback of multiple player objects, including file players. This node treats a series of playable objects as a whole, it supports time positioning and `duration` within the whole. Think of Pink Floyd's *Wish You Were Here*, you absolutely *should* provide gapless playback for the entire album. Questions?
-public class QueuePlayer: Player, @unchecked Sendable {
+open class QueuePlayer: Player, @unchecked Sendable {
 
 	/// Gets and sets the time position within the entire series of audio files.
 	public override var time: TimeInterval {
@@ -311,7 +311,7 @@ public class QueuePlayer: Player, @unchecked Sendable {
 
 // MARK: - MemoryPlayer
 
-public class MemoryPlayer: Player, @unchecked Sendable {
+open class MemoryPlayer: Player, @unchecked Sendable {
 
 	public let data: AudioData
 	public override var time: TimeInterval {

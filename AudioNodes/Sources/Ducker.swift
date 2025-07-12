@@ -8,7 +8,7 @@
 import Foundation
 
 
-public class Ducker: Meter, @unchecked Sendable {
+open class Ducker: Meter, @unchecked Sendable {
 
 	public init(format: StreamFormat, isEnabled: Bool = true, delegate: MeterDelegate?, volumeControl: VolumeControl) {
 		self.volumeControl = volumeControl

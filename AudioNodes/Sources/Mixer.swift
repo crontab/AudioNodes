@@ -125,7 +125,7 @@ public final class VolumeControl: Source, @unchecked Sendable {
 // MARK: - Mixer
 
 /// Mixer node with a predetermined number of buses; each bus is a VolumeControl object.
-public class Mixer: Source, @unchecked Sendable {
+open class Mixer: Source, @unchecked Sendable {
 	// Mixer is not derived from Filter since it manages its own sources and knows when to generate silence
 
 	public typealias Bus = VolumeControl
@@ -201,7 +201,7 @@ public class Mixer: Source, @unchecked Sendable {
 // MARK: - EnumMixer
 
 /// Type-safe variant of mixer that takes an `enum` as a basis for accessing the buses. The `enum` should conform to `CaseIterable` and have an `Int` raw value type.
-public class EnumMixer<Enum: RawRepresentable & CaseIterable>: Mixer, @unchecked Sendable where Enum.RawValue == Int {
+open class EnumMixer<Enum: RawRepresentable & CaseIterable>: Mixer, @unchecked Sendable where Enum.RawValue == Int {
 
 	public init(format: StreamFormat) {
 		super.init(format: format, busCount: Enum.allCases.count)

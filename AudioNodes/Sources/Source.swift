@@ -22,7 +22,7 @@ import Foundation
 // NB: names that start with an underscore are executed or accessed on the system audio thread. Names that end with $ should be called only within a semaphore lock, i.e. withAudioLock { }
 
 
-public class Node: @unchecked Sendable {
+open class Node: @unchecked Sendable {
 
 	@inlinable
 	public func withAudioLock<T>(execute: () -> T) -> T {
@@ -47,7 +47,7 @@ public class Node: @unchecked Sendable {
 // MARK: - Source
 
 /// Generic abstract audio node; all other generator and filter types are subclasses of `Node`. All public methods are thread-safe.
-public class Source: Node, @unchecked Sendable {
+open class Source: Node, @unchecked Sendable {
 
 	init(isEnabled: Bool = true) {
 		_prevEnabled = isEnabled

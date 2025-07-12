@@ -15,7 +15,7 @@ public protocol RecorderDelegate: AnyObject {
 }
 
 
-public class Recorder: Monitor, @unchecked Sendable {
+open class Recorder: Monitor, @unchecked Sendable {
 	var capacity: TimeInterval { 0 }
 	var duration: TimeInterval { 0 }
 	var isFull: Bool { true }
@@ -46,7 +46,7 @@ public class Recorder: Monitor, @unchecked Sendable {
 
 // MARK: - FileRecorder
 
-public class FileRecorder: Recorder, @unchecked Sendable {
+open class FileRecorder: Recorder, @unchecked Sendable {
 
 	public override var capacity: TimeInterval { .greatestFiniteMagnitude } // TODO: available disk space?
 
@@ -97,7 +97,7 @@ public class FileRecorder: Recorder, @unchecked Sendable {
 
 // MARK: - MemoryRecorder
 
-public class MemoryRecorder: Recorder, @unchecked Sendable {
+open class MemoryRecorder: Recorder, @unchecked Sendable {
 
 	public let data: AudioData
 

@@ -29,7 +29,7 @@ public final class Stereo: System, @unchecked Sendable {
 
 // MARK: - System
 
-public class System: Source, @unchecked Sendable {
+open class System: Source, @unchecked Sendable {
 
 	/// System input node for recording; nil until `requestInputAuthorization()` is called and permission is granted; stays nil if there are no input devices.
 	public private(set) var input: Input?

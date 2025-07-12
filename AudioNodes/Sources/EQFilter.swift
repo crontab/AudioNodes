@@ -71,7 +71,7 @@ public struct EQParameters: Equatable {
 // MARK: - EQ Filters
 
 /// Internal base class for the single-band EQFilter, and also for internal per-band filters in MultiEQFilter. It doesn't allocate the scratch buffer since we only need one buffer for both single- and multiband EQ nodes.
-public class EQBase: Source, @unchecked Sendable {
+open class EQBase: Source, @unchecked Sendable {
 
 	fileprivate init(format: StreamFormat, params: EQParameters?, isEnabled: Bool = true) {
 		self.sampleRate = format.sampleRate
@@ -117,7 +117,7 @@ public class EQBase: Source, @unchecked Sendable {
 
 
 /// Single-band EQ filter node
-public class EQFilter: EQBase, @unchecked Sendable {
+open class EQFilter: EQBase, @unchecked Sendable {
 
 	public override init(format: StreamFormat, params: EQParameters? = nil, isEnabled: Bool = true) {
 		// This should be allocated as stereo because we use the two-buffer swapping trick when calculating the EQ's per each channel (see _render() below)
@@ -145,7 +145,7 @@ public class EQFilter: EQBase, @unchecked Sendable {
 
 
 /// Multiband EQ filter with fixed number of bands.
-public class MultiEQFilter: Source, @unchecked Sendable {
+open class MultiEQFilter: Source, @unchecked Sendable {
 
 	public init(format: StreamFormat, params: [EQParameters?], isEnabled: Bool = true) {
 		// This should be allocated as stereo because we use the two-buffer swapping trick when calculating the EQ's per each channel (see _render() below)

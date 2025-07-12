@@ -21,7 +21,7 @@ private let BINS_PER_SEC: Float = 25 // update frequency is 25 times per second,
 
 
 /// An observer node that can measure RMS levels; suitable for UI gauges. The values are returned via the `MeterDelegate` method `meterDidUpdateGains`.
-public class Meter: Monitor, @unchecked Sendable {
+open class Meter: Monitor, @unchecked Sendable {
 
 	/// Creates a meter node; the audio format should be known at the time of creation. You can obtain the format from one of the `System` objects.
 	public init(format: StreamFormat, isEnabled: Bool = true, delegate: MeterDelegate?) {

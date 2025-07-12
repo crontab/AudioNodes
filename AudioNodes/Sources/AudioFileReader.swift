@@ -16,7 +16,7 @@ actor AudioFileActor {
 }
 
 
-public class AudioFileReader: StaticDataSource {
+open class AudioFileReader: StaticDataSource {
 
 	public final let url: URL
 	public final let format: StreamFormat
