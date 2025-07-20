@@ -34,7 +34,7 @@ open class Node: @unchecked Sendable {
 	}
 
 	/// Name of the node for debug printing
-	var debugName: String { String(describing: type(of: self)) }
+	public var debugName: String { String(describing: type(of: self)) }
 
 	deinit {
 		DLOG("deinit \(debugName)")
@@ -46,10 +46,10 @@ open class Node: @unchecked Sendable {
 
 // MARK: - Source
 
-/// Generic abstract audio node; all other generator and filter types are subclasses of `Node`. All public methods are thread-safe.
+/// Generic abstract audio node; all other generator and filter types are subclasses of `Source`. All public methods are thread-safe.
 open class Source: Node, @unchecked Sendable {
 
-	init(isEnabled: Bool = true) {
+	public init(isEnabled: Bool = true) {
 		_prevEnabled = isEnabled
 		_config = .init(enabled: isEnabled)
 		config$ = .init(enabled: isEnabled)

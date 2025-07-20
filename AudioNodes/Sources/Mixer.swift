@@ -29,7 +29,7 @@ public final class VolumeControl: Source, @unchecked Sendable {
 	}
 
 
-	override var debugName: String { super.debugName + (busNumber.map { "[\($0)]" } ?? "") }
+	public override var debugName: String { super.debugName + (busNumber.map { "[\($0)]" } ?? "") }
 
 
 	/// Sets the gain, optionally with timed transition. The normal range for the value is 0...1 but values outside of it are also allowed. Any timed request overrides a previous one, but the transition is always smooth.
