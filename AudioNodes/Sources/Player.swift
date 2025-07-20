@@ -80,8 +80,15 @@ open class FilePlayer: Player, @unchecked Sendable {
 
 	/// Get or set the current time within the file. The granularity is approximately 10ms.
 	public override var time: TimeInterval {
-		get { Double(lastKnownPlayhead$) / file.format.sampleRate }
-		set { playhead$ = Int(newValue * file.format.sampleRate).clamped(to: 0...file.estimatedTotalFrames) }
+		get {
+			withAudioLock { Double(lastKnownPlayhead$) / file.format.sampleRate }
+		}
+		set {
+			withAudioLock {
+				lastKnownPlayhead$ = Int(newValue * file.format.sampleRate).clamped(to: 0...file.estimatedTotalFrames)
+				playhead$ = lastKnownPlayhead$
+			}
+		}
 	}
 
 	/// Returns the total duration of the audio file. If the system sampling rate is the same as the file's own then the value is highly accurate; however if it's not then this value may be slightly off due to floating point arithmetic quirks. Most of the time the inaccuracy may be ignored in your code.
