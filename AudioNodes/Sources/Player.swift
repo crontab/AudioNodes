@@ -198,7 +198,7 @@ open class QueuePlayer: Player, @unchecked Sendable {
 	public override var duration: TimeInterval { items$.map { $0.duration }.reduce(0, +) } // no need for a lock
 
 	/// Indicates whether the player has reached the end of the series of files.
-	public override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(lastKnownIndex$) } }
+	public override var isAtEnd: Bool { withAudioLock { !items$.indices.contains(currentIndex$) } }
 
 	/// Adds a file player to the queue. Can be done at any time during playback or not. `url` can only point to a local file. Throws an `AudioError` exception if there was an error opening the audio file. Returns the duration of the file on success.
 	@discardableResult
@@ -250,7 +250,7 @@ open class QueuePlayer: Player, @unchecked Sendable {
 		}
 
 		withAudioLock {
-			lastKnownIndex$ = _currentIndex
+			currentIndex$ = _currentIndex
 		}
 
 		if framesWritten < frameCount {
@@ -270,9 +270,7 @@ open class QueuePlayer: Player, @unchecked Sendable {
 	override func _willRender$() {
 		super._willRender$()
 		_items = items$
-		if let currentIndex = currentIndex$.take() {
-			_currentIndex = currentIndex
-		}
+		_currentIndex = currentIndex$
 	}
 
 
@@ -280,23 +278,24 @@ open class QueuePlayer: Player, @unchecked Sendable {
 
 	private var time$: TimeInterval {
 		get {
-			items$[..<lastKnownIndex$].map { $0.duration }.reduce(0, +)
-				+ (items$.indices.contains(lastKnownIndex$) ? items$[lastKnownIndex$].time : 0)
+			// currentIndex$ can be outside of the number of items, in which case the total duration is returned
+			items$[..<currentIndex$].map { $0.duration }.reduce(0, +)
+				+ (currentIndex$ < items$.count ? items$[currentIndex$].time : 0)
 		}
 		set {
 			var time = newValue
 			for i in items$.indices {
 				let item = items$[i]
 				if time == 0 {
-					// succeeding item, reset to 0
+					// Previous item already set the time, reset this one to 0
 					item.time = 0
 				}
 				else if time >= item.duration {
-					// preceding item, do nothing
+					// Time is outside of this item, do nothing
 					time -= item.duration
 				}
 				else {
-					// an item that should become current
+					// An item that should become current
 					currentIndex$ = i
 					item.time = time
 					time = 0
@@ -310,8 +309,7 @@ open class QueuePlayer: Player, @unchecked Sendable {
 
 	private var items$: [Player] = []
 	private var _items: [Player] = []
-	private var lastKnownIndex$: Int = 0
-	private var currentIndex$: Int?
+	private var currentIndex$: Int = 0
 	private var _currentIndex: Int = 0
 }
 
