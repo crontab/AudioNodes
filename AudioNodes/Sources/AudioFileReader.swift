@@ -12,7 +12,7 @@ import AudioToolbox
 
 @globalActor
 actor AudioFileActor {
-	static var shared = AudioFileActor()
+	static let shared = AudioFileActor()
 }
 
 
