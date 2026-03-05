@@ -9,7 +9,7 @@ import AVFAudio
 import AudioNodes
 
 
-private let FileSampleRate: Double = 48000
+private let FileSampleRate: Double = 44100
 
 private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "m4a")!
 
@@ -23,13 +23,13 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			guard isRunning != oldValue else { return }
 			initializeOutputGraph()
 			if isRunning {
-				stereo.start()
-				stereo.connectSource(mixer)
+				system.start()
+				system.connectSource(mixer)
 			}
 			else {
 				Task {
-					await stereo.disconnectSource()
-					stereo.stop()
+					await system.disconnectSource()
+					system.stop()
 				}
 			}
 		}
@@ -39,7 +39,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	@Published var isOutputEnabled = true {
 		didSet {
 			guard !Globals.isPreview else { return }
-			stereo.isEnabled = isOutputEnabled
+			system.isEnabled = isOutputEnabled
 		}
 	}
 
@@ -50,7 +50,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			guard isInputEnabled != oldValue else { return }
 			if isInputEnabled {
 				Task {
-					if await stereo.requestInputAuthorization(), let input {
+					if await system.requestInputAuthorization(), let input {
 						initializeInputGraph()
 						input.connectMonitor(inputMeter)
 						input.isEnabled = true
@@ -137,14 +137,14 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			filePlayer.isEnabled = false
 			await mixer[.filePlayer].disconnectSource()
 		}
-		let newPlayer = try FilePlayer(url: url, format: stereo.outputFormat, delegate: self)
+		let newPlayer = try FilePlayer(url: url, format: system.outputFormat, delegate: self)
 		filePlayer = newPlayer
 		mixer[.filePlayer].connectSource(newPlayer)
 		playerTimePosition = 0
 		resetInputGain()
 
 		Task {
-			let file = try AudioFileReader(url: url, format: stereo.outputFormat)
+			let file = try AudioFileReader(url: url, format: system.outputFormat)
 			trackWaveform = try Waveform.fromSource(file, ticksPerSec: 4)
 		}
 	}
@@ -269,24 +269,25 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	}
 
 
-	private lazy var stereo = Stereo(sampleRate: 48000)
-	private var input: System.Input? { stereo.input }
+//	private lazy var system = Mono()
+	private lazy var system = Stereo()
+	private var input: System.Input? { system.input }
 
-	private lazy var mixer: EnumMixer<InChannel> = .init(format: stereo.outputFormat)
+	private lazy var mixer: EnumMixer<InChannel> = .init(format: system.outputFormat)
 	private var filePlayer: FilePlayer?
 
-	private lazy var recordingData = AudioData(durationSeconds: 30, format: stereo.inputFormat)
+	private lazy var recordingData = AudioData(durationSeconds: 30, format: system.inputFormat)
 	private lazy var recorder = MemoryRecorder(data: recordingData, delegate: self)
 	private lazy var recordingPlayer = MemoryPlayer(data: recordingData, delegate: self)
 
-	private lazy var outputMeter = Meter(format: stereo.outputFormat, delegate: self)
-	private lazy var inputMeter = FFTMeter(format: stereo.inputFormat, delegate: self)
+	private lazy var outputMeter = Meter(format: system.outputFormat, delegate: self)
+	private lazy var inputMeter = FFTMeter(format: system.inputFormat, delegate: self)
 
 
 	private static func activateAVAudioSession() {
 		guard !Globals.isPreview else { return }
 		try! AVAudioSession.sharedInstance().setActive(false)
-		try! AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowAirPlay, .allowBluetooth])
+		try! AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
 		try! AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
 	}
 }

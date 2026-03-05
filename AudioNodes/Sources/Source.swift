@@ -12,6 +12,8 @@ import Foundation
 	public let sampleRate: Double
 	public let isStereo: Bool
 
+	public var numChannels: Int { isStereo ? 2 : 1 }
+
 	public static var `default`: Self { .init(sampleRate: 48000, isStereo: true) }
 	public static var defaultMono: Self { .init(sampleRate: 48000, isStereo: false) }
 }

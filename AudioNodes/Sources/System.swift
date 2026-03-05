@@ -15,8 +15,8 @@ import AudioToolbox
 /// High quality system audio I/O node. You can create multiple system nodes, e.g. if you want to have stereo and mono I/O separately. Normally you create a graph of nodes and connect it to system output for playing audio; recording is done using the `input` node.
 public final class Stereo: System, @unchecked Sendable {
 
-	public init(sampleRate: Double = 0) {
-		super.init(isStereo: true, sampleRate: sampleRate)
+	public init() {
+		super.init(isStereo: true)
 	}
 
 #if os(iOS)
@@ -32,8 +32,8 @@ public final class Stereo: System, @unchecked Sendable {
 /// Mono system I/O with optional voice processing (echo cancellation, AGC). On iOS uses VoiceProcessingIO when options are used; on macOS uses default output and options are ignored.
 public final class Mono: System, @unchecked Sendable {
 
-	public init(sampleRate: Double = 0, echoCancellation: Bool = true, agc: Bool = false) {
-		super.init(isStereo: false, sampleRate: sampleRate)
+	public init(echoCancellation: Bool = true, agc: Bool = false) {
+		super.init(isStereo: false)
 #if os(iOS)
 		var bypass: UInt32 = echoCancellation ? 0 : 1
 		NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &bypass, SizeOf(bypass)), 51025)
@@ -120,7 +120,7 @@ open class System: Source, @unchecked Sendable {
 
 
 	/// Creates a system I/O node.
-	fileprivate init(isStereo: Bool, sampleRate: Double) {
+	fileprivate init(isStereo: Bool) {
 		var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: Self.subtype(), componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
 		let comp = AudioComponentFindNext(nil, &desc)!
 		var tempUnit: AudioUnit?
@@ -128,16 +128,10 @@ open class System: Source, @unchecked Sendable {
 		unit = tempUnit!
 
 		// Determine optimal output sample rate
-		var setSampleRate: Double = sampleRate
-		if setSampleRate == 0 {
-			var descr = AudioStreamBasicDescription()
-			var descrSize = SizeOf(descr)
-			NotError(AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &descr, &descrSize), 51005)
-			setSampleRate = descr.mSampleRate > 0 ? descr.mSampleRate : Self.hardwareSampleRate(unit)
-		}
-
-		// Limit output sample rate to 48kHz. There may be some crazy external DAC connected to the Mac, haven't tried though
-		// setSampleRate = min(setSampleRate, 48000)
+		var descr = AudioStreamBasicDescription()
+		var descrSize = SizeOf(descr)
+		NotError(AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &descr, &descrSize), 51005)
+		let sampleRate = descr.mSampleRate > 0 ? descr.mSampleRate : Self.hardwareSampleRate(unit)
 
 		// Read hardware format, make sure it's non-empty
 		var inDescr = AudioStreamBasicDescription(), inDescrSize = SizeOf(inDescr)
@@ -151,14 +145,14 @@ open class System: Source, @unchecked Sendable {
 			return
 		}
 
-		outputFormat = .init(sampleRate: setSampleRate, isStereo: isStereo)
-		inputFormat = .init(sampleRate: setSampleRate, isStereo: isStereo)
+		outputFormat = .init(sampleRate: sampleRate, isStereo: isStereo)
+		inputFormat = .init(sampleRate: sampleRate, isStereo: isStereo)
 
 		super.init()
 
 		// Now set our format parameters using the same sampling rate
-		var descr = AudioStreamBasicDescription.canonical(with: .init(sampleRate: setSampleRate, isStereo: isStereo))
-		let descrSize = SizeOf(descr)
+		descr = AudioStreamBasicDescription.canonical(with: .init(sampleRate: sampleRate, isStereo: isStereo))
+		descrSize = SizeOf(descr)
 		NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &descr, descrSize), 51006)
 
 		// Set up the render callback
@@ -220,18 +214,20 @@ open class System: Source, @unchecked Sendable {
 			self.system = system
 
 			// Read hardware format, make sure it's non-empty
-			var descr = AudioStreamBasicDescription(), descrSize = SizeOf(descr)
-			let status = AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 1, &descr, &descrSize)
-			if status != noErr || descr.mChannelsPerFrame == 0 {
+			var inDescr = AudioStreamBasicDescription(), inDescrSize = SizeOf(inDescr)
+			let status = AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 1, &inDescr, &inDescrSize)
+			if status != noErr || inDescr.mChannelsPerFrame == 0 {
 				return nil
 			}
 
 			// Set the "soft" format for audio input to make sure the sample rate is the same as for audio output
-			descr = .canonical(with: system.inputFormat)
-			NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51022)
+			if system.inputFormat.numChannels > inDescr.mChannelsPerFrame {
+				var descr = AudioStreamBasicDescription.canonical(with: system.inputFormat)
+				NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51022)
+			}
 
 			// Render buffer: the input AU will allocate the data buffers, we just supply the buffer headers
-			renderBuffer = AudioBufferList.allocate(maximumBuffers: Int(descr.mChannelsPerFrame))
+			renderBuffer = AudioBufferList.allocate(maximumBuffers: system.inputFormat.numChannels)
 
 			super.init()
 
