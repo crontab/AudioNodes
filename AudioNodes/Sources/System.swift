@@ -27,6 +27,29 @@ public final class Stereo: System, @unchecked Sendable {
 }
 
 
+// MARK: - Mono
+
+/// Mono system I/O with optional voice processing (echo cancellation, AGC). On iOS uses VoiceProcessingIO when options are used; on macOS uses default output and options are ignored.
+public final class Mono: System, @unchecked Sendable {
+
+	public init(sampleRate: Double = 0, echoCancellation: Bool = true, agc: Bool = false) {
+		super.init(isStereo: false, sampleRate: sampleRate)
+#if os(iOS)
+		var bypass: UInt32 = echoCancellation ? 0 : 1
+		NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &bypass, SizeOf(bypass)), 51025)
+		var enableAGC: UInt32 = agc ? 1 : 0
+		NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 1, &enableAGC, SizeOf(enableAGC)), 51026)
+#endif
+	}
+
+#if os(iOS)
+	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_VoiceProcessingIO }
+#else
+	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_DefaultOutput }
+#endif
+}
+
+
 // MARK: - System
 
 open class System: Source, @unchecked Sendable {
@@ -97,7 +120,7 @@ open class System: Source, @unchecked Sendable {
 
 
 	/// Creates a system I/O node.
-	fileprivate init(isStereo: Bool = true, sampleRate: Double = 0) {
+	fileprivate init(isStereo: Bool, sampleRate: Double) {
 		var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: Self.subtype(), componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
 		let comp = AudioComponentFindNext(nil, &desc)!
 		var tempUnit: AudioUnit?
