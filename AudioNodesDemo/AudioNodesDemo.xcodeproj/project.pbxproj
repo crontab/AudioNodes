@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3628CB172C70F90200FD125E /* FileDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628CB162C70F90200FD125E /* FileDialogs.swift */; };
+		36292CB52F5CE539001FF39A /* AudioNodes in Frameworks */ = {isa = PBXBuildFile; productRef = 36292CB42F5CE539001FF39A /* AudioNodes */; };
 		3632443E2C695B4B0021C8BE /* FontEx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632443D2C695B4B0021C8BE /* FontEx.swift */; };
 		363244602C6961280021C8BE /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3632445F2C6961280021C8BE /* Globals.swift */; };
 		363478B62C692BD6004BB3B8 /* AudioNodesDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */; };
@@ -63,6 +64,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				36E1BA232EAF49A9009C6056 /* AudioNodes in Frameworks */,
+				36292CB52F5CE539001FF39A /* AudioNodes in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -170,7 +172,7 @@
 			);
 			mainGroup = 363478A92C692BD6004BB3B8;
 			packageReferences = (
-				36E1BA212EAF49A9009C6056 /* XCLocalSwiftPackageReference "../../AudioNodes" */,
+				36292CB32F5CE539001FF39A /* XCLocalSwiftPackageReference "../../AudioNodes" */,
 			);
 			productRefGroup = 363478B32C692BD6004BB3B8 /* Products */;
 			projectDirPath = "";
@@ -433,13 +435,17 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		36E1BA212EAF49A9009C6056 /* XCLocalSwiftPackageReference "../../AudioNodes" */ = {
+		36292CB32F5CE539001FF39A /* XCLocalSwiftPackageReference "../../AudioNodes" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../AudioNodes;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		36292CB42F5CE539001FF39A /* AudioNodes */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AudioNodes;
+		};
 		36E1BA222EAF49A9009C6056 /* AudioNodes */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AudioNodes;
