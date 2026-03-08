@@ -33,7 +33,7 @@ struct FFTLevelsView: View {
 
 	private struct Bar: Shape {
 
-		nonisolated func path(in rect: CGRect) -> Path {
+		func path(in rect: CGRect) -> Path {
 			var path = Path()
 			path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
 			path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
@@ -49,9 +49,11 @@ private extension Comparable {
 
 
 #Preview {
-	FFTLevelsView(levels: [0.2, 0.1, 0.5, 0.3, 0, 0.4, 0.25], height: 16)
-		.tint(.orange)
-		.background(.gray)
-		.padding()
-	Spacer()
+	VStack {
+		FFTLevelsView(levels: [0.2, 0.1, 0.5, 0.3, 0, 0.4, 0.25], height: 16)
+			.tint(.orange)
+			.padding()
+		Spacer()
+	}
+	.frame(maxWidth: .infinity)
 }

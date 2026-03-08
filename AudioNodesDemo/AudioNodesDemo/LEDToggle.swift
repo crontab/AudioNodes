@@ -14,23 +14,21 @@ struct LEDToggle: View {
 	var body: some View {
 		let isOn = isOn && enabled
 		let colors: [Color] = isOn ?
-			[.yellow, .orange.opacity(0.4)] :
-		[.gray.opacity(0.2), .gray.opacity(0.3)]
+			[.yellow, .orange] :
+			[.gray.opacity(0.2), .gray.opacity(0.5)]
 		ZStack {
 			Circle()
-				.fill(.stdBackground)
+				.fill(.background.secondary)
 				.fill(RadialGradient(colors: colors, center: .center, startRadius: 0, endRadius: size / 1.5))
 			Circle()
-				.stroke(.black, lineWidth: 1)
-				.shadow(color: .white.opacity(isOn ? 0.5 : 0.3), radius: shadow / 1.5, x: shadow, y: shadow)
+				.stroke(.quaternary, lineWidth: enabled ? 0.5 : 0)
+				.shadow(color: .white.opacity(isOn ? 1 : 0.3), radius: shadow / 1.5, x: shadow, y: shadow)
 				.shadow(color: .black.opacity(0.3), radius: shadow / 1.5, x: -shadow, y: -shadow)
 		}
 		.animation(.easeInOut(duration: 0.05), value: isOn)
 		.frame(width: size, height: size)
-		.clipShape(Circle())
-		.shadow(radius: 3)
+		.shadow(color: .gray.opacity(0.5), radius: 3, x: 1, y: 1)
 		.disabled(!enabled)
-		.opacity(enabled ? 1 : 0.3)
 		.onTapGesture {
 			if enabled {
 				self.isOn.toggle()
@@ -57,7 +55,7 @@ struct LEDToggle: View {
 				LEDToggle(isOn: $three, enabled: false)
 			}
 			.frame(maxWidth: .infinity, maxHeight: .infinity)
-			.background(.stdBackground)
+			.background(.background.secondary)
 		}
 	}
 

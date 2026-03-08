@@ -27,8 +27,8 @@ struct SectionView<Content: View, Title: View>: View {
 				RoundedRectangle(cornerRadius: 12)
 					.inset(by: 0.5)
 					.fill(.clear)
-					.stroke(LinearGradient(colors: [.white.opacity(0.3), .white.opacity(0.2)], startPoint: .top, endPoint: .bottom), lineWidth: 1)
-					.padding(.vertical, 8)
+					.stroke(LinearGradient(colors: [.secondary.opacity(0.3), .secondary.opacity(0.2)], startPoint: .top, endPoint: .bottom), lineWidth: 1)
+					.padding(.vertical, 6)
 					.mask {
 						ZStack { // inverted mask trick
 							Rectangle()
@@ -43,7 +43,6 @@ struct SectionView<Content: View, Title: View>: View {
 	}
 
 
-	@ViewBuilder
 	private func titleBox(background: Color) -> some View {
 		title()
 			.padding(.horizontal, 6)

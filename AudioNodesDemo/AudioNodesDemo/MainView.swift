@@ -30,7 +30,7 @@ struct MainView: View {
 		.frame(maxWidth: .infinity)
 		.padding(16)
 		.tint(.orange)
-		.background { Color.stdBackground.ignoresSafeArea() }
+		.backgroundStyle(.background.secondary)
 
 		.onAppear {
 			guard !Globals.isPreview else { return }
@@ -43,11 +43,11 @@ struct MainView: View {
 		HStack(spacing: 16) {
 			Image(.kokopelli)
 			VStack(alignment: .leading) {
-				Text("Audio".uppercased())
-				Text("Nodes".uppercased())
+				Text("Audio Nodes".uppercased())
 				Text(System.version ?? "")
 					.font(.smallText)
 					.foregroundColor(.secondary)
+				Spacer()
 			}
 			.font(.header)
 
@@ -75,12 +75,29 @@ struct MainView: View {
 				toggle(isOn: $audio.isOutputEnabled, left: "Output", enabled: audio.isRunning)
 					.padding(.bottom, 8)
 				Group {
-					ProgressView(value: audio.outputGainLeft)
-					ProgressView(value: audio.outputGainRight)
+					let left = Double(audio.outputGainLeft), right = Double(audio.outputGainRight)
+					levelView(value: left)
+						.animation(.linear(duration: 0.1), value: left)
+					levelView(value: right)
+						.animation(.linear(duration: 0.1), value: right)
 				}
-				.tint(.blue)
 			}
 		}
+	}
+
+
+	private func levelView(value: Double) -> some View {
+		GeometryReader { proxy in
+			ZStack(alignment: .leading) {
+				Capsule()
+					.fill(.background.quaternary)
+					.stroke(.background.tertiary)
+				Capsule()
+					.fill(.tint)
+					.frame(width: proxy.size.width * max(0, min(1, value)))
+			}
+		}
+		.frame(height: 8)
 	}
 
 
@@ -128,6 +145,7 @@ struct MainView: View {
 					.frame(width: 36, height: 36)
 				}
 				.buttonStyle(.bordered)
+				.focusEffectDisabled()
 			}
 		}
 	}
@@ -193,6 +211,7 @@ struct MainView: View {
 			.frame(width: 24)
 		}
 		.buttonStyle(.bordered)
+		.focusEffectDisabled()
 	}
 
 

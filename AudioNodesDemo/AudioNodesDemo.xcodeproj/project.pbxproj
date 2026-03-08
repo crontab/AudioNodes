@@ -49,7 +49,7 @@
 		364310072C69C909000CF9F3 /* MainAudioState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAudioState.swift; sourceTree = "<group>"; };
 		364310112C6A09C1000CF9F3 /* SectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionView.swift; sourceTree = "<group>"; };
 		3657F73B2C752599000F99ED /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
-		36806EBA2C77995400D4566F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		36806EBA2C77995400D4566F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		369CCACB2C6B52BC002F462B /* deux.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = deux.m4a; sourceTree = "<group>"; };
 		369CCACC2C6B52BC002F462B /* trois.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = trois.m4a; sourceTree = "<group>"; };
 		36AE9C7A2E09F59900D41C44 /* FFTLevelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFTLevelsView.swift; sourceTree = "<group>"; };
@@ -90,7 +90,6 @@
 		363478B42C692BD6004BB3B8 /* AudioNodesDemo */ = {
 			isa = PBXGroup;
 			children = (
-				36806EBA2C77995400D4566F /* Info.plist */,
 				3632445F2C6961280021C8BE /* Globals.swift */,
 				3632443D2C695B4B0021C8BE /* FontEx.swift */,
 				36CADFA62C6F46D0004E0373 /* LEDToggle.swift */,
@@ -102,6 +101,7 @@
 				363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */,
 				363478C32C692BF4004BB3B8 /* Resources */,
 				363478B92C692BD7004BB3B8 /* Assets.xcassets */,
+				36806EBA2C77995400D4566F /* Info.plist */,
 			);
 			path = AudioNodesDemo;
 			sourceTree = "<group>";
