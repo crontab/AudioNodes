@@ -132,6 +132,9 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	}
 
 
+	var isOutputStereo: Bool { system.outputFormat.isStereo }
+
+
 	@Published var playerTimePosition: TimeInterval = 0
 	@Published var recorderPosition: TimeInterval = 0
 

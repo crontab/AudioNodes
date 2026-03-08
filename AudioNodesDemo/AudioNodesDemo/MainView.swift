@@ -81,8 +81,10 @@ struct MainView: View {
 					let left = Double(audio.outputGainLeft), right = Double(audio.outputGainRight)
 					levelView(value: left)
 						.animation(.linear(duration: 0.1), value: left)
-					levelView(value: right)
-						.animation(.linear(duration: 0.1), value: right)
+					if audio.isOutputStereo {
+						levelView(value: right)
+							.animation(.linear(duration: 0.1), value: right)
+					}
 				}
 			}
 		}
