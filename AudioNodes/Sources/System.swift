@@ -34,19 +34,13 @@ public final class Mono: System, @unchecked Sendable {
 
 	public init(echoCancellation: Bool = true, agc: Bool = false) {
 		super.init(isStereo: false)
-#if os(iOS)
 		var bypass: UInt32 = echoCancellation ? 0 : 1
 		NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &bypass, SizeOf(bypass)), 51025)
 		var enableAGC: UInt32 = agc ? 1 : 0
 		NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 1, &enableAGC, SizeOf(enableAGC)), 51026)
-#endif
 	}
 
-#if os(iOS)
 	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_VoiceProcessingIO }
-#else
-	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_DefaultOutput }
-#endif
 }
 
 
@@ -165,6 +159,7 @@ open class System: Source, @unchecked Sendable {
 
 	deinit {
 		stop()
+		AudioComponentInstanceDispose(unit)
 	}
 
 
@@ -204,7 +199,7 @@ open class System: Source, @unchecked Sendable {
 
 		fileprivate final var renderBuffer: AudioBufferListPtr
 
-		// The AudioUnit reference is passed via the initializer; note that in this module it's shared across input and output nodes for the same IO type, i.e. there's one unit instance for Input and Output.
+		// On iOS and also macOS Mono mode `unit` is shared with the output unit; for macOS Stereo it's a dedicated input-only AUHAL unit
 		fileprivate final var unit: AudioUnit
 		private weak var system: System?
 
@@ -212,6 +207,29 @@ open class System: Source, @unchecked Sendable {
 		fileprivate init?(system: System) {
 			self.unit = system.unit
 			self.system = system
+
+#if os(macOS)
+			// On macOS, use a dedicated input-only AUHAL unit. This avoids the device conflict that
+			// arises from sharing a single unit for both input and output when they use different devices.
+			var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: kAudioUnitSubType_HALOutput, componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
+			let comp = AudioComponentFindNext(nil, &desc)!
+			var tempUnit: AudioUnit?
+			NotError(AudioComponentInstanceNew(comp, &tempUnit), 51029)
+			unit = tempUnit!
+
+			// Input-only: disable output bus, enable input bus
+			var zero: UInt32 = 0, one: UInt32 = 1
+			NotError(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, 0, &zero, SizeOf(zero)), 51030)
+			NotError(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, 1, &one, SizeOf(one)), 51031)
+
+			// Point to the system default input device
+			var deviceID = AudioDeviceID(kAudioObjectUnknown)
+			var propSize = SizeOf(deviceID)
+			var addr = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDefaultInputDevice, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+			AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &propSize, &deviceID)
+			guard deviceID != AudioDeviceID(kAudioObjectUnknown) else { return nil }
+			NotError(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &deviceID, SizeOf(deviceID)), 51032)
+#endif
 
 			// Read hardware format, make sure it's non-empty
 			var inDescr = AudioStreamBasicDescription(), inDescrSize = SizeOf(inDescr)
@@ -235,12 +253,22 @@ open class System: Source, @unchecked Sendable {
 			var callback = AURenderCallbackStruct(inputProc: inputRenderCallback, inputProcRefCon: Bridge(obj: self))
 			NotError(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Output, 1, &callback, SizeOf(callback)), 51008)
 
+#if os(macOS)
+			// Initialize now; isEnabled will just start/stop the already-initialized unit
+			NotError(AudioUnitInitialize(unit), 51033)
+#endif
+
 			// Input is disabled by default, so set the internal var:
 			super.isEnabled = false
 		}
 
 
 		deinit {
+#if os(macOS)
+			AudioOutputUnitStop(unit)
+			AudioUnitUninitialize(unit)
+			AudioComponentInstanceDispose(unit)
+#endif
 			renderBuffer.unsafeMutablePointer.deallocate()
 		}
 
@@ -250,19 +278,20 @@ open class System: Source, @unchecked Sendable {
 				guard oldValue != isEnabled else {
 					return
 				}
-#if os(iOS)
-				// The following is a workaround for an iOS issue when a AU can not be enabled or disabled after initializiation; therefore we stop/deinitialize it before the operation and then restore the state
-				let prevRunning = system?.isRunning ?? false
-				if prevRunning {
-					system?.stop()
+#if os(macOS)
+				if isEnabled {
+					NotError(AudioOutputUnitStart(unit), 51034)
 				}
-#endif
+				else {
+					AudioOutputUnitStop(unit)
+				}
+#else
+				// EnableIO cannot be changed on an initialized unit; stop/deinitialize first, then restore
+				let prevRunning = system?.isRunning ?? false
+				if prevRunning { system?.stop() }
 				var enable: UInt32 = isEnabled ? 1 : 0
 				NotError(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, 1, &enable, SizeOf(enable)), 51021)
-#if os(iOS)
-				if prevRunning {
-					system?.start()
-				}
+				if prevRunning { system?.start() }
 #endif
 			}
 		}
