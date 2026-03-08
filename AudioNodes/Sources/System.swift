@@ -53,7 +53,6 @@ open class System: Source, @unchecked Sendable {
 
 	/// System stream format.
 	public final let outputFormat: StreamFormat
-	public final let inputFormat: StreamFormat
 
 	/// Indicates whether the audio system is enabled and is rendering data.
 	public var isRunning: Bool {
@@ -133,14 +132,12 @@ open class System: Source, @unchecked Sendable {
 		if status != noErr || inDescr.mChannelsPerFrame == 0 {
 			print("AudioNodes: audio is not available on this system")
 			outputFormat = .default
-			inputFormat = .default
 			super.init()
 			isEnabled = false
 			return
 		}
 
 		outputFormat = .init(sampleRate: sampleRate, isStereo: isStereo)
-		inputFormat = .init(sampleRate: sampleRate, isStereo: isStereo)
 
 		super.init()
 
@@ -153,7 +150,7 @@ open class System: Source, @unchecked Sendable {
 		var callback = AURenderCallbackStruct(inputProc: outputRenderCallback, inputProcRefCon: Bridge(obj: self))
 		NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, SizeOf(callback)), 51004)
 
-		DLOG("\(debugName).streamFormat: sampleRate=\(outputFormat.sampleRate), isStereo=\(outputFormat.isStereo)")
+		DLOG("\(debugName).outputFormat: sampleRate=\(outputFormat.sampleRate), \(outputFormat.isStereo ? "stereo" : "mono")")
 	}
 
 
@@ -197,6 +194,9 @@ open class System: Source, @unchecked Sendable {
 
 		// Input is a special node that's not a real source; it can only be monitored by connecting a Monitor object, possibly chained
 
+		/// System stream format.
+		public final let inputFormat: StreamFormat
+
 		fileprivate final var renderBuffer: AudioBufferListPtr
 
 		// On iOS and also macOS Mono mode `unit` is shared with the output unit; for macOS Stereo it's a dedicated input-only AUHAL unit
@@ -238,14 +238,15 @@ open class System: Source, @unchecked Sendable {
 				return nil
 			}
 
-			// Set the "soft" format for audio input to make sure the sample rate is the same as for audio output
-			if system.inputFormat.numChannels > inDescr.mChannelsPerFrame {
-				var descr = AudioStreamBasicDescription.canonical(with: system.inputFormat)
-				NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51022)
-			}
+			// Set input format based on the unit's desired format, then set it on the unit's output bus (this is mainly for macOS)
+			// NOTE: iOS returns 0 in inDescr.mSampleRate whereas macOS returns something that can be different from the output sampling rate.
+			let sampleRate = inDescr.mSampleRate == 0 ? system.outputFormat.sampleRate : inDescr.mSampleRate
+			inputFormat = .init(sampleRate: sampleRate, isStereo: inDescr.mChannelsPerFrame > 1)
+			var descr = AudioStreamBasicDescription.canonical(with: inputFormat)
+			NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51022)
 
 			// Render buffer: the input AU will allocate the data buffers, we just supply the buffer headers
-			renderBuffer = AudioBufferList.allocate(maximumBuffers: system.inputFormat.numChannels)
+			renderBuffer = AudioBufferList.allocate(maximumBuffers: inputFormat.numChannels)
 
 			super.init()
 
@@ -260,6 +261,8 @@ open class System: Source, @unchecked Sendable {
 
 			// Input is disabled by default, so set the internal var:
 			super.isEnabled = false
+
+			DLOG("\(debugName).inputFormat: sampleRate=\(inputFormat.sampleRate), \(inputFormat.isStereo ? "stereo" : "mono")")
 		}
 
 
@@ -348,12 +351,6 @@ private func inputRenderCallback(userData: UnsafeMutableRawPointer, actionFlags:
 	}
 
 	NotError(AudioUnitRender(obj.unit, actionFlags, timeStamp, busNumber, frameCount, renderBuffer.unsafeMutablePointer), 51024)
-
-	// Check the first two samples in the right channel to see if it's silence; duplicate the left channel if so.
-	// Apparently this happens on iPhones but not on the Mac or even the iPhone simulator.
-	if renderBuffer.count == 2, renderBuffer[1].samples[0] == 0, renderBuffer[1].samples[1] == 0 {
-		memcpy(renderBuffer[1].mData, renderBuffer[0].mData, Int(renderBuffer[0].mDataByteSize))
-	}
 
 	// let time = UnsafeMutablePointer<AudioTimeStamp>(mutating: timeStamp)
 	obj._internalMonitor(frameCount: Int(frameCount), buffers: renderBuffer)
