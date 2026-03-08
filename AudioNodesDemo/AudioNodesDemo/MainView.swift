@@ -12,7 +12,7 @@ private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "
 
 
 struct MainView: View {
-	@StateObject private var audio: MainAudioState = .init()
+	@StateObject private var audio = MainAudioState()
 
 
 	var body: some View {
@@ -129,20 +129,11 @@ struct MainView: View {
 			// TODO: Wave form
 			HStack {
 				Button {
-					audio.isPlaying = !audio.isPlaying
+					audio.isFilePlaying.toggle()
 				} label: {
-					Group {
-						if audio.isPlaying {
-							Image(systemName: "square.fill")
-						}
-						else {
-							Image(systemName: "triangle.fill")
-								.rotationEffect(.degrees(90))
-								.offset(x: 1)
-						}
-					}
-					.font(.system(size: 18))
-					.frame(width: 36, height: 36)
+					Image(systemName: audio.isFilePlaying ? "square.fill" : "play.fill")
+						.font(.system(size: 18))
+						.frame(width: 36, height: 36)
 				}
 				.buttonStyle(.bordered)
 				.focusEffectDisabled()

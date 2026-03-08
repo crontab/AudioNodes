@@ -24,9 +24,12 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			initializeOutputGraph()
 			if isRunning {
 				system.start()
-				system.connectSource(mixer)
+				if let mixer {
+					system.connectSource(mixer)
+				}
 			}
 			else {
+				isInputEnabled = false
 				Task {
 					await system.disconnectSource()
 					system.stop()
@@ -66,37 +69,35 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	}
 
 
-	@Published var isPlaying: Bool = false {
-		didSet {
+	var isFilePlaying: Bool {
+		get {
+			filePlayer?.isEnabled ?? false
+		}
+		set {
 			guard !Globals.isPreview else { return }
-			guard isPlaying != oldValue else { return }
-			guard let filePlayer else {
-				isPlaying = false
-				return
-			}
-			if isPlaying, filePlayer.isAtEnd {
+			guard let filePlayer else { return }
+			if newValue, filePlayer.isAtEnd {
 				filePlayer.time = 0
 			}
-			filePlayer.isEnabled = isPlaying
+			filePlayer.isEnabled = newValue
 		}
 	}
 
 
-	@Published var isRecording: Bool = false {
-		didSet {
+	var isRecording: Bool {
+		get {
+			recorder != nil
+		}
+		set {
 			guard !Globals.isPreview else { return }
-			guard isRecording != oldValue else { return }
 			guard let input, let inputMeter else { return }
-			if isRecording {
+			if newValue {
 				isRecordingPlaying = false
 				recorderPosition = 0
 				if let recorder = try? FileRecorder(url: tempFileURL, format: input.inputFormat, fileSampleRate: FileSampleRate, capacity: 30 * 60, isEnabled: true, delegate: self) {
 					print("Recording to \(tempFileURL)")
 					self.recorder = recorder
 					inputMeter.connectMonitor(recorder)
-				}
-				else {
-					isRecording = false
 				}
 			}
 			else {
@@ -107,18 +108,18 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	}
 
 
-	@Published var isRecordingPlaying: Bool = false {
-		didSet {
+	var isRecordingPlaying: Bool {
+		get {
+			recordingPlayer != nil
+		}
+		set {
 			guard !Globals.isPreview else { return }
-			guard isRecordingPlaying != oldValue else { return }
-			if isRecordingPlaying {
+			guard let mixer else { return }
+			if newValue {
 				isRecording = false
 				if let player = try? FilePlayer(url: tempFileURL, format: system.outputFormat, isEnabled: true, delegate: self) {
 					self.recordingPlayer = player
 					mixer[.recordingPlayer].connectSource(player)
-				}
-				else {
-					isRecordingPlaying = false
 				}
 			}
 			else {
@@ -143,6 +144,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 
 
 	func loadFile(url: URL) async throws {
+		guard let mixer else { return }
 		if let filePlayer {
 			filePlayer.isEnabled = false
 			await mixer[.filePlayer].disconnectSource()
@@ -184,10 +186,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 
 
 	func playerDidEndPlaying(_ player: Player) {
-		if player === self.filePlayer {
-			self.isPlaying = false
-		}
-		else if player === self.recordingPlayer {
+		if player === self.recordingPlayer {
 			self.isRecordingPlaying = false
 		}
 	}
@@ -212,7 +211,8 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	// MARK: - Meter delegate
 
 	private let declineAmount: Float = 0.05
-	private var prevOutLeft: Float = 0, prevOutRight: Float = 0
+	private var prevOutLeft: Float = 0
+	private var prevOutRight: Float = 0
 
 	func meterDidUpdateGains(_ meter: Meter, left: Float, right: Float) {
 		let newLeft = normalizeDB(left)
@@ -265,8 +265,11 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	private func initializeOutputGraph() {
 		guard !isOutputInitialized else { return }
 		isOutputInitialized = true
-//		mixer[.recordingPlayer].connectSource(recordingPlayer)
+		let mixer = EnumMixer<InChannel>(format: system.outputFormat)
+		let outputMeter = Meter(format: system.outputFormat, delegate: self)
 		mixer.connectMonitor(outputMeter)
+		self.mixer = mixer
+		self.outputMeter = outputMeter
 	}
 
 
@@ -281,18 +284,18 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	}
 
 
-//	private lazy var system = Mono()
-	private lazy var system = Stereo()
+//	private var system = Mono()
+	private let system = Stereo()
 	private var input: System.Input? { system.input }
 
-	private lazy var mixer: EnumMixer<InChannel> = .init(format: system.outputFormat)
+	private var mixer: EnumMixer<InChannel>?
 	private var filePlayer: FilePlayer?
 
 	private let tempFileURL = Globals.tempFileURL(ext: "m4a")
 	private var recorder: FileRecorder?
 	private var recordingPlayer: FilePlayer?
 
-	private lazy var outputMeter = Meter(format: system.outputFormat, delegate: self)
+	private var outputMeter: Meter?
 	private var inputMeter: FFTMeter?
 
 
