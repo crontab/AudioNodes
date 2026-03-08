@@ -286,8 +286,10 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 
 	private static func activateAVAudioSession() {
 		guard !Globals.isPreview else { return }
+#if os(iOS)
 		try! AVAudioSession.sharedInstance().setActive(false)
 		try! AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
 		try! AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+#endif
 	}
 }

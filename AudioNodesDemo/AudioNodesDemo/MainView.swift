@@ -14,8 +14,6 @@ private let fileUrl = Bundle.main.url(forResource: "eyes-demo", withExtension: "
 struct MainView: View {
 	@StateObject private var audio: MainAudioState = .init()
 
-	@State private var showShare: URL?
-
 
 	var body: some View {
 		VStack(spacing: 24) {
@@ -37,10 +35,6 @@ struct MainView: View {
 		.onAppear {
 			guard !Globals.isPreview else { return }
 			audio.isRunning = true
-		}
-
-		.sheet(item: $showShare) { item in
-			ShareTempFileView(url: item)
 		}
 	}
 
