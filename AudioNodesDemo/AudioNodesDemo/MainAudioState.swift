@@ -86,15 +86,22 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 		didSet {
 			guard !Globals.isPreview else { return }
 			guard isRecording != oldValue else { return }
+			guard let input, let inputMeter else { return }
 			if isRecording {
 				isRecordingPlaying = false
-				recorder?.isEnabled = false
-				recordingData?.clear()
 				recorderPosition = 0
-				recorder?.isEnabled = true
+				if let recorder = try? FileRecorder(url: tempFileURL, format: input.inputFormat, fileSampleRate: FileSampleRate, capacity: 30 * 60, isEnabled: true, delegate: self) {
+					print("Recording to \(tempFileURL)")
+					self.recorder = recorder
+					inputMeter.connectMonitor(recorder)
+				}
+				else {
+					isRecording = false
+				}
 			}
 			else {
-				recorder?.isEnabled = false
+				inputMeter.disconnectMonitor()
+				recorder = nil
 			}
 		}
 	}
@@ -106,11 +113,20 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			guard isRecordingPlaying != oldValue else { return }
 			if isRecordingPlaying {
 				isRecording = false
-				if recordingPlayer?.isAtEnd ?? false {
-					recordingPlayer?.reset()
+				if let player = try? FilePlayer(url: tempFileURL, format: system.outputFormat, isEnabled: true, delegate: self) {
+					self.recordingPlayer = player
+					mixer[.recordingPlayer].connectSource(player)
+				}
+				else {
+					isRecordingPlaying = false
 				}
 			}
-			recordingPlayer?.isEnabled = isRecordingPlaying
+			else {
+				recordingPlayer = nil
+				Task {
+					await mixer[.recordingPlayer].disconnectSource()
+				}
+			}
 		}
 	}
 
@@ -124,11 +140,6 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	@Published var inputLevels: [Float] = []
 
 	@Published var trackWaveform: Waveform?
-
-
-	func saveRecording(to url: URL) throws {
-		try recordingData?.writeToFile(url: url, fileSampleRate: FileSampleRate)
-	}
 
 
 	func loadFile(url: URL) async throws {
@@ -264,16 +275,8 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	private func initializeInputGraph(input: System.Input) {
 		guard !isInputInitialized else { return }
 		isInputInitialized = true
-		let recordingData = AudioData(durationSeconds: 30, format: input.inputFormat)
-		let recorder = MemoryRecorder(data: recordingData, delegate: self)
-		let recordingPlayer = MemoryPlayer(data: recordingData, delegate: self)
 		let inputMeter = FFTMeter(format: input.inputFormat, delegate: self)
-		inputMeter.connectMonitor(recorder)
 		input.connectMonitor(inputMeter)
-
-		self.recordingData = recordingData
-		self.recorder = recorder
-		self.recordingPlayer = recordingPlayer
 		self.inputMeter = inputMeter
 	}
 
@@ -285,9 +288,9 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	private lazy var mixer: EnumMixer<InChannel> = .init(format: system.outputFormat)
 	private var filePlayer: FilePlayer?
 
-	private var recordingData: AudioData?
-	private var recorder: MemoryRecorder?
-	private var recordingPlayer: MemoryPlayer?
+	private let tempFileURL = Globals.tempFileURL(ext: "m4a")
+	private var recorder: FileRecorder?
+	private var recordingPlayer: FilePlayer?
 
 	private lazy var outputMeter = Meter(format: system.outputFormat, delegate: self)
 	private var inputMeter: FFTMeter?

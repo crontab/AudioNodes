@@ -16,15 +16,18 @@ struct MainView: View {
 
 
 	var body: some View {
-		VStack(spacing: 24) {
+		VStack(spacing: 0) {
 			top()
+				.padding(.bottom)
 			Divider()
 
 			Spacer()
 
 			inOut()
 			Divider()
+
 			bottom()
+				.padding(.vertical)
 		}
 		.font(.text)
 		.frame(maxWidth: .infinity)
@@ -40,14 +43,14 @@ struct MainView: View {
 
 
 	private func top() -> some View {
-		HStack(spacing: 16) {
-			Image(.kokopelli)
+		HStack(spacing: 12) {
+			Image(.kokopelli).resizable().scaledToFit()
+				.frame(height: 52)
 			VStack(alignment: .leading) {
 				Text("Audio Nodes".uppercased())
 				Text(System.version ?? "")
 					.font(.smallText)
 					.foregroundColor(.secondary)
-				Spacer()
 			}
 			.font(.header)
 
@@ -113,9 +116,6 @@ struct MainView: View {
 					Spacer()
 					playButton()
 				}
-				HStack {
-					saveButton()
-				}
 				let levels = audio.inputLevels.count > 7 ? audio.inputLevels[1...7] : audio.inputLevels[...]
 				FFTLevelsView(levels: Array(levels), height: 16)
 					.tint(.orange)
@@ -153,28 +153,12 @@ struct MainView: View {
 
 	@State private var saving: Bool = false
 
-	private func saveButton() -> some View {
-		audioButton("Save") {
-			saving = true
-			Task {
-				let url = Globals.tempFileURL(ext: "m4a")
-				print("Saving file to: \(url)")
-				try audio.saveRecording(to: url)
-				saving = false
-			}
-		} label: {
-			Image(systemName: "square.and.arrow.down.fill")
-		}
-		.tint(.secondary)
-		.disabled(audio.recorderPosition == 0 || saving)
-	}
-
 
 	private func recButton() -> some View {
 		audioButton("Rec") {
-			audio.isRecording = !audio.isRecording
+			audio.isRecording.toggle()
 		} label: {
-			Image(systemName: "circle.fill")
+			Image(systemName: audio.isRecording ? "square.fill" : "circle.fill")
 		}
 		.tint(audio.isRecording ? .red : .secondary)
 		.disabled(!audio.isInputEnabled)
@@ -183,19 +167,12 @@ struct MainView: View {
 
 	private func playButton() -> some View {
 		audioButton("Play") {
-			audio.isRecordingPlaying = !audio.isRecordingPlaying
+			audio.isRecordingPlaying.toggle()
 		} label: {
-			if audio.isRecordingPlaying {
-				Image(systemName: "square.fill")
-			}
-			else {
-				Image(systemName: "triangle.fill")
-					.rotationEffect(.degrees(90))
-					.offset(x: 0.5)
-			}
+			Image(systemName: audio.isRecordingPlaying ? "square.fill" : "play.fill")
 		}
 		.tint(audio.isRecordingPlaying ? .blue : .secondary)
-		.disabled(!audio.isInputEnabled || audio.recorderPosition == 0)
+		.disabled(!audio.isInputEnabled || audio.isRecording)
 	}
 
 

@@ -240,6 +240,7 @@ open class System: Source, @unchecked Sendable {
 
 			// Set input format based on the unit's desired format, then set it on the unit's output bus (this is mainly for macOS)
 			// NOTE: iOS returns 0 in inDescr.mSampleRate whereas macOS returns something that can be different from the output sampling rate.
+			// Also NOTE: on macOS input and output sampling rates may end up being different. e.g. 48 vs 44.1
 			let sampleRate = inDescr.mSampleRate == 0 ? system.outputFormat.sampleRate : inDescr.mSampleRate
 			inputFormat = .init(sampleRate: sampleRate, isStereo: inDescr.mChannelsPerFrame > 1)
 			var descr = AudioStreamBasicDescription.canonical(with: inputFormat)
