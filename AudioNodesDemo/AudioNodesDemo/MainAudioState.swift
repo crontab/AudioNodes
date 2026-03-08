@@ -29,7 +29,6 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 				}
 			}
 			else {
-				isInputEnabled = false
 				Task {
 					await system.disconnectSource()
 					system.stop()
@@ -294,7 +293,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	private var mixer: EnumMixer<InChannel>?
 	private var filePlayer: FilePlayer?
 
-	private let tempFileURL = Globals.tempFileURL(ext: "m4a")
+	private let tempFileURL = URL.temporaryDirectory.appendingPathComponent("recording").appendingPathExtension("m4a")
 	private var recorder: FileRecorder?
 	private var recordingPlayer: FilePlayer?
 
