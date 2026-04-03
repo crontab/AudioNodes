@@ -43,7 +43,7 @@ public final class VolumeControl: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
+	public override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		var current = _previous
 
 		if current != _config.targetVolume {
@@ -154,7 +154,7 @@ open class Mixer: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
+	open override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		var first = true
 		for bus in buses {
 			if first {

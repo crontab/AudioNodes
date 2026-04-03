@@ -128,7 +128,7 @@ open class EQFilter: EQBase, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
+	open override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		guard let configPtr = _config?.unsafePointer() else { return }
 		let inData = _scratchBuffer.buffers[0].samples
 		let outData = _scratchBuffer.buffers[1].samples
@@ -163,7 +163,7 @@ open class MultiEQFilter: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
+	open override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		for i in 0..<buffers.count {
 			let audio = buffers[i]
 			// In and out buffers will be flipflopping as we progress with bands, this is for efficiency

@@ -171,7 +171,7 @@ open class System: Source, @unchecked Sendable {
 
 	// MARK: - Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
+	open override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 	}
 
 
@@ -321,7 +321,7 @@ open class System: Source, @unchecked Sendable {
 		}
 
 
-		override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
+		public override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 			// do nothing, the data is received from the system
 		}
 	}

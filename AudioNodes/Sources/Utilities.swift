@@ -201,11 +201,11 @@ func Smooth(out: Bool, frameCount: Int, fadeFrameCount: Int, buffers: AudioBuffe
 
 extension AudioBuffer {
 
-	func rmsDb() -> Sample {
+	public func rmsDb() -> Sample {
 		rmsDb(frameCount: sampleCount, offset: 0)
 	}
 
-	func rmsDb(frameCount: Int, offset: Int = 0) -> Sample {
+	public func rmsDb(frameCount: Int, offset: Int = 0) -> Sample {
 		var rms: Sample = 0
 		vDSP_rmsqv(samples + offset, 1, &rms, UInt(min(frameCount, sampleCount - offset)))
 		return (rms == 0) ? MIN_LEVEL_DB : max(MIN_LEVEL_DB, 20 * log10(rms))

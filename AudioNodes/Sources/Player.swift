@@ -55,7 +55,7 @@ open class Player: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
+	open override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		_read(frameCount: frameCount, buffers: buffers, offset: 0)
 		filled = true
 	}

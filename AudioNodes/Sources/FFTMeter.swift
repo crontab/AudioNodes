@@ -43,7 +43,7 @@ public final class FFTMeter: Monitor, @unchecked Sendable {
 
 	// Internal
 
-	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
+	public override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		_ = _circular.enqueue(buffers, toCopy: frameCount)
 
 		while _circular.dequeue(_scratch.buffers, toCopy: _scratch.capacity) {

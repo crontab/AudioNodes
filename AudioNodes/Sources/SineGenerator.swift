@@ -37,7 +37,7 @@ public final class SineGenerator: Source, StaticDataSource, @unchecked Sendable 
 	}
 
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
+	public override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		let samples = buffers[0].samples
 		let increment = thetaInc * Double(_freq)
 		for frame in 0..<frameCount {

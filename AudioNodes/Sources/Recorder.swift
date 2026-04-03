@@ -69,7 +69,7 @@ open class FileRecorder: Recorder, @unchecked Sendable {
 
 	// Internal
 
-	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
+	open override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		let toWrite = min(frameCount, frameCapacity - _playhead)
 		if toWrite > 0, file.writeAsync(frameCount: toWrite, buffers: buffers) == noErr {
 			_playhead += toWrite
@@ -112,7 +112,7 @@ open class MemoryRecorder: Recorder, @unchecked Sendable {
 	}
 
 
-	override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
+	open override func _monitor(frameCount: Int, buffers: AudioBufferListPtr) {
 		let result = data.write(frameCount: frameCount, buffers: buffers)
 		if result < frameCount {
 			isEnabled = false

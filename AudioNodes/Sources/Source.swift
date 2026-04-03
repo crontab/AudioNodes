@@ -119,7 +119,7 @@ open class Source: Node, @unchecked Sendable {
 	// MARK: - Internal: rendering
 
 	/// Abstract overridable function that's called if this node is enabled, not bypassing and is connected to another node as `source`. Subclasses either generate or mutate the sound in this routine.
-	func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
+	open func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		Abstract()
 	}
 

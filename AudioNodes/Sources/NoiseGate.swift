@@ -21,7 +21,7 @@ open class NoiseGate: Source, @unchecked Sendable {
 	}
 
 
-	override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
+	open override func _render(frameCount: Int, buffers: AudioBufferListPtr, filled: inout Bool) {
 		// Max level on all channels
 		let level: Sample = buffers
 			.map { $0.rmsDb() }
