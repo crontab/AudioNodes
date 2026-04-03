@@ -31,7 +31,7 @@ public final class SineGenerator: Source, StaticDataSource, @unchecked Sendable 
 	}
 
 
-	override func _willRender$() {
+	public override func _willRender$() {
 		super._willRender$()
 		_freq = freq$
 	}

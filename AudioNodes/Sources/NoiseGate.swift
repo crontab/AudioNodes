@@ -55,7 +55,7 @@ open class NoiseGate: Source, @unchecked Sendable {
 	}
 
 
-	override func _reset() {
+	open override func _reset() {
 		super._reset()
 		_prevOpen = nil
 	}

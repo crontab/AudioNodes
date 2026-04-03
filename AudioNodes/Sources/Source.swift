@@ -190,12 +190,12 @@ open class Source: Node, @unchecked Sendable {
 	}
 
 
-	func _willRender$() {
+	open func _willRender$() {
 		_config = config$
 	}
 
 
-	func _reset() {
+	open func _reset() {
 		_prevEnabled = _config.enabled
 		_config.source?._reset()
 	}

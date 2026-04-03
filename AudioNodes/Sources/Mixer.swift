@@ -12,7 +12,7 @@ import Accelerate
 // MARK: - VolumeControl
 
 /// Audio node/filter that can control the gain. Supports timed transitions. It's a standalone component that's also used internally by the Mixer node.
-public final class VolumeControl: Source, @unchecked Sendable {
+public class VolumeControl: Source, @unchecked Sendable {
 
 	public let busNumber: Int? // for debug diagnostics only
 	public let format: StreamFormat
@@ -92,7 +92,7 @@ public final class VolumeControl: Source, @unchecked Sendable {
 	}
 
 
-	override func _willRender$() {
+	public override func _willRender$() {
 		super._willRender$()
 		if let config = config$.take() {
 			_config = config
@@ -100,7 +100,7 @@ public final class VolumeControl: Source, @unchecked Sendable {
 	}
 
 
-	override func _reset() {
+	public override func _reset() {
 		super._reset()
 		_previous = _config.targetVolume
 		_config.transitionFrames = 0

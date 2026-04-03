@@ -157,7 +157,7 @@ open class FilePlayer: Player, @unchecked Sendable {
 	}
 
 
-	override func _willRender$() {
+	open override func _willRender$() {
 		super._willRender$()
 		if let playhead = playhead$.take() {
 			_playhead = playhead
@@ -267,7 +267,7 @@ open class QueuePlayer: Player, @unchecked Sendable {
 	}
 
 
-	override func _willRender$() {
+	open override func _willRender$() {
 		super._willRender$()
 		_items = items$
 		_currentIndex = currentIndex$

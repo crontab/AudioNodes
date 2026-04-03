@@ -66,7 +66,7 @@ open class Monitor: Node, @unchecked Sendable {
 	}
 
 
-	func _willRender$() {
+	open func _willRender$() {
 		_config = config$
 	}
 

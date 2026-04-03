@@ -95,12 +95,12 @@ open class EQBase: Source, @unchecked Sendable {
 
 	// Internal
 
-	override func _willRender$() {
+	open override func _willRender$() {
 		super._willRender$()
 		_config = config$
 	}
 
-	override func _reset() {
+	open override func _reset() {
 		super._reset()
 		for i in _processors.indices {
 			_processors[i].reset()
@@ -188,14 +188,14 @@ open class MultiEQFilter: Source, @unchecked Sendable {
 		}
 	}
 
-	override func _willRender$() {
+	open override func _willRender$() {
 		super._willRender$()
 		items.forEach {
 			$0._willRender$()
 		}
 	}
 
-	override func _reset() {
+	open override func _reset() {
 		super._reset()
 		items.forEach {
 			$0._reset()
