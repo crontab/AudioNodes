@@ -213,7 +213,7 @@ extension AudioBuffer {
 }
 
 
-extension AudioBuffer {
+public extension AudioBuffer {
 
 	@inlinable
 	var samples: UnsafeMutablePointer<Sample> {
@@ -299,6 +299,7 @@ public class CircularAudioBuffer: SafeAudioBufferList {
 
 
 	public func enqueue(_ from: AudioBufferListPtr, toCopy: Int) -> Bool {
+		precondition(toCopy >= 0)
 		guard toCopy + count < capacity else {
 			return false
 		}
@@ -314,10 +315,12 @@ public class CircularAudioBuffer: SafeAudioBufferList {
 	}
 
 
-	public func dequeue(_ to: AudioBufferListPtr, toCopy: Int) -> Bool {
+	public func peek(_ to: AudioBufferListPtr, toCopy: Int) -> Bool {
+		precondition(toCopy >= 0)
 		guard toCopy <= count else {
 			return false
 		}
+		var tail = tail
 		let copied = Copy(from: buffers, to: to, fromOffset: tail, toOffset: 0, framesMax: head > tail ? head - tail : capacity - tail)
 		tail += copied
 		if tail == capacity {
@@ -327,5 +330,23 @@ public class CircularAudioBuffer: SafeAudioBufferList {
 			}
 		}
 		return true
+	}
+
+
+	public func advance(by: Int) -> Bool {
+		precondition(by >= 0)
+		guard by <= count else {
+			return false
+		}
+		tail = (tail + by) % capacity
+		return true
+	}
+
+
+	public func dequeue(_ to: AudioBufferListPtr, toCopy: Int) -> Bool {
+		defer {
+			advance(by: toCopy)
+		}
+		return peek(to, toCopy: toCopy)
 	}
 }
