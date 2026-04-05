@@ -19,6 +19,7 @@
 		364643C32C6D16B30038F237 /* deux.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 369CCACB2C6B52BC002F462B /* deux.m4a */; };
 		364643C42C6D16BA0038F237 /* trois.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 369CCACC2C6B52BC002F462B /* trois.m4a */; };
 		3657F73C2C752599000F99ED /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3657F73B2C752599000F99ED /* WaveformView.swift */; };
+		36A0626C2F82C12A00A0D7C0 /* VoiceFileRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A0626B2F82C12A00A0D7C0 /* VoiceFileRecorder.swift */; };
 		36AE9C7B2E09F59900D41C44 /* FFTLevelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36AE9C7A2E09F59900D41C44 /* FFTLevelsView.swift */; };
 		36CADFA72C6F46D0004E0373 /* LEDToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36CADFA62C6F46D0004E0373 /* LEDToggle.swift */; };
 		36E1BA232EAF49A9009C6056 /* AudioNodes in Frameworks */ = {isa = PBXBuildFile; productRef = 36E1BA222EAF49A9009C6056 /* AudioNodes */; };
@@ -52,6 +53,7 @@
 		36806EBA2C77995400D4566F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		369CCACB2C6B52BC002F462B /* deux.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = deux.m4a; sourceTree = "<group>"; };
 		369CCACC2C6B52BC002F462B /* trois.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = trois.m4a; sourceTree = "<group>"; };
+		36A0626B2F82C12A00A0D7C0 /* VoiceFileRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceFileRecorder.swift; sourceTree = "<group>"; };
 		36AE9C7A2E09F59900D41C44 /* FFTLevelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFTLevelsView.swift; sourceTree = "<group>"; };
 		36CADFA62C6F46D0004E0373 /* LEDToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LEDToggle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -96,6 +98,7 @@
 				36AE9C7A2E09F59900D41C44 /* FFTLevelsView.swift */,
 				364310112C6A09C1000CF9F3 /* SectionView.swift */,
 				3657F73B2C752599000F99ED /* WaveformView.swift */,
+				36A0626B2F82C12A00A0D7C0 /* VoiceFileRecorder.swift */,
 				364310072C69C909000CF9F3 /* MainAudioState.swift */,
 				363478B72C692BD6004BB3B8 /* MainView.swift */,
 				363478B52C692BD6004BB3B8 /* AudioNodesDemoApp.swift */,
@@ -200,6 +203,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3657F73C2C752599000F99ED /* WaveformView.swift in Sources */,
+				36A0626C2F82C12A00A0D7C0 /* VoiceFileRecorder.swift in Sources */,
 				364310122C6A09C1000CF9F3 /* SectionView.swift in Sources */,
 				363478B82C692BD6004BB3B8 /* MainView.swift in Sources */,
 				364310082C69C909000CF9F3 /* MainAudioState.swift in Sources */,
@@ -363,11 +367,12 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.melikyan.AudioNodesDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -399,11 +404,12 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.melikyan.AudioNodesDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";

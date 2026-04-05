@@ -93,7 +93,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			if newValue {
 				isRecordingPlaying = false
 				recorderPosition = 0
-				if let recorder = try? FileRecorder(url: tempFileURL, format: input.inputFormat, fileSampleRate: FileSampleRate, capacity: 30 * 60, isEnabled: true, delegate: self) {
+				if let recorder = try? VoiceFileRecorder(url: tempFileURL, format: input.inputFormat, capacity: 30 * 60, isEnabled: true, delegate: self) {
 					print("Recording to \(tempFileURL)")
 					self.recorder = recorder
 					inputMeter.connectMonitor(recorder)
