@@ -7,7 +7,7 @@
 
 import Foundation
 import Accelerate
-import CoreAudio
+@_exported import CoreAudio
 
 
 public typealias Sample = Float32
