@@ -211,10 +211,10 @@ open class MultiEQFilter: Source, @unchecked Sendable {
 
 // MARK: - Internal structures
 
-private struct EQConfig {
+public struct EQConfig {
 	var b0, b1, b2, a1, a2: Float
 
-	mutating func unsafePointer() -> UnsafeMutablePointer<Float> {
+	public mutating func unsafePointer() -> UnsafeMutablePointer<Float> {
 		withUnsafeMutablePointer(to: &b0) { $0 }
 	}
 
@@ -226,7 +226,7 @@ private struct EQConfig {
 		b0 = 0; b1 = 0; b2 = 0; a1 = 0; a2 = 0
 	}
 
-	init(_ params: EQParameters, sampleRate: Double) {
+	public init(_ params: EQParameters, sampleRate: Double) {
 		let omega = 2 * Float.pi * params.freq / Float(sampleRate)
 		let cs = cos(omega)
 		let alpha = sin(omega) / (2 * params.q)
@@ -282,13 +282,15 @@ private struct EQConfig {
 }
 
 
-private struct EQProcessor {
+public struct EQProcessor {
 	var k0: Sample = 0
 	var k1: Sample = 0
 	var k2: Sample = 0
 	var k3: Sample = 0
 
-	mutating func process(config: UnsafePointer<Float>, frameCount: Int, inData: UnsafeMutablePointer<Sample>, outData: UnsafeMutablePointer<Sample>) {
+	public init() {}
+
+	public mutating func process(config: UnsafePointer<Float>, frameCount: Int, inData: UnsafeMutablePointer<Sample>, outData: UnsafeMutablePointer<Sample>) {
 		inData[0] = k0
 		inData[1] = k1
 		outData[0] = k2
@@ -300,7 +302,7 @@ private struct EQProcessor {
 		k3 = outData[frameCount + 1]
 	}
 
-	mutating func reset() {
+	public mutating func reset() {
 		k0 = 0
 		k1 = 0
 		k2 = 0
