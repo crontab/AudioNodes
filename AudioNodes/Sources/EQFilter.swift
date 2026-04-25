@@ -30,6 +30,7 @@ public let LogFreqWidth = LogFreqRange.width
 public let BWRange: ClosedRange<Float> = 0.05...5
 public let GainRange: ClosedRange<Float> = -96...24
 public let QRange: ClosedRange<Float> = 0.18...28.8
+public let QButterworth: Float = 1 / sqrt(2)
 
 
 public struct EQParameters: Equatable {
@@ -40,6 +41,13 @@ public struct EQParameters: Equatable {
 		self.q = QRange.lowerBound
 		self.gain = gain
 		self.bw = bw
+	}
+
+	public init(type: EQType, freq: Float, q: Float = QButterworth, gain: Float = 0) {
+		self.type = type
+		self.freq = freq
+		self.q = q.clamped(to: QRange)
+		self.gain = gain
 	}
 
 	public var type: EQType
