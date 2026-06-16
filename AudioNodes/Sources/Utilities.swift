@@ -139,7 +139,7 @@ func FactorFromGain(_ gain: Float32) -> Float32 {
 }
 
 
-func FillSilence(frameCount: Int, buffers: AudioBufferListPtr, offset: Int = 0) {
+public func FillSilence(frameCount: Int, buffers: AudioBufferListPtr, offset: Int = 0) {
 	precondition(offset <= frameCount)
 	if offset < frameCount {
 		for i in 0..<buffers.count {
@@ -156,7 +156,7 @@ func Copy(from: AudioBuffer, to: AudioBuffer, frameCount: Int) {
 
 
 @discardableResult
-func Copy(from: AudioBufferListPtr, to: AudioBufferListPtr, fromOffset: Int, toOffset: Int, framesMax: Int) -> Int {
+public func Copy(from: AudioBufferListPtr, to: AudioBufferListPtr, fromOffset: Int, toOffset: Int, framesMax: Int) -> Int {
 	// The reason framesMax exists and is enforced is that buffers may be longer than the available data in buffers coming from the system, for some unknown reason.
 	let toCopy = min(from[0].sampleCount - fromOffset, to[0].sampleCount - toOffset, framesMax)
 	precondition(from.count > 0 && to.count > 0)
