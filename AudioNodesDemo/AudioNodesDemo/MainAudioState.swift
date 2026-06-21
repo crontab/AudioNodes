@@ -24,6 +24,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			initializeOutputGraph()
 			if isRunning {
 				system.start()
+				inputSystem.start()
 				if let mixer {
 					system.connectSource(mixer)
 				}
@@ -31,6 +32,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			else {
 				Task {
 					await system.disconnectSource()
+					inputSystem.stop()
 					system.stop()
 				}
 			}
@@ -52,7 +54,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 			guard isInputEnabled != oldValue else { return }
 			if isInputEnabled {
 				Task {
-					if await system.requestInputAuthorization(), let input {
+					if await inputSystem.requestInputAuthorization(), let input {
 						initializeInputGraph(input: input)
 						input.isEnabled = true
 					}
@@ -286,9 +288,10 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	}
 
 
-//	private var system = Mono()
+	private var mono = Mono()
 	private let system = Stereo()
-	private var input: System.Input? { system.input }
+	private var inputSystem: System { mono }
+	private var input: System.Input? { mono.input }
 
 	private var mixer: EnumMixer<InChannel>?
 	private var filePlayer: FilePlayer?

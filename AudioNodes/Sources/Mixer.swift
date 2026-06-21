@@ -172,6 +172,7 @@ open class Mixer: Source, @unchecked Sendable {
 		}
 		if first { // no connections on buses
 			FillSilence(frameCount: frameCount, buffers: buffers)
+			filled = true
 		}
 	}
 

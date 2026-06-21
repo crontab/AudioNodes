@@ -77,12 +77,14 @@ open class System: Source, @unchecked Sendable {
 
 	/// Stops the audio system. To avoid clicks, disconnect the input using `smoothDisconnect() async` prior to calling `stop()`.
 	public func stop() {
-		if let input, input.ownsUnit {
-			AudioOutputUnitStop(input.unit)
+		if isRunning {
+			if let input, input.ownsUnit {
+				AudioOutputUnitStop(input.unit)
+			}
+			AudioOutputUnitStop(unit)
+			AudioUnitUninitialize(unit)
+			DLOG("\(debugName).stop()")
 		}
-		AudioOutputUnitStop(unit)
-		AudioUnitUninitialize(unit)
-		DLOG("\(debugName).stop()")
 	}
 
 
