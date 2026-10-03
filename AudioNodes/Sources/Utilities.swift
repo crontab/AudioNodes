@@ -333,6 +333,7 @@ public class CircularAudioBuffer: SafeAudioBufferList {
 	}
 
 
+	@discardableResult
 	public func advance(by: Int) -> Bool {
 		precondition(by >= 0)
 		guard by <= count else {
