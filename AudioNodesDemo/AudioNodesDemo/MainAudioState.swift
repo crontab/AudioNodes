@@ -159,7 +159,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 		playerTimePosition = 0
 		resetInputGain()
 
-		Task {
+		_ = Task {
 			let file = try AudioFileReader(url: url, format: system.outputFormat)
 			trackWaveform = try Waveform.fromSource(file, ticksPerSec: 4)
 		}
@@ -172,7 +172,7 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 		if System.inputAuthorized {
 			isInputEnabled = true
 		}
-		Task {
+		_ = Task {
 			try await loadFile(url: fileUrl)
 		}
 	}
