@@ -77,6 +77,9 @@ struct MainView: View {
 			VStack(alignment: .trailing, spacing: 16) {
 				toggle(isOn: $audio.isOutputEnabled, left: "Output", enabled: audio.isRunning)
 					.padding(.bottom, 8)
+				if audio.isOutputStereo {
+					Slider(value: $audio.outputPan, in: -1...1, step: 0.1)
+				}
 				Group {
 					let left = Double(audio.outputGainLeft), right = Double(audio.outputGainRight)
 					levelView(value: left)

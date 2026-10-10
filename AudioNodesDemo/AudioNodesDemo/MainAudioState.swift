@@ -142,6 +142,12 @@ final class MainAudioState: ObservableObject, PlayerDelegate, MeterDelegate, FFT
 	@Published var outputGainLeft: Float = 0
 	@Published var outputGainRight: Float = 0
 
+	@Published var outputPan: Float = 0 {
+		didSet {
+			mixer?.buses.forEach { $0.pan = outputPan }
+		}
+	}
+
 	@Published var inputLevels: [Float] = []
 
 	@Published var trackWaveform: Waveform?

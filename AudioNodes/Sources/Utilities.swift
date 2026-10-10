@@ -139,6 +139,17 @@ func FactorFromGain(_ gain: Float32) -> Float32 {
 }
 
 
+@inlinable
+func PanFactor(_ pan: Float, channel: Int, of count: Int) -> Sample {
+	// Constant-power law scaled by √2 so that the center is 1 on both channels
+	guard pan != 0, count == 2 else {
+		return 1
+	}
+	let theta = (pan + 1) * .pi / 4
+	return Float(2).squareRoot() * (channel == 0 ? cos(theta) : sin(theta))
+}
+
+
 public func FillSilence(frameCount: Int, buffers: AudioBufferListPtr, offset: Int = 0) {
 	precondition(offset <= frameCount)
 	if offset < frameCount {

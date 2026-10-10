@@ -19,6 +19,12 @@ public class VolumeControl: Source, @unchecked Sendable {
 
 	public var volume: Float { withAudioLock { lastKnownVolume$ } }
 
+	/// Stereo panning, -1 (left) ... 1 (right); 0 leaves both channels unchanged. Constant-power, i.e. the perceived loudness stays the same, therefore the near channel gains up to +3dB. Changes are smoothed; has no effect on mono.
+	public var pan: Float {
+		get { withAudioLock { pan$ } }
+		set { withAudioLock { pan$ = min(max(newValue, -1), 1) } }
+	}
+
 
 	public init(format: StreamFormat, initialVolume: Float = 1, busNumber: Int? = nil) {
 		self.busNumber = busNumber
@@ -57,30 +63,33 @@ public class VolumeControl: Source, @unchecked Sendable {
 				current += delta
 				_config.transitionFrames -= frameCount
 			}
+		}
 
-			// Make a short transition to the new level, then multiply the rest of the buffer by the new factor
-			let prevFactor = FactorFromGain(_previous)
-			var factor = FactorFromGain(current)
-			_previous = current
-			let delta = factor - prevFactor
+		if current != _previous || _pan != _prevPan {
+			// Make a short transition to the new level and pan, then multiply the rest of the buffer by the new factors
 			let transitionFrames = transitionFrames(frameCount)
 			for i in 0..<buffers.count {
+				let prevFactor = FactorFromGain(_previous) * PanFactor(_prevPan, channel: i, of: buffers.count)
+				var factor = FactorFromGain(current) * PanFactor(_pan, channel: i, of: buffers.count)
+				let delta = factor - prevFactor
 				let samples = buffers[i].samples
-				for i in 0..<transitionFrames {
-					samples[i] *= prevFactor + delta * (Sample(i) / Sample(transitionFrames))
+				for j in 0..<transitionFrames {
+					samples[j] *= prevFactor + delta * (Sample(j) / Sample(transitionFrames))
 				}
 				let rest = samples + transitionFrames
 				vDSP_vsmul(rest, 1, &factor, rest, 1, UInt(frameCount - transitionFrames))
 			}
+			_previous = current
+			_prevPan = _pan
 		}
 
 		else if current == 0 { // silence
 			return FillSilence(frameCount: frameCount, buffers: buffers)
 		}
 
-		else if current != 1 { // no ramps, non-1 level
-			var factor = FactorFromGain(current)
+		else if current != 1 || _pan != 0 { // no ramps, non-1 level or panned
 			for i in 0..<buffers.count {
+				var factor = FactorFromGain(current) * PanFactor(_pan, channel: i, of: buffers.count)
 				let samples = buffers[i].samples
 				vDSP_vsmul(samples, 1, &factor, samples, 1, UInt(frameCount))
 			}
@@ -97,12 +106,14 @@ public class VolumeControl: Source, @unchecked Sendable {
 		if let config = config$.take() {
 			_config = config
 		}
+		_pan = pan$
 	}
 
 
 	public override func _reset() {
 		super._reset()
 		_previous = _config.targetVolume
+		_prevPan = _pan
 		_config.transitionFrames = 0
 		lastKnownVolume$ = _previous
 	}
@@ -117,8 +128,11 @@ public class VolumeControl: Source, @unchecked Sendable {
 
 	private var config$: Config? = nil
 	private var lastKnownVolume$: Float
+	private var pan$: Float = 0
 	private var _config: Config
 	private var _previous: Float
+	private var _pan: Float = 0
+	private var _prevPan: Float = 0
 }
 
 
