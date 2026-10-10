@@ -318,6 +318,9 @@ open class System: Source, @unchecked Sendable {
 					}
 				}
 				else {
+#if os(macOS)
+					// Mono: VoiceProcessingIO keeps the mic running regardless of EnableIO, so the input callback alone gates the data
+#else
 					// EnableIO cannot be changed on an initialized unit; stop/deinitialize first, then restore
 					let prevRunning = system?.isRunning ?? false
 					if prevRunning {
@@ -328,6 +331,7 @@ open class System: Source, @unchecked Sendable {
 					if prevRunning {
 						system?.start()
 					}
+#endif
 				}
 			}
 		}
