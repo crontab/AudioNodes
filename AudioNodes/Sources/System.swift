@@ -29,15 +29,19 @@ public final class Stereo: System, @unchecked Sendable {
 
 // MARK: - Mono
 
-/// Mono system I/O with optional voice processing (echo cancellation, AGC). On iOS uses VoiceProcessingIO when options are used; on macOS uses default output and options are ignored.
+/// Mono system I/O through VoiceProcessingIO with optional echo cancellation and AGC. `duckOthers: false` reduces the ducking of other audio to the minimum, it can't be turned off completely. On macOS voice processing keeps the mic in use for as long as the node runs, so use `Stereo` for output only.
 public final class Mono: System, @unchecked Sendable {
 
-	public init(echoCancellation: Bool = true, agc: Bool = false) {
+	public init(echoCancellation: Bool = true, agc: Bool = true, duckOthers: Bool = false) {
 		super.init(isStereo: false)
 		var bypass: UInt32 = echoCancellation ? 0 : 1
 		NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &bypass, SizeOf(bypass)), 51025)
 		var enableAGC: UInt32 = agc ? 1 : 0
 		NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 1, &enableAGC, SizeOf(enableAGC)), 51026)
+		if !duckOthers {
+			var otherAudioDucking = AUVoiceIOOtherAudioDuckingConfiguration(mEnableAdvancedDucking: false, mDuckingLevel: .min)
+			NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_OtherAudioDuckingConfiguration, kAudioUnitScope_Global, 0, &otherAudioDucking, SizeOf(otherAudioDucking)), 51072)
+		}
 #if os(macOS)
 		// VoiceProcessingIO fails to initialize on macOS (-10875) unless both client formats have the same rate; the input one defaults to 44.1kHz
 		var descr = AudioStreamBasicDescription.canonical(with: outputFormat)
