@@ -38,6 +38,11 @@ public final class Mono: System, @unchecked Sendable {
 		NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 1, &bypass, SizeOf(bypass)), 51025)
 		var enableAGC: UInt32 = agc ? 1 : 0
 		NotError(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 1, &enableAGC, SizeOf(enableAGC)), 51026)
+#if os(macOS)
+		// VoiceProcessingIO fails to initialize on macOS (-10875) unless both client formats have the same rate; the input one defaults to 44.1kHz
+		var descr = AudioStreamBasicDescription.canonical(with: outputFormat)
+		NotError(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &descr, SizeOf(descr)), 51071)
+#endif
 	}
 
 	fileprivate override class func subtype() -> UInt32 { kAudioUnitSubType_VoiceProcessingIO }
@@ -255,7 +260,12 @@ open class System: Source, @unchecked Sendable {
 			// NOTE: iOS returns 0 in inDescr.mSampleRate whereas macOS returns something that can be different from the output sampling rate.
 			// Also NOTE: on macOS input and output sampling rates may end up being different. e.g. 48 vs 44.1
 			let sampleRate = inDescr.mSampleRate == 0 ? system.outputFormat.sampleRate : inDescr.mSampleRate
+#if os(macOS)
+			// Mono sets its client input format in its own init
+			inputFormat = system is Mono ? system.outputFormat : .init(sampleRate: sampleRate, isStereo: inDescr.mChannelsPerFrame == 2)
+#else
 			inputFormat = .init(sampleRate: sampleRate, isStereo: inDescr.mChannelsPerFrame == 2)
+#endif
 			if ownsUnit {
 				// Only macOS requires setting the format for the client-facing bus, otherwise rendering fails.
 				var descr = AudioStreamBasicDescription.canonical(with: inputFormat)
